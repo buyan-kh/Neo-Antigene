@@ -1,0 +1,95 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "neoantigene"
+version = "0.1.0"
+description = "Neoantigen ranking engine optimized for T-cell assay validation rate"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+
+dependencies = [
+    "typer>=0.12",
+    "pydantic>=2.6",
+    "polars>=1.0",
+    "numpy>=1.26",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+presentation = ["mhcflurry>=2.0"]
+learning = ["scikit-learn>=1.4"]
+
+[project.scripts]
+neoantigene = "neoantigene.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "types-pyyaml>=6.0",
+    "scikit-learn>=1.4",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/neoantigene"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "ANN"]
+ignore = [
+    "ANN401",  # typer and polars surfaces legitimately take Any
+    "RUF012",  # pydantic/ClassVar interplay is handled by the mypy plugin
+]
+
+[tool.ruff.lint.per-file-ignores]
+# typer declares parameters as function calls in argument defaults.
+"src/neoantigene/cli.py" = ["B008"]
+"tests/**" = ["ANN"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+plugins = ["pydantic.mypy"]
+warn_unreachable = true
+enable_error_code = ["redundant-expr", "truthy-bool", "ignore-without-code"]
+
+[[tool.mypy.overrides]]
+# Optional heavy extras that ship without type information.
+module = ["mhcflurry.*", "sklearn.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Test bodies are exercised by pytest, so annotating every fixture and helper
+# buys little. Everything else about strict mode still applies to them.
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers --strict-config"
+markers = [
+    "eval: ranking quality benchmarks against baselines",
+]

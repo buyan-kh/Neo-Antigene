@@ -1,0 +1,6 @@
+chrom	pos	ref	alt	gene	transcript	consequence	protein_position	amino_acids	dna_vaf	rna_vaf	tumor_depth	copy_number	population_af	filter
+12	25245350	C	T	KRAS	ENST00000256078	missense_variant	12	G/D	0.38	0.41	142	2	.	PASS
+12	25245350	C	A	KRAS	ENST00000256078	missense_variant	12	G/V	0.31	0.29	138	2	.	PASS
+1	1000300	G	A	SYNTHA	ENST90000000001	missense_variant	30	M/K	0.44	0.36	96	2	.	PASS
+1	1000420	CCTGGCTGTG	C	SYNTHA	ENST90000000001	inframe_deletion	41-43	LAV/-	0.29	0.22	88	2	.	PASS
+1	1000510	T	C	SYNTHA	ENST90000000001	missense_variant	52	M/V	0.08	0.05	110	2	.	PASS

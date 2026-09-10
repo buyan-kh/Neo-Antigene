@@ -1,0 +1,31 @@
+# Example manifest. Paths are resolved relative to this file.
+#
+# The proteome here is a two-protein stub for smoke testing. Real runs need a
+# full Ensembl release, e.g. Homo_sapiens.GRCh38.pep.all.fa.gz, or the
+# self-peptide gate is meaningless.
+
+sample_id: EXAMPLE-PDAC-001
+cancer_type: pancreatic_adenocarcinoma
+tumor_purity: 0.6
+
+hla:
+  - HLA-A*11:01
+  - HLA-A*02:01
+  - HLA-B*07:02
+  - HLA-C*08:02
+
+processed:
+  # Production input is a VEP-annotated somatic VCF:
+  #   somatic_vcf: somatic.vep.vcf
+  #   tumor_sample_name: TUMOR
+  # Exactly one of somatic_vcf / variant_tsv may be set.
+  variant_tsv: variants.tsv
+  expression_tsv: expression.tsv
+  normal_expression_tsv: normal_expression.tsv
+  proteome_fasta: proteome.mini.fa
+
+# Reserved for the not-yet-implemented FASTQ front end.
+raw:
+  tumor_dna: []
+  normal_dna: []
+  tumor_rna: []

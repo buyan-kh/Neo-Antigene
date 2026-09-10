@@ -1,0 +1,15 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##FILTER=<ID=weak_evidence,Description="Mutant allele is only weakly supported">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for the ref and alt alleles">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth">
+##INFO=<ID=gnomAD_AF,Number=A,Type=Float,Description="gnomAD allele frequency">
+##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Allele|Consequence|IMPACT|SYMBOL|Gene|Feature_type|Feature|BIOTYPE|Protein_position|Amino_acids|Codons|CANONICAL">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NORMAL	TUMOR
+12	25245350	.	C	T	.	PASS	CSQ=T|missense_variant|MODERATE|KRAS|ENSG00000133703|Transcript|ENST00000256078|protein_coding|12|G/D|gGt/gAt|YES	AD:DP	140,0:140	88,54:142
+12	25245350	.	C	A	.	PASS	CSQ=A|missense_variant|MODERATE|KRAS|ENSG00000133703|Transcript|ENST00000256078|protein_coding|12|G/V|gGt/gTt|YES	AD:DP	136,0:136	95,43:138
+1	1000300	.	G	A	.	PASS	CSQ=A|missense_variant|MODERATE|SYNTHA|ENSG90000000001|Transcript|ENST90000000001|protein_coding|30|M/K|aTg/aAg|YES	AD:DP	94,0:94	54,42:96
+1	1000420	.	CCTGGCTGTG	C	.	PASS	CSQ=-|inframe_deletion|MODERATE|SYNTHA|ENSG90000000001|Transcript|ENST90000000001|protein_coding|41-43|LAV/-|cttgctgtg/-|YES	AD:DP	90,0:90	62,26:88
+1	1000510	.	T	C	.	weak_evidence	CSQ=C|missense_variant|MODERATE|SYNTHA|ENSG90000000001|Transcript|ENST90000000001|protein_coding|52|M/V|Atg/Gtg	AD:DP	108,0:108	101,9:110
+1	1000600	.	C	T	.	PASS	gnomAD_AF=0.0231;CSQ=T|missense_variant|MODERATE|SYNTHA|ENSG90000000001|Transcript|ENST90000000001|protein_coding|58|Y/H|Tat/Cat|YES	AD:DP	60,58:118	55,61:116
+1	1000700	.	A	G	.	PASS	CSQ=G|synonymous_variant|LOW|SYNTHA|ENSG90000000001|Transcript|ENST90000000001|protein_coding|60|S|tcA/tcG|YES	AD:DP	102,0:102	60,44:104

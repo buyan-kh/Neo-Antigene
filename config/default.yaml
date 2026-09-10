@@ -1,0 +1,50 @@
+# Neo Antigene defaults.
+#
+# Weights are PRIORS, not fitted values. Replace them with the output of
+# `neoantigene refit` as soon as assay labels exist.
+
+variant_filters:
+  require_pass: true
+  min_tumor_depth: 20
+  min_dna_vaf: 0.05
+  max_population_af: 0.0001
+  min_ccf: 0.6
+  tumor_purity: 0.5
+
+expression:
+  min_tpm: 1.0
+  min_rna_vaf: 0.02
+  require_rna_evidence: false
+  normal_tpm_ceiling: null
+
+peptides:
+  lengths: [8, 9, 10, 11]
+  flank_length: 10
+  drop_self_matching: true
+
+presentation:
+  backend: mhcflurry
+  max_affinity_percentile: 2.0
+  min_presentation_score: 0.0
+  score_wildtype: true
+
+# Scaled by strength of evidence. Presentation, clonality and expression are
+# close to necessary conditions for a response; the sequence-intrinsic terms
+# below them are proxies, and giving those comparable weight lets noise
+# dominate the top of the shortlist.
+weights:
+  bias: -3.0
+
+  presentation: 2.5
+  clonality: 1.5
+  expression: 1.2
+
+  agretopicity: 0.5
+  tumor_selectivity: 0.4
+  foreignness: 0.25
+  hydrophobicity: 0.15
+
+output:
+  top_n: 50
+  max_per_variant: 2
+  include_failed: false

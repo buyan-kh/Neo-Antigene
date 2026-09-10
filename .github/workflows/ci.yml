@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_FROZEN: "1"
+
+jobs:
+  check:
+    name: lint, types, tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Ruff lint
+        run: uv run ruff check --output-format=github .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Mypy (strict)
+        run: uv run mypy
+
+      - name: Tests
+        run: uv run pytest --cov=neoantigene --cov-report=term-missing
+
+  no-patient-data:
+    name: no patient data committed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject sequencing data outside data/examples
+        # Patient-derived data must never reach the repository. This is a
+        # backstop for .gitignore, which only helps if it was in place first.
+        run: |
+          matches=$(git ls-files \
+            '*.vcf' '*.vcf.gz' '*.bam' '*.bai' '*.cram' \
+            '*.fastq' '*.fastq.gz' '*.fq' '*.fq.gz' \
+            | grep -v '^data/examples/' || true)
+          if [ -n "$matches" ]; then
+            echo "::error::sequencing data committed outside data/examples:"
+            echo "$matches"
+            exit 1
+          fi
+          echo "clean"
