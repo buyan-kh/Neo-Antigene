@@ -114,6 +114,91 @@ def _reference_rate(summaries: Sequence[ValidationSummary], baseline: str | None
     return None if fallback is None else fallback.validation_rate
 
 
+class RetrievalSummary(BaseModel):
+    """The four numbers a published benchmark is reported on.
+
+    Precision and recall are both here because they answer different questions
+    and diverge sharply when positives are scarce. Precision@10 is what a lab
+    feels: of ten peptides synthesized, how many worked. Recall@10 is what a
+    paper asks: of the epitopes that exist, how many did the method surface.
+    With three positives in a pool, precision@10 cannot exceed 0.3 however
+    perfect the ranking, so quoting it alone understates a good method.
+    """
+
+    method: str
+    assayed: int
+    positives: int
+    recall_at_10: float
+    recall_at_20: float
+    precision_at_10: float
+    hits_at_10: int
+    hits_at_20: int
+    best_positive_rank: int | None
+
+    def describe(self) -> str:
+        best = "none ranked" if self.best_positive_rank is None else f"#{self.best_positive_rank}"
+        return (
+            f"{self.method:<20} "
+            f"recall@10 {self.recall_at_10:>6.1%} ({self.hits_at_10}/{self.positives})  "
+            f"recall@20 {self.recall_at_20:>6.1%} ({self.hits_at_20}/{self.positives})  "
+            f"precision@10 {self.precision_at_10:>6.1%}  "
+            f"best {best}"
+        )
+
+
+def positive_ranks(
+    results: Sequence[AssayResult],
+    ranking: Mapping[str, float],
+) -> list[int]:
+    """1-based ranks of every assay-positive peptide within the assayed pool.
+
+    Scoped to peptides that were both ranked and assayed, which is the same
+    rule `validation_rate_at_k` uses.
+    """
+    pool = [r for r in labelled(results) if r.key in ranking]
+    ordered = sorted(pool, key=lambda r: (-ranking[r.key], r.key))
+    return [index for index, result in enumerate(ordered, start=1) if result.label == 1]
+
+
+def retrieval_at_k(
+    results: Sequence[AssayResult],
+    ranking: Mapping[str, float],
+    method: str = BASELINE_METHOD_EXCLUDED,
+) -> RetrievalSummary:
+    """Recall@10, recall@20, precision@10 and the best positive's rank."""
+    pool = [r for r in labelled(results) if r.key in ranking]
+    positives = sum(1 for r in pool if r.label == 1)
+    ranks = positive_ranks(results, ranking)
+
+    hits_10 = sum(1 for r in ranks if r <= 10)
+    hits_20 = sum(1 for r in ranks if r <= 20)
+    depth_10 = min(10, len(pool))
+
+    return RetrievalSummary(
+        method=method,
+        assayed=len(pool),
+        positives=positives,
+        recall_at_10=hits_10 / positives if positives else 0.0,
+        recall_at_20=hits_20 / positives if positives else 0.0,
+        precision_at_10=hits_10 / depth_10 if depth_10 else 0.0,
+        hits_at_10=hits_10,
+        hits_at_20=hits_20,
+        best_positive_rank=min(ranks) if ranks else None,
+    )
+
+
+def compare_retrieval(
+    results: Sequence[AssayResult],
+    rankings: Mapping[str, Mapping[str, float]],
+) -> list[RetrievalSummary]:
+    """`retrieval_at_k` for every method over one shared assayed pool."""
+    if not rankings:
+        return []
+    shared = set.intersection(*(set(r) for r in rankings.values()))
+    pool = [r for r in labelled(results) if r.key in shared]
+    return [retrieval_at_k(pool, ranking, method=name) for name, ranking in rankings.items()]
+
+
 def enrichment_by_feature(
     results: Sequence[AssayResult],
     features: Mapping[str, dict[str, float]],

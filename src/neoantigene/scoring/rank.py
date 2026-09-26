@@ -23,8 +23,10 @@ SCORED_FEATURES: tuple[str, ...] = (
     "presentation",
     "agretopicity",
     "tumor_selectivity",
+    "mutation_exposure",
+    "wt_dissimilarity",
+    "self_dissimilarity",
     "hydrophobicity",
-    "foreignness",
 )
 
 

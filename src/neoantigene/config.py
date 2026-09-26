@@ -93,8 +93,14 @@ class ScoringWeights(ConfigModel):
 
     agretopicity: float = 0.5
     tumor_selectivity: float = 0.4
-    foreignness: float = 0.25
-    hydrophobicity: float = 0.15
+    self_dissimilarity: float = 0.25
+    wt_dissimilarity: float = 0.15
+    mutation_exposure: float = 0.1
+
+    #: Zero on purpose: Chowell (PNAS 2015) and TESLA (Cell 2020) disagree on
+    #: the sign of this effect in tumor neoepitopes. See
+    #: `scoring.immunogenicity.tcr_contact_hydrophobicity` and docs/CITATIONS.md.
+    hydrophobicity: float = 0.0
 
 
 class OutputConfig(ConfigModel):

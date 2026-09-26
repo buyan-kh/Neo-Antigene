@@ -1,0 +1,19 @@
+# Ott et al. 2017 (doi:10.1038/nature22991) patient 1.
+# Built by build/build_case.py from the published supplementary tables.
+# Tumour purity, VAF and depth are not published, so they are absent here
+# rather than guessed, and the clonality terms are inactive for every
+# candidate in this sample.
+
+sample_id: OTT2017-PT1
+cancer_type: melanoma
+
+hla:
+  - HLA-A*02:01
+  - HLA-A*24:02
+  - HLA-B*44:02
+  - HLA-B*15:01
+
+processed:
+  variant_tsv: ../variants/OTT2017-PT1.variants.tsv
+  expression_tsv: ../expression/OTT2017-PT1.expression.tsv
+  proteome_fasta: ../reference/Homo_sapiens.GRCh38.pep.all.fa.gz
