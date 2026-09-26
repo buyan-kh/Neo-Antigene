@@ -11,6 +11,7 @@ from typing import Self
 
 from ..io.fasta import read_fasta
 from ..io.ids import strip_version
+from .reference import MIN_REAL_PROTEOME_PROTEINS
 
 _SEPARATOR = "*"
 
@@ -53,19 +54,49 @@ class ProteomeIndex:
             return self._by_symbol.get(gene)
         return None
 
-    def contains_peptide(self, peptide: str) -> bool:
-        """Exact-match check against the whole reference proteome.
+    def sequences(self) -> list[str]:
+        """Every distinct protein sequence in the index."""
+        source = self._by_protein or self._by_transcript
+        return list(source.values())
 
-        Backed by a lazily built concatenated sequence: substring search is
-        cheap enough for the few hundred peptides that survive gating, and
-        avoids holding a multi-gigabyte k-mer set in memory.
+    def concatenated(self) -> str:
+        """Every protein joined by a separator, built once and cached.
+
+        The separator matters: without it a peptide could "match" self by
+        straddling the junction between two unrelated proteins.
+
+        Cost warning. `contains_peptide` runs one substring search over
+        ~157 Mb per call, roughly 7 ms, and the pipeline calls it for every
+        candidate rather than only for gate survivors. At tens of thousands of
+        candidates that is minutes per sample, and it is the slowest stage in
+        a real run. The alternative, a k-mer index over the proteome, costs
+        gigabytes of memory, so the trade was made deliberately -- but see
+        `docs/BENCHMARK.md` for what it means for runtime.
         """
-        if not peptide:
-            return False
         if self._concatenated is None:
             sequences = self._by_protein.values() or self._by_transcript.values()
             self._concatenated = _SEPARATOR.join(sequences)
-        return peptide in self._concatenated
+        return self._concatenated
+
+    def contains_peptide(self, peptide: str) -> bool:
+        """Exact-match check against the whole reference proteome."""
+        if not peptide:
+            return False
+        return peptide in self.concatenated()
+
+    @property
+    def protein_count(self) -> int:
+        return max(len(self._by_protein), len(self._by_transcript))
+
+    @property
+    def is_stub(self) -> bool:
+        """True when this index is too small to be a real reference proteome.
+
+        The self-peptide gate is meaningless against a handful of proteins: it
+        will pass essentially every candidate. Callers surface this so a demo
+        run is never mistaken for a real one.
+        """
+        return self.protein_count < MIN_REAL_PROTEOME_PROTEINS
 
     def __len__(self) -> int:
         return len(self._by_transcript)

@@ -24,6 +24,12 @@ from .learning.active import select_batch
 from .learning.dataset import build_training_set, load_feature_records
 from .learning.train import InsufficientData, compare_to_prior, fit_weights
 from .models import ScoredCandidate
+from .peptides.reference import (
+    ENSEMBL_RELEASE,
+    ReferenceDownloadError,
+    fetch_proteome,
+    provenance,
+)
 from .pipeline import run as run_pipeline
 from .presentation.registry import DEVELOPMENT_BACKENDS, available, get_backend
 from .run import configure_logging, new_run_id
@@ -278,6 +284,28 @@ def catalog(
         typer.echo(f"{marker} {antigen.key:<16} {frequency:>5}  {restrictions}")
     if hla is not None:
         typer.echo("\n* has a published epitope for one of the supplied alleles")
+
+
+@app.command("fetch-proteome")
+def fetch_proteome_command(
+    release: Annotated[str, typer.Option("--release", help="Ensembl release.")] = ENSEMBL_RELEASE,
+    out: Annotated[Path | None, typer.Option("--out", help="Destination file.")] = None,
+    force: Annotated[bool, typer.Option("--force", help="Re-download if present.")] = False,
+) -> None:
+    """Download the Ensembl human proteome the self-peptide gate needs."""
+    try:
+        path = fetch_proteome(release=release, dest=out, force=force)
+    except ReferenceDownloadError as exc:
+        typer.echo(f"download failed: {exc}")
+        raise typer.Exit(code=1) from exc
+
+    report = provenance(path)
+    typer.echo(f"proteome : {path}")
+    typer.echo(f"proteins : {report.proteins}")
+    if report.caveat:
+        typer.echo(f"warning  : {report.caveat}")
+    else:
+        typer.echo("point processed.proteome_fasta at that path")
 
 
 @app.command("init-config")

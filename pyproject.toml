@@ -21,6 +21,20 @@ dependencies = [
 [project.optional-dependencies]
 presentation = ["mhcflurry>=2.0"]
 learning = ["scikit-learn>=1.4"]
+plots = [
+    "matplotlib>=3.11.2",
+]
+#: Only `scripts/build_ott2017_benchmark.py` needs this, to read the
+#: publisher's .xlsx supplements. Kept out of the default install so the
+#: library stays lean.
+benchmark = [
+    "openpyxl>=3.1",
+]
+api = [
+    "fastapi>=0.115",
+    "python-multipart>=0.0.9",
+    "uvicorn[standard]>=0.30",
+]
 
 [project.scripts]
 neoantigene = "neoantigene.cli:app"
@@ -33,6 +47,7 @@ dev = [
     "mypy>=1.11",
     "types-pyyaml>=6.0",
     "scikit-learn>=1.4",
+    "httpx>=0.28.1",
 ]
 
 [tool.hatch.build.targets.wheel]

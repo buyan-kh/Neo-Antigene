@@ -12,7 +12,7 @@ or the clock.
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -24,6 +24,7 @@ from .io.vcf import read_variant_tsv, read_vep_vcf
 from .models import GateFailure, PeptideCandidate, PresentationCall, ScoredCandidate, Variant
 from .peptides.generate import PeptideGenerationError, generate_for_variant
 from .peptides.proteome import ProteomeIndex
+from .peptides.selfsim import SelfProteome
 from .presentation.base import PresentationBackend
 from .presentation.registry import get_backend
 from .run import RunManifest
@@ -43,6 +44,18 @@ class RunReport(BaseModel):
     pairs_scored: int = 0
     pairs_gated: dict[GateFailure, int] = Field(default_factory=dict)
     shortlisted: int = 0
+
+    #: Size of the loaded reference proteome, and whether it is too small to be
+    #: a real one. A stub reference makes the self-peptide gate and the
+    #: self-dissimilarity feature meaningless, which consumers must disclose.
+    proteome_proteins: int = 0
+    proteome_is_stub: bool = False
+
+    #: False when the sample carried no RNA, in which case the `expression` and
+    #: `tumor_selectivity` features fall back to a neutral 0.5 and contribute
+    #: nothing but their bias.
+    expression_available: bool = False
+    normal_expression_available: bool = False
 
     def counts(self) -> dict[str, int]:
         """Flat integer summary, for the run manifest."""
@@ -110,6 +123,70 @@ def generate_peptides(
             errors[reason] = errors.get(reason, 0) + 1
             logger.debug("skipping %s: %s", variant.hgvsp_short, exc)
     return candidates, errors
+
+
+def scan_nearest_self(
+    candidates: Sequence[PeptideCandidate],
+    proteome: ProteomeIndex,
+    calls: Mapping[tuple[str, str], PresentationCall] | None = None,
+    config: PipelineConfig | None = None,
+) -> dict[str, float] | None:
+    """Nearest-self similarity for plausibly presented peptides, or None if unusable.
+
+    Skipped against a stub reference: a two-protein FASTA would report every
+    peptide as maximally foreign, which is a fabricated signal rather than a
+    weak one.
+
+    Restricted to peptides that at least one allele is predicted to present.
+    That is not only a saving. The search seeds on exact 4-mers, and there are
+    only 20^4 of them, so a query set of tens of thousands of peptides covers
+    most of the seed space and every proteome position becomes a hit — the
+    index stops discriminating and the scan degrades to a full comparison.
+    Scanning the gate-passing subset keeps the seeding selective, and peptides
+    no allele presents are dropped downstream regardless.
+    """
+    if proteome.is_stub:
+        logger.warning("skipping nearest-self search: reference proteome is a stub")
+        return None
+
+    peptides = _presentable_peptides(candidates, calls, config)
+    if not peptides:
+        logger.info("no peptides cleared presentation, skipping nearest-self search")
+        return None
+
+    reference = SelfProteome(proteome.sequences())
+    similarities = reference.nearest_similarity(peptides)
+    logger.info(
+        "scanned %d of %d peptides against %d self residues",
+        len(peptides),
+        len({c.mutant_peptide for c in candidates}),
+        reference.residues,
+    )
+    return similarities
+
+
+def _presentable_peptides(
+    candidates: Sequence[PeptideCandidate],
+    calls: Mapping[tuple[str, str], PresentationCall] | None,
+    config: PipelineConfig | None,
+) -> list[str]:
+    """Mutant peptides at least one allele is predicted to present."""
+    everything = sorted({c.mutant_peptide for c in candidates})
+    if calls is None or config is None:
+        return everything
+
+    ceiling = config.presentation.max_affinity_percentile
+    floor = config.presentation.min_presentation_score
+    keep: set[str] = set()
+    for (peptide, _allele), call in calls.items():
+        percentile = call.affinity_percentile
+        if percentile is not None and percentile > ceiling:
+            continue
+        score = call.presentation_score
+        if score is not None and score < floor:
+            continue
+        keep.add(peptide)
+    return sorted(keep & set(everything))
 
 
 def predict_presentation(
@@ -202,6 +279,14 @@ def run(
 
     expression = _load(ExpressionTable, sample.processed.expression_tsv)
     normal_expression = _load(NormalExpressionReference, sample.processed.normal_expression_tsv)
+    report.expression_available = expression is not None
+    report.normal_expression_available = normal_expression is not None
+    if expression is None:
+        logger.warning(
+            "no expression table for %s: the expression feature is neutral for every "
+            "candidate and cannot discriminate",
+            sample.sample_id,
+        )
 
     kept, filter_report = apply_variant_filters(
         variants, resolved.variant_filters, resolved.expression, expression
@@ -211,7 +296,17 @@ def run(
     logger.info("somatic filtering: %s", filter_report.summary())
 
     proteome = ProteomeIndex.from_fasta(proteome_path)
+    report.proteome_proteins = proteome.protein_count
+    report.proteome_is_stub = proteome.is_stub
     logger.info("loaded proteome with %d transcripts", len(proteome))
+    if proteome.is_stub:
+        logger.warning(
+            "%s holds only %d proteins, which is not a reference proteome: the "
+            "self-peptide gate and self-dissimilarity feature are meaningless. Run "
+            "`neoantigene fetch-proteome` and point the manifest at the result.",
+            proteome_path,
+            proteome.protein_count,
+        )
 
     candidates, errors = generate_peptides(kept, proteome, resolved)
     report.peptides_generated = len(candidates)
@@ -238,6 +333,7 @@ def run(
         expression=expression,
         normal_expression=normal_expression,
         proteome=proteome,
+        self_similarity=scan_nearest_self(candidates, proteome, calls, resolved),
     )
     all_scored = score_all(build_scored(candidates, alleles, calls, context), resolved.weights)
     report.pairs_scored = len(all_scored)

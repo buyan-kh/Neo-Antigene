@@ -17,7 +17,12 @@ from ..config import PipelineConfig
 from ..io.expression import ExpressionTable, NormalExpressionReference
 from ..models import GateFailure, PeptideCandidate, PresentationCall
 from ..peptides.proteome import ProteomeIndex
-from .immunogenicity import agretopicity, dissimilarity_to_wildtype, tcr_contact_hydrophobicity
+from .immunogenicity import (
+    agretopicity,
+    dissimilarity_to_wildtype,
+    mutation_exposure,
+    tcr_contact_hydrophobicity,
+)
 
 NEUTRAL = 0.5
 
@@ -34,6 +39,12 @@ class FeatureContext:
     expression: ExpressionTable | None = None
     normal_expression: NormalExpressionReference | None = None
     proteome: ProteomeIndex | None = None
+
+    #: Nearest-self BLOSUM62 similarity per mutant peptide, precomputed in one
+    #: proteome pass by `peptides.selfsim`. `None` means the search could not be
+    #: run (no reference, or a stub too small to mean anything), in which case
+    #: the feature is neutral rather than optimistic.
+    self_similarity: dict[str, float] | None = None
 
 
 def expression_feature(tpm: float | None) -> float:
@@ -72,6 +83,19 @@ def agretopicity_feature(raw: float | None) -> float:
     if raw <= 0:
         return 0.0
     return _clip(math.log10(raw) / AGRETOPICITY_LOG_CEILING + 0.5)
+
+
+def self_dissimilarity_feature(similarity: float | None) -> float:
+    """Distance from the closest human self peptide, higher being more foreign.
+
+    `None` means the nearest-self search did not run, which is a different
+    thing from "nothing similar was found". Returning NEUTRAL keeps an
+    unavailable feature from silently acting as a strong positive signal, at
+    the cost of the feature contributing nothing.
+    """
+    if similarity is None:
+        return NEUTRAL
+    return _clip(1.0 - similarity)
 
 
 def _gates(
@@ -133,19 +157,30 @@ def assemble(
         wildtype_call.affinity_nm if wildtype_call else None,
     )
 
+    raw_self_similarity = (
+        context.self_similarity.get(candidate.mutant_peptide)
+        if context.self_similarity is not None
+        else None
+    )
+
     features: dict[str, float] = {
         "clonality": variant.ccf if variant.ccf is not None else NEUTRAL,
         "expression": expression_feature(tpm),
         "presentation": presentation_feature(mutant_call),
         "agretopicity": agretopicity_feature(raw_agretopicity),
         "tumor_selectivity": tumor_selectivity_feature(normal_tpm),
+        "mutation_exposure": mutation_exposure(candidate.mutation_position, candidate.length),
         "hydrophobicity": tcr_contact_hydrophobicity(candidate.mutant_peptide),
-        "foreignness": dissimilarity_to_wildtype(
+        "wt_dissimilarity": dissimilarity_to_wildtype(
             candidate.mutant_peptide, candidate.wildtype_peptide
         ),
+        "self_dissimilarity": self_dissimilarity_feature(raw_self_similarity),
         "tpm_raw": tpm if tpm is not None else math.nan,
         "normal_tpm_raw": normal_tpm if normal_tpm is not None else math.nan,
         "agretopicity_raw": raw_agretopicity if raw_agretopicity is not None else math.nan,
+        "self_similarity_raw": (
+            raw_self_similarity if raw_self_similarity is not None else math.nan
+        ),
         "self_match": 1.0 if self_match else 0.0,
     }
 

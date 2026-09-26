@@ -10,7 +10,7 @@ class TestValidation:
         weights = PipelineConfig().weights
         # Well-evidenced features must outweigh the speculative ones.
         assert weights.presentation > weights.agretopicity
-        assert weights.clonality > weights.foreignness
+        assert weights.clonality > weights.wt_dissimilarity
         assert weights.expression > weights.hydrophobicity
 
     def test_unknown_keys_are_rejected(self):

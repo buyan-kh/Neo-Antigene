@@ -43,7 +43,28 @@ Ott PA et al., *Nature* 2017;547:217–221. DOI [10.1038/nature22991](https://do
 
 The shuffle beat both real methods. Neo Antigene's only advantage over `binding_only` is that one extra top-10 hit, and a best positive at rank 2 rather than rank 9. `expression_only` matching the ranker is expected: the paper's TPM is published for the vaccine peptides, so loading it would mark the assayed set, and it was left unloaded. Expression, tumor selectivity, and clonality are therefore constant. Those three weights are a large fraction of the model, and they did not run.
 
-Four of 18 published positives were never scored: three are frameshift or neo-ORF peptides the generator does not build, and one (`CASP1` p.P172S) matched no Ensembl 116 isoform. They are absent from the 14.
+Four of 18 published positives were never scored: three are frameshift or neo-ORF peptides the generator does not build (`DHX40` p.S754fs and its neo-ORF in PT4, `RALGAPB` neo-ORF in PT6), and one (`CASP1` p.P172S) matched no Ensembl 116 isoform — no CASP1 isoform in that release carries proline at position 172, so it was dropped rather than forced onto a sequence the reference does not support. They are absent from the 14. Frameshifts are 33 of 4,347 candidate-class variants here, 0.8%, but 3 of 18 validated positives, 17%. That enrichment is the strongest argument for building neo-ORF generation next.
+
+**Exactly how the labels were filtered.** Supplementary Table 5 has 174 rows. A peptide is positive when the primary readout — IFN-γ ELISPOT against peptide-pulsed autologous APCs, the column headed `Peptide pulsed autologous APC` — is positive. The minigene and autologous-tumor columns are kept in each row's `notes` but do not set the label.
+
+| Outcome | Rows |
+| --- | ---: |
+| Kept, negative | 149 |
+| Kept, positive | 18 |
+| Dropped: no clean mutant peptide sequence published | 6 |
+| Dropped: ELISPOT recorded as `n.d.` | 1 |
+
+`n.d.` is dropped, not read as negative, because "not determined" is not a result. Unlabeled peptides are likewise never treated as negatives.
+
+**How blinding is enforced.** In `scripts/run_ott2017_benchmark.py`, `rank_everything()` receives the manifests and the config and has no parameter through which a label could reach it. `score_rankings()` is the first function that opens `validated.tsv`, and prints its SHA-256 at the moment it does, so the ordering is visible in the run log rather than merely asserted here. Reproduce with:
+
+```bash
+uv run --extra benchmark python scripts/build_ott2017_benchmark.py
+uv run --extra presentation --extra plots python scripts/run_ott2017_benchmark.py
+```
+
+The build verifies pinned SHA-256 digests of the three supplements and fails if the publisher replaces a file. Because the MAF is GRCh37 with 2010-era UCSC transcript IDs and the proteome is Ensembl 116, isoforms are matched by requiring the annotated reference residue at the annotated position, and symbols retired since 2017 are followed through HGNC's `prev_symbol` table (`ACPP`→`ACP3` and 498 others). That rename step alone recovered 284 variants, one of them a validated positive; Ensembl's REST symbol lookup was tried first and recovered none, because it does not resolve retired symbols.
+
 
 This case's mutation input is the full table, 4,314 usable missense and in-frame variants out of 11,092 MAF rows. The score is still only the 139 pairs the trial assayed. Unassayed peptides are excluded, so a method cannot win by nominating something nobody tested, and it also cannot be credited for finding an epitope the trial never labeled.
 
@@ -72,6 +93,8 @@ Same hits, stated as recall so they can sit next to Ott:
 Recall@20 is 100% for both because every positive sits inside a pool of 19.
 
 This case is a re-rank of a list the authors already chose. Supplementary Data 5 records 511 nonsynonymous mutations and 336 expressed mutations in this tumor. The assayed list is two pools of 10. The restricting allele on each label is `full_ms_model_most_probable_restriction`, which the supplement's caption defines as the allele their model predicted. The Y/N is an IFN-γ ELISpot after in vitro expansion, not a tetramer and not an ex vivo call. No per-variant VAF, depth, or purity was published, so clonality is the same number on every variant. One frameshift negative was omitted because the generator cannot build it. The ranker is being scored on a shortlist whose hard selection already happened, with the clonality term switched off.
+
+A full six-patient Ott run takes about 24 minutes, and most of that is not MHCflurry. It is the exact self-match check in `scoring/features.py`, which evaluates `peptide in proteome.concatenated()` per candidate: a substring scan over 156 million residues, roughly 30 ms, repeated for up to 63,500 peptides in one patient. It is correct but wasteful, and it should be restricted to the presented subset the way the nearest-self scan already is.
 
 ## These two runs did not share a config file
 

@@ -7,60 +7,10 @@ them is expected to be replaced by coefficients fit on real assay outcomes.
 
 from __future__ import annotations
 
+from ..matrices import BLOSUM62, KYTE_DOOLITTLE
+
 BLOSUM_MATCH_SCORE = 4.0
 BLOSUM_RANGE = 8.0
-
-KYTE_DOOLITTLE = {
-    "A": 1.8,
-    "R": -4.5,
-    "N": -3.5,
-    "D": -3.5,
-    "C": 2.5,
-    "Q": -3.5,
-    "E": -3.5,
-    "G": -0.4,
-    "H": -3.2,
-    "I": 4.5,
-    "L": 3.8,
-    "K": -3.9,
-    "M": 1.9,
-    "F": 2.8,
-    "P": -1.6,
-    "S": -0.8,
-    "T": -0.7,
-    "W": -0.9,
-    "Y": -1.3,
-    "V": 4.2,
-}
-
-_BLOSUM62_ORDER = "ARNDCQEGHILKMFPSTWYV"
-_BLOSUM62_ROWS = [
-    [4, -1, -2, -2, 0, -1, -1, 0, -2, -1, -1, -1, -1, -2, -1, 1, 0, -3, -2, 0],
-    [-1, 5, 0, -2, -3, 1, 0, -2, 0, -3, -2, 2, -1, -3, -2, -1, -1, -3, -2, -3],
-    [-2, 0, 6, 1, -3, 0, 0, 0, 1, -3, -3, 0, -2, -3, -2, 1, 0, -4, -2, -3],
-    [-2, -2, 1, 6, -3, 0, 2, -1, -1, -3, -4, -1, -3, -3, -1, 0, -1, -4, -3, -3],
-    [0, -3, -3, -3, 9, -3, -4, -3, -3, -1, -1, -3, -1, -2, -3, -1, -1, -2, -2, -1],
-    [-1, 1, 0, 0, -3, 5, 2, -2, 0, -3, -2, 1, 0, -3, -1, 0, -1, -2, -1, -2],
-    [-1, 0, 0, 2, -4, 2, 5, -2, 0, -3, -3, 1, -2, -3, -1, 0, -1, -3, -2, -2],
-    [0, -2, 0, -1, -3, -2, -2, 6, -2, -4, -4, -2, -3, -3, -2, 0, -2, -2, -3, -3],
-    [-2, 0, 1, -1, -3, 0, 0, -2, 8, -3, -3, -1, -2, -1, -2, -1, -2, -2, 2, -3],
-    [-1, -3, -3, -3, -1, -3, -3, -4, -3, 4, 2, -3, 1, 0, -3, -2, -1, -3, -1, 3],
-    [-1, -2, -3, -4, -1, -2, -3, -4, -3, 2, 4, -2, 2, 0, -3, -2, -1, -2, -1, 1],
-    [-1, 2, 0, -1, -3, 1, 1, -2, -1, -3, -2, 5, -1, -3, -1, 0, -1, -3, -2, -2],
-    [-1, -1, -2, -3, -1, 0, -2, -3, -2, 1, 2, -1, 5, 0, -2, -1, -1, -1, -1, 1],
-    [-2, -3, -3, -3, -2, -3, -3, -3, -1, 0, 0, -3, 0, 6, -4, -2, -2, 1, 3, -1],
-    [-1, -2, -2, -1, -3, -1, -1, -2, -2, -3, -3, -1, -2, -4, 7, -1, -1, -4, -3, -2],
-    [1, -1, 1, 0, -1, 0, 0, 0, -1, -2, -2, 0, -1, -2, -1, 4, 1, -3, -2, -2],
-    [0, -1, 0, -1, -1, -1, -1, -2, -2, -1, -1, -1, -1, -2, -1, 1, 5, -2, -2, 0],
-    [-3, -3, -4, -4, -2, -2, -3, -2, -2, -3, -2, -3, -1, 1, -4, -3, -2, 11, 2, -3],
-    [-2, -2, -2, -3, -2, -1, -2, -3, 2, -1, -1, -2, -1, 3, -3, -2, -2, 2, 7, -1],
-    [0, -3, -3, -3, -1, -2, -2, -3, -3, 3, 1, -2, 1, -1, -2, -2, 0, -3, -1, 4],
-]
-BLOSUM62 = {
-    (a, b): _BLOSUM62_ROWS[i][j]
-    for i, a in enumerate(_BLOSUM62_ORDER)
-    for j, b in enumerate(_BLOSUM62_ORDER)
-}
 
 
 def anchor_positions(length: int) -> set[int]:
@@ -76,11 +26,62 @@ def tcr_contact_positions(length: int) -> list[int]:
     return [p for p in range(1, length + 1) if p not in anchors and p != 1]
 
 
+#: P1 sits partly in the A pocket and partly under the TCR, so a mutation there
+#: is neither clearly buried nor clearly visible. It gets the neutral value
+#: rather than being forced into one of the two clean cases.
+_AMBIGUOUS_POSITION = 1
+_ANCHOR_EXPOSURE = 0.0
+_AMBIGUOUS_EXPOSURE = 0.5
+_TCR_EXPOSURE = 1.0
+
+
+def mutation_exposure(position: int, length: int) -> float:
+    """Whether the mutated residue points at the TCR or into the MHC groove.
+
+    Returned on [0, 1], higher meaning more TCR-facing.
+
+    Read the weight on this term before trusting it. The mechanistic story is
+    that a substitution at an anchor (P2 and the C-terminus for class I)
+    changes *whether* the peptide is presented while the surface a T cell sees
+    stays the self surface, whereas a substitution at a solvent-exposed
+    position changes that surface directly.
+
+    The literature does not support the directional claim. Capietto et al.
+    (J Exp Med 2020) establish that mutation position matters, but what they
+    show is that position determines *which* affinity metric predicts
+    immunogenicity — absolute affinity for non-anchor mutations, affinity
+    relative to wild-type for anchor mutations — and they state explicitly that
+    "both anchor and nonanchor mutated peptides contain cases that show CD8
+    responses". TESLA (Wells et al., Cell 2020) went further and found mutation
+    position was not useful for filtering at all.
+
+    So this is kept near zero, computed and reported for a future refit rather
+    than trusted to order a shortlist today.
+    """
+    if length <= 0 or not 1 <= position <= length:
+        return _AMBIGUOUS_EXPOSURE
+    if position in anchor_positions(length):
+        return _ANCHOR_EXPOSURE
+    if position == _AMBIGUOUS_POSITION:
+        return _AMBIGUOUS_EXPOSURE
+    return _TCR_EXPOSURE
+
+
 def tcr_contact_hydrophobicity(peptide: str) -> float:
     """Mean Kyte-Doolittle score over TCR-facing residues, scaled to [0, 1].
 
-    Hydrophobic TCR-contact residues are one of the few sequence features that
-    has held up across immunogenicity datasets.
+    Shipped with a weight of zero, deliberately. The two best sources disagree
+    on the sign of this effect, and they disagree in the setting that matters
+    here. Chowell et al. (PNAS 2015) found "a strong bias toward hydrophobic
+    amino acids at T-cell receptor contact residues within immunogenic
+    epitopes", validated in vivo — but on viral and self epitopes. TESLA
+    (Wells et al., Cell 2020), working on human tumor neoepitopes, found
+    immunogenic pMHC were significantly *less* hydrophobic (p = 0.04) and that
+    hydrophobicity was not useful for filtering.
+
+    Guessing a sign here would be inventing a result. The value is still
+    computed and written to `features.json` so `neoantigene refit` can settle
+    it from real labels, which is the only thing that will.
     """
     positions = tcr_contact_positions(len(peptide))
     values = [KYTE_DOOLITTLE.get(peptide[p - 1], 0.0) for p in positions]

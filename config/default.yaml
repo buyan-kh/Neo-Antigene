@@ -28,21 +28,49 @@ presentation:
   min_presentation_score: 0.0
   score_wildtype: true
 
-# Scaled by strength of evidence. Presentation, clonality and expression are
-# close to necessary conditions for a response; the sequence-intrinsic terms
-# below them are proxies, and giving those comparable weight lets noise
-# dominate the top of the shortlist.
+# PRIORS, not fitted values, and not tuned against any benchmark. Each weight
+# is scaled by how well the literature actually supports it; every citation is
+# in docs/CITATIONS.md with a DOI, and the ones that turned out NOT to support
+# the claim commonly made for them are recorded there too.
+#
+# Frozen before the Ott et al. 2017 benchmark was run. If you change these,
+# say so, because a weight chosen after seeing benchmark output is a fitted
+# parameter wearing a prior's clothes.
 weights:
   bias: -3.0
 
+  # Presentation gates everything downstream. TESLA's two-stage architecture
+  # treats it as the first filter, and binding affinity had the smallest
+  # p-value of any presentation feature they tested (p = 4e-6).
   presentation: 2.5
+
+  # Clonal neoantigens track survival and checkpoint response; subclonal ones
+  # do not (McGranahan 2016). Ghorani 2018 saw the agretopicity effect only in
+  # clonal peptides, which argues for keeping this above the proxy terms.
   clonality: 1.5
+
+  # TESLA: immunogenic pMHC had significantly higher tumor abundance (p = 0.01),
+  # and half of the immunogenic peptides their filter wrongly discarded were
+  # lost to low abundance.
   expression: 1.2
 
+  # Recognition-stage terms. TESLA's recognition criterion was low agretopicity
+  # OR high foreignness, so both earn a real but modest weight.
   agretopicity: 0.5
   tumor_selectivity: 0.4
-  foreignness: 0.25
-  hydrophobicity: 0.15
+  self_dissimilarity: 0.25
+
+  # A cheaper stand-in for self-dissimilarity, kept below it because the
+  # literature grounds the proteome-wide version, not this one.
+  wt_dissimilarity: 0.15
+
+  # Near zero: Capietto 2020 shows position matters but not in which
+  # direction, and TESLA found it useless for filtering.
+  mutation_exposure: 0.1
+
+  # Zero: Chowell 2015 (viral/self epitopes) and TESLA (tumor neoepitopes)
+  # disagree on the sign. Still computed and reported, so `refit` can settle it.
+  hydrophobicity: 0.0
 
 output:
   top_n: 50

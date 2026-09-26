@@ -1,0 +1,58 @@
+Ott et al. 2017 benchmark (doi:10.1038/nature22991)
+config  : /Users/buyan/Neo Antigene/config/default.yaml  [shipped defaults, not tuned]
+backend : mhcflurry
+
+Stage 1 -- ranking, with no access to labels
+  ranking OTT2017-PT1 (4 alleles) ...
+2026-09-26 11:09:02,427 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: run 20260926T180902Z-a93851e5: sample OTT2017-PT1, 4 alleles, backend mhcflurry
+2026-09-26 11:09:02,429 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: read 82 protein-altering variants
+2026-09-26 11:09:02,429 WARNING [20260926T180857Z-05271c3f] neoantigene.pipeline: no expression table for OTT2017-PT1: the expression feature is neutral for every candidate and cannot discriminate
+2026-09-26 11:09:02,429 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: somatic filtering: kept 82, dropped 0
+2026-09-26 11:09:04,118 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: loaded proteome with 382428 transcripts
+2026-09-26 11:09:04,133 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: generated 3048 unique mutant peptides
+2026-09-26 11:09:05,913 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: predicted 23960 peptide-allele pairs
+2026-09-26 11:09:10,113 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: scanned 297 of 3048 peptides against 156641702 self residues
+2026-09-26 11:09:31,309 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: shortlisted 50 candidates
+    82 variants -> 3048 peptides -> 12192 peptide-HLA pairs
+  ranking OTT2017-PT2 (3 alleles) ...
+2026-09-26 11:09:32,335 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: run 20260926T180932Z-e96d1991: sample OTT2017-PT2, 3 alleles, backend mhcflurry
+2026-09-26 11:09:32,340 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: read 896 protein-altering variants
+2026-09-26 11:09:32,340 WARNING [20260926T180857Z-05271c3f] neoantigene.pipeline: no expression table for OTT2017-PT2: the expression feature is neutral for every candidate and cannot discriminate
+2026-09-26 11:09:32,342 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: somatic filtering: kept 896, dropped 0
+2026-09-26 11:09:33,983 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: loaded proteome with 382428 transcripts
+2026-09-26 11:09:34,314 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: generated 33770 unique mutant peptides
+2026-09-26 11:09:44,674 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: predicted 199635 peptide-allele pairs
+2026-09-26 11:09:52,906 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: scanned 3112 of 33694 peptides against 156641702 self residues
+2026-09-26 11:13:20,165 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: shortlisted 50 candidates
+    896 variants -> 33770 peptides -> 101310 peptide-HLA pairs
+  ranking OTT2017-PT3 (4 alleles) ...
+2026-09-26 11:13:21,496 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: run 20260926T181321Z-e2d58b5b: sample OTT2017-PT3, 4 alleles, backend mhcflurry
+2026-09-26 11:13:21,498 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: read 364 protein-altering variants
+2026-09-26 11:13:21,498 WARNING [20260926T180857Z-05271c3f] neoantigene.pipeline: no expression table for OTT2017-PT3: the expression feature is neutral for every candidate and cannot discriminate
+2026-09-26 11:13:21,499 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: somatic filtering: kept 364, dropped 0
+2026-09-26 11:13:23,391 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: loaded proteome with 382428 transcripts
+2026-09-26 11:13:23,474 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: generated 13659 unique mutant peptides
+2026-09-26 11:13:28,824 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: predicted 108740 peptide-allele pairs
+2026-09-26 11:13:36,340 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: scanned 1529 of 13612 peptides against 156641702 self residues
+2026-09-26 11:15:38,749 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: shortlisted 50 candidates
+    364 variants -> 13659 peptides -> 54636 peptide-HLA pairs
+  ranking OTT2017-PT4 (4 alleles) ...
+2026-09-26 11:15:39,917 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: run 20260926T181539Z-4546be5b: sample OTT2017-PT4, 4 alleles, backend mhcflurry
+2026-09-26 11:15:39,924 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: read 955 protein-altering variants
+2026-09-26 11:15:39,924 WARNING [20260926T180857Z-05271c3f] neoantigene.pipeline: no expression table for OTT2017-PT4: the expression feature is neutral for every candidate and cannot discriminate
+2026-09-26 11:15:39,925 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: somatic filtering: kept 955, dropped 0
+2026-09-26 11:15:41,748 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: loaded proteome with 382428 transcripts
+2026-09-26 11:15:41,914 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: generated 35808 unique mutant peptides
+2026-09-26 11:15:56,062 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: predicted 283184 peptide-allele pairs
+2026-09-26 11:16:07,520 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: scanned 4030 of 35761 peptides against 156641702 self residues
+2026-09-26 11:21:07,735 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: shortlisted 50 candidates
+    955 variants -> 35808 peptides -> 143232 peptide-HLA pairs
+  ranking OTT2017-PT5 (4 alleles) ...
+2026-09-26 11:21:08,923 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: run 20260926T182108Z-06001fbe: sample OTT2017-PT5, 4 alleles, backend mhcflurry
+2026-09-26 11:21:08,925 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: read 318 protein-altering variants
+2026-09-26 11:21:08,925 WARNING [20260926T180857Z-05271c3f] neoantigene.pipeline: no expression table for OTT2017-PT5: the expression feature is neutral for every candidate and cannot discriminate
+2026-09-26 11:21:08,925 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: somatic filtering: kept 318, dropped 0
+2026-09-26 11:21:10,520 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: loaded proteome with 382428 transcripts
+2026-09-26 11:21:10,574 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: generated 11933 unique mutant peptides
+2026-09-26 11:21:14,977 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: predicted 94888 peptide-allele pairs
+2026-09-26 11:21:22,333 INFO    [20260926T180857Z-05271c3f] neoantigene.pipeline: scanned 1490 of 11933 peptides against 156641702 self residues
