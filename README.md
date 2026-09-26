@@ -86,6 +86,50 @@ Outputs land in `results/`:
   which is what `refit` and `evaluate` consume later
 - `<sample>.run.json` — the run manifest
 
+## Benchmark
+
+One real published case, run label-blind. Full method, coverage accounting and
+caveats in [`docs/BENCHMARK.md`](docs/BENCHMARK.md).
+
+**Case:** Ott et al., *Nature* 2017,
+doi:[10.1038/nature22991](https://doi.org/10.1038/nature22991) — six vaccinated
+melanoma patients, IFN-gamma ELISPOT labels from the paper's own Supplementary
+Table 5, somatic mutations and HLA typing from Tables 2 and 4.
+
+```bash
+uv run --extra benchmark python scripts/build_ott2017_benchmark.py   # fetch + verify supplements
+uv run --extra presentation --extra plots python scripts/run_ott2017_benchmark.py
+```
+
+Pooled over the 139 assayed peptide-HLA pairs the pipeline scored, of which 14
+are positive:
+
+| method | recall@10 | recall@20 | precision@10 | rank of best validated peptide |
+| --- | ---: | ---: | ---: | ---: |
+| **neoantigene** | **14.3%** | **14.3%** | **20.0%** | **2** |
+| binding_only (MHCflurry baseline) | 7.1% | 14.3% | 10.0% | 9 |
+| arbitrary | 21.4% | 28.6% | 30.0% | 4 |
+
+**How to read this honestly.** The ranker doubles the MHCflurry baseline's
+recall@10 and moves the first validated hit from rank 9 to rank 2, ties it at
+recall@20, and is beaten by a deterministic arbitrary ordering. With 14
+positives in 139, none of these results clears an exact hypergeometric test
+(ours p=0.265, arbitrary p=0.064). **The correct conclusion is that this case
+cannot distinguish any method from chance**, not that arbitrary ranking works.
+The pipeline runs and the measurement is honest; the measurement is also
+underpowered, and that is fixed with assay labels, not code.
+
+Three of nine features (`expression`, `tumor_selectivity`, `clonality`) are
+inert in this benchmark because the paper publishes RNA only for
+vaccine-selected peptides and no per-patient purity — using them would leak
+which peptides were assayed. Four of 18 positives were never scored: three are
+frameshift/neo-ORF peptides this package cannot enumerate, one is lost to
+hg19-to-GRCh38 isoform harmonization.
+
+Nothing was tuned against this benchmark. The run uses `config/default.yaml`
+as shipped, whose weights are literature-derived priors frozen beforehand and
+justified individually in [`docs/CITATIONS.md`](docs/CITATIONS.md).
+
 ## Reproducibility
 
 Every run gets a sortable run id (`20260909T184233Z-1a2b3c4d`) that is stamped
@@ -136,8 +180,8 @@ failing.
 
 ## How ranking works
 
-The score is `sigmoid(bias + Σ wᵢxᵢ)` over seven features, each normalized to
-`[0, 1]` and oriented so higher is better:
+The score is `sigmoid(bias + Σ wᵢxᵢ)` over nine features, each normalized to
+`[0, 1]` and oriented so higher is better. Bias is `-3.0`.
 
 | feature | prior weight | what it captures |
 | --- | --- | --- |
@@ -146,14 +190,30 @@ The score is `sigmoid(bias + Σ wᵢxᵢ)` over seven features, each normalized 
 | `expression` | 1.2 | tumor TPM of the source transcript |
 | `agretopicity` | 0.5 | WT/mutant affinity ratio — did the mutation create the binding event |
 | `tumor_selectivity` | 0.4 | inverse of healthy-tissue expression |
-| `foreignness` | 0.25 | BLOSUM62 dissimilarity to the wild-type peptide at TCR contacts |
-| `hydrophobicity` | 0.15 | Kyte-Doolittle over TCR-facing residues |
+| `self_dissimilarity` | 0.25 | BLOSUM62 distance to the nearest peptide in the whole human proteome |
+| `wt_dissimilarity` | 0.15 | BLOSUM62 distance to the wild-type peptide at TCR contacts |
+| `mutation_exposure` | 0.1 | whether the mutated residue is an anchor or faces the TCR |
+| `hydrophobicity` | 0.0 | Kyte-Doolittle over TCR-facing residues |
 
-Weights are scaled by strength of evidence. The top three are close to
-necessary conditions for a response; the bottom four are proxies with thinner
-support. That gap is deliberate — with comparable weights, the speculative
-terms dominate the top of the shortlist, which is precisely the part a lab
-synthesizes. `tests/test_eval.py` fails if that regresses.
+Weights are scaled by strength of evidence, and every one of them is justified
+against a specific paper in [`docs/CITATIONS.md`](docs/CITATIONS.md), including
+what each citation does *not* support. Two are worth calling out because the
+honest reading of the literature is uncomfortable:
+
+- **`hydrophobicity` ships at zero.** Chowell 2015 found hydrophobic TCR-contact
+  residues enriched in immunogenic epitopes, but TESLA found immunogenic tumor
+  pMHC were significantly *less* hydrophobic (p=0.04). The sign is contested in
+  the setting that matters here, so the term is present, documented, and
+  contributes nothing until labels settle it.
+- **`mutation_exposure` is near zero.** Capietto 2020 shows mutation position
+  determines *which* affinity metric predicts immunogenicity, not that
+  TCR-facing beats anchor; they state both classes produce CD8 responses, and
+  TESLA found position useless for filtering.
+
+The top three are close to necessary conditions for a response; the rest are
+proxies with thinner support. That gap is deliberate — with comparable weights,
+the speculative terms dominate the top of the shortlist, which is precisely the
+part a lab synthesizes. `tests/test_eval.py` fails if that regresses.
 
 Hard gates run before scoring and drop candidates outright: weak binders,
 subclonal variants, germline-common variants, unexpressed transcripts, and any

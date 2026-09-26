@@ -109,7 +109,11 @@ def validated_ranks(
     methods = list(rankings)
     figure, axes = plt.subplots(figsize=(6.4, 0.7 * len(methods) + 1.6), dpi=160)
 
-    ceiling = max_rank or max(len(pool), 1)
+    # Ranks run over the assayed peptides a method actually scored, which is
+    # smaller than the label file whenever the pipeline did not generate one.
+    # Labelling the axis with the full label count would overstate the pool.
+    scored = {key for ranking in rankings.values() for key in ranking if key in pool}
+    ceiling = max_rank or max(len(scored), 1)
     for row, method in enumerate(methods):
         ranks = _ranks_of_positives(rankings[method], pool, positives)
         axes.scatter(
@@ -137,7 +141,7 @@ def validated_ranks(
     axes.set_xlim(0.5, ceiling + 0.5)
     axes.set_ylim(-0.6, len(methods) - 0.4)
     axes.invert_yaxis()
-    axes.set_xlabel(f"rank among the {len(pool)} assayed peptides (lower is better)")
+    axes.set_xlabel(f"rank among the {len(scored)} assayed peptides scored (lower is better)")
     axes.set_title(title, fontsize=10, color=INK, loc="left")
     _style(axes)
     return _save(figure, path)
@@ -160,7 +164,12 @@ def recall_curve(
     pool = {r.key for r in assayed}
 
     figure, axes = plt.subplots(figsize=(6.4, 3.4), dpi=160)
-    depths = range(1, len(pool) + 1)
+    # Depth and the chance line must both run over the peptides that were
+    # actually ranked. Using the full label count would stretch the axis past
+    # the end of every list and flatten the chance line below true chance.
+    scored = {key for ranking in rankings.values() for key in ranking if key in pool}
+    ranked_positives = len(positives & scored)
+    depths = range(1, max(len(scored), 1) + 1)
     palette = [ACCENT, INK, MUTED, POSITIVE, NEGATIVE]
 
     for index, (method, ranking) in enumerate(rankings.items()):
@@ -177,7 +186,7 @@ def recall_curve(
 
     axes.plot(
         list(depths),
-        [len(positives) * depth / max(len(pool), 1) for depth in depths],
+        [ranked_positives * depth / max(len(scored), 1) for depth in depths],
         linestyle=(0, (3, 3)),
         linewidth=0.9,
         color=MUTED,

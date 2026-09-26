@@ -289,6 +289,29 @@ def main() -> int:
     results_json.write_text(json.dumps(payload, indent=2))
     print(f"\n  wrote {results_json}")
 
+    # Every score behind every number above, so the metrics can be recomputed
+    # or the plots redrawn without a 24-minute MHCflurry rerun -- and so a
+    # sceptic can check the arithmetic against the label file themselves.
+    #
+    # Restricted to the assayed pairs. Every metric here ranks within the
+    # assayed intersection, so these scores reproduce the numbers exactly,
+    # while the full set is ~550k pairs per method and lands at 160 MB.
+    assayed = {r.key for r in labelled(results)}
+    audit = {
+        method: {key: score for key, score in ranking.items() if key in assayed}
+        for method, ranking in rankings.items()
+    }
+    # An audit file that silently came out empty is worse than none: it looks
+    # like a reproducibility artifact and recomputes to zeros.
+    if stats["labels_scored"] and not all(audit.values()):
+        raise SystemExit(
+            f"refusing to write an empty audit file: {stats['labels_scored']} pairs were "
+            "scored, but at least one method contributed no assayed scores"
+        )
+    rankings_json = args.out / "rankings.json"
+    rankings_json.write_text(json.dumps(audit, indent=2, sort_keys=True))
+    print(f"  wrote {rankings_json} ({stats['labels_scored']} pairs per method)")
+
     if not args.no_plots:
         _plots(runs, results, rankings, args.out)
     return 0

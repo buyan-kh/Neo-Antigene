@@ -303,9 +303,10 @@ class Proteome:
             request = urllib.request.Request(
                 HGNC_URL, headers={"User-Agent": "neoantigene-benchmark/0.1"}
             )
-            with urllib.request.urlopen(request, timeout=300) as response, open(
-                target, "wb"
-            ) as out:
+            with (
+                urllib.request.urlopen(request, timeout=300) as response,
+                open(target, "wb") as out,
+            ):
                 shutil.copyfileobj(response, out)
         print(f"  HGNC table sha256={sha256(target)[:16]}...")
         return target
@@ -345,9 +346,7 @@ def maf_symbols(path: Path) -> list[str]:
     return [str(row[column]).strip() for row in rows[3:] if row and row[column]]
 
 
-def read_variants(
-    path: Path, proteome: Proteome, tally: Tally
-) -> dict[int, list[dict[str, str]]]:
+def read_variants(path: Path, proteome: Proteome, tally: Tally) -> dict[int, list[dict[str, str]]]:
     """Per-patient pipeline inputs from the full somatic mutation table."""
     rows = load_sheet(path)
     header = [str(c).strip() if c is not None else "" for c in rows[2]]
@@ -456,9 +455,7 @@ def read_labels(path: Path, tally: Tally) -> list[dict[str, str]]:
             continue
 
         raw = row[column[ELISPOT_PRIMARY]]
-        call = {1: "positive", 0: "negative"}.get(
-            int(raw) if isinstance(raw, int | float) else -1
-        )
+        call = {1: "positive", 0: "negative"}.get(int(raw) if isinstance(raw, int | float) else -1)
         if call is None:
             tally.hit("dropped: ELISPOT not determined (n.d.)")
             continue
@@ -560,9 +557,7 @@ def main() -> int:
         print(f"   PT{patient}: {' '.join(typing.get(patient, [])) or 'MISSING'}")
 
     print("4. resolving gene symbols retired since 2017")
-    learned = proteome.learn_aliases(
-        maf_symbols(tables[2]), cache / "symbol_aliases.json"
-    )
+    learned = proteome.learn_aliases(maf_symbols(tables[2]), cache / "symbol_aliases.json")
     print(f"   mapped {learned} retired symbols onto current Ensembl gene IDs")
 
     print("5. converting the full mutation table (Table 2)")
@@ -595,9 +590,7 @@ def main() -> int:
             continue
         directory = args.out / "inputs" / f"patient-{patient}"
         write_tsv(directory / "variants.tsv", rows, columns)
-        write_manifest(
-            directory / "sample.yaml", patient, alleles, str(proteome_path)
-        )
+        write_manifest(directory / "sample.yaml", patient, alleles, str(proteome_path))
         print(f"   PT{patient}: {len(rows)} variants, {len(alleles)} alleles -> {directory}")
 
     label_path = args.out / "validated.tsv"

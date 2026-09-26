@@ -6,8 +6,13 @@ recalled, and the "what it does **not** say" column exists because three of
 the attributions commonly made for these papers — including ones I made in an
 earlier draft of this repo — are not supported by the papers themselves.
 
-Weights are priors. They were frozen before the benchmark in
+Weights are priors. They were frozen before either benchmark in
 [`docs/BENCHMARK.md`](BENCHMARK.md) was run, and were not adjusted afterwards.
+The table below is the Ott-branch config, SHA-256 `f36218f21aea1706…`.
+The CU04 run used main `4632e34`, SHA-256 `ba17954987d4bc45…`, which has
+`foreignness` 0.25 and `hydrophobicity` 0.15 and does not define
+`self_dissimilarity`, `wt_dissimilarity`, or `mutation_exposure`. The pooled
+null does not depend on that difference: neither config separates methods.
 
 ## The weights
 
@@ -86,7 +91,13 @@ Both are reported and refittable.
    vaccine for patients with melanoma." *Nature* 2017;547(7662):217-221.
    DOI [10.1038/nature22991](https://doi.org/10.1038/nature22991).
    PMID 28678778. PMC5577644.
-   The benchmark case. See [`docs/BENCHMARK.md`](BENCHMARK.md).
+   One of the two benchmark cases. See [`docs/BENCHMARK.md`](BENCHMARK.md).
+
+9b. **Bulik-Sullivan B, Busby J, Palmer CD, et al.** "Deep learning using
+    tumor HLA peptide mass spectrometry datasets improves neoantigen
+    identification." *Nature Biotechnology*, published 17 December 2018.
+    DOI [10.1038/nbt.4313](https://doi.org/10.1038/nbt.4313).
+    The second benchmark case, patient CU04. Same pooled write-up.
 
 10. **Calis JJA, Maybeno M, Greenbaum JA, et al.** "Properties of MHC class I
     presented peptides that enhance immunogenicity." *PLoS Comput Biol*
@@ -107,9 +118,12 @@ Both are reported and refittable.
 ## On label provenance in IEDB
 
 The project brief cited a preprint reporting that ~55.8% of assessable IEDB
-entries were labeled by prediction rather than experiment. That checks out, and
-it is worth stating precisely because the precise version is narrower than the
-headline.
+entries were labeled by prediction rather than experiment. That checks out.
+The quotable form is narrower than the abstract: **55.8% is eluted-ligand
+allele labels**, not T-cell assay records. A separate live count of IEDB
+evidence codes, 16.4% of `mhc_search` rows tagged "Inferred by motif or
+alleles present", measures a different denominator. The two figures are not
+in conflict.
 
 **Preibisch G, Tyrolski M, Kucharski P, et al.** "Resolution of recursive data
 corruption to transform T-cell epitope discovery." bioRxiv, posted April 2026.
@@ -163,11 +177,11 @@ Live counts from `https://query-api.iedb.org` (measured 2026-09-26, with
 | `mhc_search` | Single allele present | 600,168 | 10.3% |
 
 So IEDB's own provenance field puts prediction-derived restriction around
-12-19%, not 55.8%. This is **not** a refutation, because the two numbers
-measure different things: the preprint locates the contamination in
-prediction-based deconvolution and filtering applied to immunopeptidomics
-datasets *upstream* of submission, and IEDB has no field that records whether
-a submitted peptide's allele came from a deconvolution tool. That provenance
+12-19%. The 16.4% evidence-code share and the preprint's 55.8% are different
+denominators. The preprint counts eluted-ligand allele labels: predictor-based
+deconvolution and filtering applied to immunopeptidomics *before* submission.
+IEDB has no field that records whether a submitted peptide's allele came from
+a deconvolution tool. That provenance
 would land silently in the 59.0% antibody-purification bucket, and 85.7% of
 MHC-ligand rows mention mass spectrometry, so the bucket is large enough for
 it to hide in.

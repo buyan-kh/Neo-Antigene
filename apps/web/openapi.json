@@ -1,0 +1,1938 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Neo Antigene API",
+    "summary": "Ranks mutant peptides for personalized cancer vaccines.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Api Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/backends": {
+      "get": {
+        "summary": "Backends",
+        "description": "Which predictors are installed, and whether MHCflurry has its weights.",
+        "operationId": "backends_api_backends_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackendInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reference": {
+      "get": {
+        "summary": "Reference Info",
+        "description": "Reference proteome state, so the UI can warn before a run rather than after.",
+        "operationId": "reference_info_api_reference_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/config": {
+      "get": {
+        "summary": "Default Config",
+        "operationId": "default_config_api_config_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/weights": {
+      "get": {
+        "summary": "Weights",
+        "description": "The scored feature weights, which are priors rather than fitted values.",
+        "operationId": "weights_api_weights_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "type": "object",
+                  "title": "Response Weights Api Weights Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/example": {
+      "get": {
+        "summary": "Example Sample",
+        "description": "The bundled example manifest, for the one-click path.",
+        "operationId": "example_sample_api_example_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Example Sample Api Example Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/uploads": {
+      "post": {
+        "summary": "Upload",
+        "description": "Stash uploaded inputs in a workspace directory keyed by id.",
+        "operationId": "upload_api_uploads_post",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workspace"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_api_uploads_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs": {
+      "get": {
+        "summary": "List Runs",
+        "operationId": "list_runs_api_runs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RunState"
+                  },
+                  "type": "array",
+                  "title": "Response List Runs Api Runs Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Start Run",
+        "description": "Begin a ranking run and return its id. Poll `/api/runs/{id}` for progress.",
+        "operationId": "start_run_api_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}": {
+      "get": {
+        "summary": "Run State",
+        "operationId": "run_state_api_runs__run_id__get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/results": {
+      "get": {
+        "summary": "Results",
+        "description": "The ranked table, built with the same writer the TSV uses.",
+        "operationId": "results_api_runs__run_id__results_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "include_gated",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Gated"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultsPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/explain": {
+      "get": {
+        "summary": "Explain",
+        "description": "Per-feature score decomposition, from `scoring.rank.contributions`.",
+        "operationId": "explain_api_runs__run_id__explain_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "peptide",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Peptide"
+            }
+          },
+          {
+            "name": "allele",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Allele"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Explanation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/download/{artifact}": {
+      "get": {
+        "summary": "Download",
+        "description": "Serve the files the library's writers already produced.",
+        "operationId": "download_api_runs__run_id__download__artifact__get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "artifact",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artifact"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/benchmark": {
+      "post": {
+        "summary": "Benchmark",
+        "description": "Score this run against the baselines using an uploaded assay-label TSV.\n\nLabels arrive only here, after the run has finished. Nothing in the ranking\npath can see them, which is what makes the comparison worth reading.",
+        "operationId": "benchmark_api_runs__run_id__benchmark_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "k",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 20,
+              "title": "K"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_benchmark_api_runs__run_id__benchmark_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BenchmarkReport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/features": {
+      "get": {
+        "summary": "Features",
+        "description": "Raw feature records, the same payload `features.json` contains.",
+        "operationId": "features_api_runs__run_id__features_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Features Api Runs  Run Id  Features Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BackendInfo": {
+        "properties": {
+          "available": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Available"
+          },
+          "development": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Development"
+          },
+          "default": {
+            "type": "string",
+            "title": "Default"
+          },
+          "mhcflurry_ready": {
+            "type": "boolean",
+            "title": "Mhcflurry Ready"
+          },
+          "mhcflurry_detail": {
+            "type": "string",
+            "title": "Mhcflurry Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "development",
+          "default",
+          "mhcflurry_ready",
+          "mhcflurry_detail"
+        ],
+        "title": "BackendInfo",
+        "description": "Which presentation predictors this deployment can actually use."
+      },
+      "BenchmarkReport": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "source": {
+            "$ref": "#/components/schemas/LabelSource"
+          },
+          "retrieval": {
+            "items": {
+              "$ref": "#/components/schemas/RetrievalSummary"
+            },
+            "type": "array",
+            "title": "Retrieval"
+          },
+          "validation": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationSummary"
+            },
+            "type": "array",
+            "title": "Validation"
+          },
+          "k": {
+            "type": "integer",
+            "title": "K"
+          },
+          "positive_ranks": {
+            "additionalProperties": {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Positive Ranks"
+          },
+          "pool_size": {
+            "type": "integer",
+            "title": "Pool Size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "source",
+          "retrieval",
+          "validation",
+          "k",
+          "positive_ranks",
+          "pool_size"
+        ],
+        "title": "BenchmarkReport"
+      },
+      "Body_benchmark_api_runs__run_id__benchmark_post": {
+        "properties": {
+          "labels": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Labels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "labels"
+        ],
+        "title": "Body_benchmark_api_runs__run_id__benchmark_post"
+      },
+      "Body_upload_api_uploads_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "contentMediaType": "application/octet-stream"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_upload_api_uploads_post"
+      },
+      "Contribution": {
+        "properties": {
+          "feature": {
+            "type": "string",
+            "title": "Feature"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "contribution": {
+            "type": "number",
+            "title": "Contribution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "feature",
+          "weight",
+          "value",
+          "contribution"
+        ],
+        "title": "Contribution"
+      },
+      "DropReason": {
+        "type": "string",
+        "enum": [
+          "not_pass",
+          "low_depth",
+          "low_vaf",
+          "germline_common",
+          "subclonal",
+          "no_expression_data",
+          "not_expressed",
+          "allele_not_expressed"
+        ],
+        "title": "DropReason"
+      },
+      "Explanation": {
+        "properties": {
+          "peptide": {
+            "type": "string",
+            "title": "Peptide"
+          },
+          "wildtype_peptide": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wildtype Peptide"
+          },
+          "allele": {
+            "type": "string",
+            "title": "Allele"
+          },
+          "gene": {
+            "type": "string",
+            "title": "Gene"
+          },
+          "hgvsp": {
+            "type": "string",
+            "title": "Hgvsp"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "bias": {
+            "type": "number",
+            "title": "Bias"
+          },
+          "logit": {
+            "type": "number",
+            "title": "Logit"
+          },
+          "mutation_position": {
+            "type": "integer",
+            "title": "Mutation Position"
+          },
+          "gate_failures": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gate Failures"
+          },
+          "contributions": {
+            "items": {
+              "$ref": "#/components/schemas/Contribution"
+            },
+            "type": "array",
+            "title": "Contributions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "peptide",
+          "wildtype_peptide",
+          "allele",
+          "gene",
+          "hgvsp",
+          "score",
+          "bias",
+          "logit",
+          "mutation_position",
+          "gate_failures",
+          "contributions"
+        ],
+        "title": "Explanation",
+        "description": "The per-feature decomposition behind one candidate's score."
+      },
+      "ExpressionConfig": {
+        "properties": {
+          "min_tpm": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Min Tpm",
+            "default": 1.0
+          },
+          "min_rna_vaf": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Rna Vaf",
+            "default": 0.02
+          },
+          "require_rna_evidence": {
+            "type": "boolean",
+            "title": "Require Rna Evidence",
+            "default": false
+          },
+          "normal_tpm_ceiling": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normal Tpm Ceiling"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ExpressionConfig"
+      },
+      "FilterReport": {
+        "properties": {
+          "kept": {
+            "type": "integer",
+            "title": "Kept",
+            "default": 0
+          },
+          "dropped": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/DropReason"
+            },
+            "type": "object",
+            "title": "Dropped"
+          }
+        },
+        "type": "object",
+        "title": "FilterReport"
+      },
+      "GateFailure": {
+        "type": "string",
+        "enum": [
+          "weak_binder",
+          "low_presentation",
+          "self_peptide",
+          "normal_tissue_expressed"
+        ],
+        "title": "GateFailure",
+        "description": "Reasons a candidate is excluded outright rather than scored down."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LabelSource": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "assayed": {
+            "type": "integer",
+            "title": "Assayed"
+          },
+          "positives": {
+            "type": "integer",
+            "title": "Positives"
+          },
+          "negatives": {
+            "type": "integer",
+            "title": "Negatives"
+          },
+          "indeterminate": {
+            "type": "integer",
+            "title": "Indeterminate"
+          },
+          "assays": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Assays"
+          },
+          "matched_to_run": {
+            "type": "integer",
+            "title": "Matched To Run"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "assayed",
+          "positives",
+          "negatives",
+          "indeterminate",
+          "assays",
+          "matched_to_run"
+        ],
+        "title": "LabelSource",
+        "description": "Provenance of the loaded labels, shown next to every benchmark number."
+      },
+      "OutputConfig": {
+        "properties": {
+          "top_n": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Top N",
+            "default": 50
+          },
+          "max_per_variant": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Max Per Variant",
+            "default": 2
+          },
+          "include_failed": {
+            "type": "boolean",
+            "title": "Include Failed",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "OutputConfig"
+      },
+      "PeptideConfig": {
+        "properties": {
+          "lengths": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Lengths"
+          },
+          "flank_length": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 0.0,
+            "title": "Flank Length",
+            "default": 10
+          },
+          "drop_self_matching": {
+            "type": "boolean",
+            "title": "Drop Self Matching",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PeptideConfig"
+      },
+      "PipelineConfig": {
+        "properties": {
+          "variant_filters": {
+            "$ref": "#/components/schemas/VariantFilterConfig"
+          },
+          "expression": {
+            "$ref": "#/components/schemas/ExpressionConfig"
+          },
+          "peptides": {
+            "$ref": "#/components/schemas/PeptideConfig"
+          },
+          "presentation": {
+            "$ref": "#/components/schemas/PresentationConfig"
+          },
+          "weights": {
+            "$ref": "#/components/schemas/ScoringWeights"
+          },
+          "output": {
+            "$ref": "#/components/schemas/OutputConfig"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PipelineConfig"
+      },
+      "PresentationConfig": {
+        "properties": {
+          "backend": {
+            "type": "string",
+            "title": "Backend",
+            "default": "mhcflurry"
+          },
+          "max_affinity_percentile": {
+            "type": "number",
+            "maximum": 100.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Max Affinity Percentile",
+            "default": 2.0
+          },
+          "min_presentation_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Min Presentation Score",
+            "default": 0.0
+          },
+          "score_wildtype": {
+            "type": "boolean",
+            "title": "Score Wildtype",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PresentationConfig"
+      },
+      "ProgressEvent": {
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "at",
+          "level",
+          "stage",
+          "message"
+        ],
+        "title": "ProgressEvent",
+        "description": "One line the pipeline emitted while running."
+      },
+      "ReferenceInfo": {
+        "properties": {
+          "bundled_stub_path": {
+            "type": "string",
+            "title": "Bundled Stub Path"
+          },
+          "bundled_stub_proteins": {
+            "type": "integer",
+            "title": "Bundled Stub Proteins"
+          },
+          "cached_release": {
+            "type": "string",
+            "title": "Cached Release"
+          },
+          "cached_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cached Path"
+          },
+          "cached_proteins": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cached Proteins"
+          },
+          "cached_is_stub": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cached Is Stub"
+          },
+          "fetch_command": {
+            "type": "string",
+            "title": "Fetch Command"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bundled_stub_path",
+          "bundled_stub_proteins",
+          "cached_release",
+          "fetch_command"
+        ],
+        "title": "ReferenceInfo",
+        "description": "State of the reference proteome, which gates two features and a hard gate."
+      },
+      "ResultsPage": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "sample_id": {
+            "type": "string",
+            "title": "Sample Id"
+          },
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Columns"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "genes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Genes"
+          },
+          "alleles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Alleles"
+          },
+          "gate_failures": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gate Failures"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "sample_id",
+          "columns",
+          "rows",
+          "total",
+          "genes",
+          "alleles",
+          "gate_failures"
+        ],
+        "title": "ResultsPage",
+        "description": "The ranked table, in exactly the column order the TSV uses."
+      },
+      "RetrievalSummary": {
+        "properties": {
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "assayed": {
+            "type": "integer",
+            "title": "Assayed"
+          },
+          "positives": {
+            "type": "integer",
+            "title": "Positives"
+          },
+          "recall_at_10": {
+            "type": "number",
+            "title": "Recall At 10"
+          },
+          "recall_at_20": {
+            "type": "number",
+            "title": "Recall At 20"
+          },
+          "precision_at_10": {
+            "type": "number",
+            "title": "Precision At 10"
+          },
+          "hits_at_10": {
+            "type": "integer",
+            "title": "Hits At 10"
+          },
+          "hits_at_20": {
+            "type": "integer",
+            "title": "Hits At 20"
+          },
+          "best_positive_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Positive Rank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "assayed",
+          "positives",
+          "recall_at_10",
+          "recall_at_20",
+          "precision_at_10",
+          "hits_at_10",
+          "hits_at_20",
+          "best_positive_rank"
+        ],
+        "title": "RetrievalSummary",
+        "description": "The four numbers a published benchmark is reported on.\n\nPrecision and recall are both here because they answer different questions\nand diverge sharply when positives are scarce. Precision@10 is what a lab\nfeels: of ten peptides synthesized, how many worked. Recall@10 is what a\npaper asks: of the epitopes that exist, how many did the method surface.\nWith three positives in a pool, precision@10 cannot exceed 0.3 however\nperfect the ranking, so quoting it alone understates a good method."
+      },
+      "RunCreated": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id"
+        ],
+        "title": "RunCreated"
+      },
+      "RunReport": {
+        "properties": {
+          "variants_read": {
+            "type": "integer",
+            "title": "Variants Read",
+            "default": 0
+          },
+          "variants_kept": {
+            "type": "integer",
+            "title": "Variants Kept",
+            "default": 0
+          },
+          "filter_report": {
+            "$ref": "#/components/schemas/FilterReport"
+          },
+          "peptides_generated": {
+            "type": "integer",
+            "title": "Peptides Generated",
+            "default": 0
+          },
+          "peptide_errors": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Peptide Errors"
+          },
+          "pairs_scored": {
+            "type": "integer",
+            "title": "Pairs Scored",
+            "default": 0
+          },
+          "pairs_gated": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/GateFailure"
+            },
+            "type": "object",
+            "title": "Pairs Gated"
+          },
+          "shortlisted": {
+            "type": "integer",
+            "title": "Shortlisted",
+            "default": 0
+          },
+          "proteome_proteins": {
+            "type": "integer",
+            "title": "Proteome Proteins",
+            "default": 0
+          },
+          "proteome_is_stub": {
+            "type": "boolean",
+            "title": "Proteome Is Stub",
+            "default": false
+          },
+          "expression_available": {
+            "type": "boolean",
+            "title": "Expression Available",
+            "default": false
+          },
+          "normal_expression_available": {
+            "type": "boolean",
+            "title": "Normal Expression Available",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "RunReport"
+      },
+      "RunRequest": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "example",
+              "upload"
+            ],
+            "title": "Source",
+            "default": "example"
+          },
+          "workspace": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace"
+          },
+          "sample": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SampleInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "backend": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backend"
+          },
+          "top_n": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top N"
+          },
+          "acknowledge_development_backend": {
+            "type": "boolean",
+            "title": "Acknowledge Development Backend",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "RunRequest"
+      },
+      "RunState": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunStatus"
+          },
+          "sample_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sample Id"
+          },
+          "backend": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backend"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/ProgressEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "report": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RunReport"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "warnings": {
+            "$ref": "#/components/schemas/RunWarnings"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PipelineConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "error_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Type"
+          },
+          "shortlisted": {
+            "type": "integer",
+            "title": "Shortlisted",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "status",
+          "created_at"
+        ],
+        "title": "RunState"
+      },
+      "RunStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "running",
+          "succeeded",
+          "failed"
+        ],
+        "title": "RunStatus"
+      },
+      "RunWarnings": {
+        "properties": {
+          "proteome_is_stub": {
+            "type": "boolean",
+            "title": "Proteome Is Stub",
+            "default": false
+          },
+          "proteome_proteins": {
+            "type": "integer",
+            "title": "Proteome Proteins",
+            "default": 0
+          },
+          "proteome_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proteome Detail"
+          },
+          "development_backend": {
+            "type": "boolean",
+            "title": "Development Backend",
+            "default": false
+          },
+          "development_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Development Detail"
+          },
+          "expression_available": {
+            "type": "boolean",
+            "title": "Expression Available",
+            "default": true
+          },
+          "expression_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expression Detail"
+          }
+        },
+        "type": "object",
+        "title": "RunWarnings",
+        "description": "Caveats that must be visible in any interface, not just the README."
+      },
+      "SampleInput": {
+        "properties": {
+          "sample_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Sample Id"
+          },
+          "cancer_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancer Type"
+          },
+          "tumor_purity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tumor Purity"
+          },
+          "hla": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Hla"
+          },
+          "somatic_vcf": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Somatic Vcf"
+          },
+          "variant_tsv": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variant Tsv"
+          },
+          "expression_tsv": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expression Tsv"
+          },
+          "normal_expression_tsv": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normal Expression Tsv"
+          },
+          "tumor_sample_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tumor Sample Name"
+          },
+          "proteome": {
+            "type": "string",
+            "title": "Proteome",
+            "default": "ensembl"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_id"
+        ],
+        "title": "SampleInput",
+        "description": "Mirrors `data/examples/sample.yaml`.\n\nFile fields name a file previously uploaded to a workspace, not a server\npath, so a request cannot reach outside its own upload directory."
+      },
+      "ScoringWeights": {
+        "properties": {
+          "bias": {
+            "type": "number",
+            "title": "Bias",
+            "default": -3.0
+          },
+          "presentation": {
+            "type": "number",
+            "title": "Presentation",
+            "default": 2.5
+          },
+          "clonality": {
+            "type": "number",
+            "title": "Clonality",
+            "default": 1.5
+          },
+          "expression": {
+            "type": "number",
+            "title": "Expression",
+            "default": 1.2
+          },
+          "agretopicity": {
+            "type": "number",
+            "title": "Agretopicity",
+            "default": 0.5
+          },
+          "tumor_selectivity": {
+            "type": "number",
+            "title": "Tumor Selectivity",
+            "default": 0.4
+          },
+          "self_dissimilarity": {
+            "type": "number",
+            "title": "Self Dissimilarity",
+            "default": 0.25
+          },
+          "wt_dissimilarity": {
+            "type": "number",
+            "title": "Wt Dissimilarity",
+            "default": 0.15
+          },
+          "mutation_exposure": {
+            "type": "number",
+            "title": "Mutation Exposure",
+            "default": 0.1
+          },
+          "hydrophobicity": {
+            "type": "number",
+            "title": "Hydrophobicity",
+            "default": 0.0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ScoringWeights",
+        "description": "Coefficients of a logistic model over normalized features.\n\nWeights are scaled by how well evidenced each feature is, not by how\ninteresting it sounds. Presentation, clonality and expression are close to\nnecessary conditions for a T-cell response and carry most of the weight.\nThe sequence-intrinsic terms are proxies with weak literature support, so\nthey are kept small on purpose: given them comparable weight and they\ndominate the very top of the shortlist, which is the part a lab actually\nsynthesizes. `tests/test_eval.py` guards against that regression.\n\nDeliberately absent: any \"known driver gene\" or literature-prominence term.\nDriver status is a proxy for publication history, not for T-cell response,\nand biases the shortlist toward antigens that are already known to fail.\n\nThese are priors. Replace them with `neoantigene refit` output."
+      },
+      "UploadedFile": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "bytes": {
+            "type": "integer",
+            "title": "Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "bytes"
+        ],
+        "title": "UploadedFile"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationSummary": {
+        "properties": {
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "k": {
+            "type": "integer",
+            "title": "K"
+          },
+          "assayed": {
+            "type": "integer",
+            "title": "Assayed"
+          },
+          "positives": {
+            "type": "integer",
+            "title": "Positives"
+          },
+          "hits_in_top_k": {
+            "type": "integer",
+            "title": "Hits In Top K"
+          },
+          "validation_rate": {
+            "type": "number",
+            "title": "Validation Rate"
+          },
+          "baseline_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "k",
+          "assayed",
+          "positives",
+          "hits_in_top_k",
+          "validation_rate"
+        ],
+        "title": "ValidationSummary"
+      },
+      "VariantFilterConfig": {
+        "properties": {
+          "require_pass": {
+            "type": "boolean",
+            "title": "Require Pass",
+            "default": true
+          },
+          "min_tumor_depth": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Min Tumor Depth",
+            "default": 20
+          },
+          "min_dna_vaf": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Min Dna Vaf",
+            "default": 0.05
+          },
+          "max_population_af": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Max Population Af",
+            "default": 0.0001
+          },
+          "min_ccf": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Min Ccf",
+            "default": 0.6
+          },
+          "tumor_purity": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Tumor Purity",
+            "default": 0.5
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "VariantFilterConfig"
+      },
+      "Workspace": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/UploadedFile"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "files"
+        ],
+        "title": "Workspace"
+      }
+    }
+  }
+}
