@@ -1,0 +1,18 @@
+chrom	pos	ref	alt	gene	transcript	consequence	protein_position	amino_acids	dna_vaf	rna_vaf	tumor_depth	copy_number	population_af	filter
+1	37874128	G	C	INPP5B	ENST00000373024	missense_variant	606	Q/E						
+1	52268541	A	C	ZFYVE9	ENST00000287727	missense_variant	845	K/T						
+1	220024376	C	G	EPRS	ENST00000366923	missense_variant	277	M/I						
+11	62827178	C	G	STX5	ENST00000996436	missense_variant	134	E/Q						
+12	7066530	C	T	C1S	ENST00000328916	missense_variant	295	P/L						
+14	34713369	C	A	CFL2	ENST00000298159	missense_variant	66	D/Y						
+14	75117203	C	G	NEK9	ENST00001044055	missense_variant	252	D/H						
+17	42104792	T	A	DHX58	ENST00000251642	missense_variant	513	M/L						
+2	67404159	G	C	ETAA1	ENST00000272342	missense_variant	493	E/Q						
+2	85395579	C	T	CAPG	ENST00000951335	missense_variant	314	E/K						
+3	9943508	G	C	CRELD1	ENST00000383811	missense_variant	347	Q/H						
+4	22413213	C	A	ADGRA3	ENST00001029712	missense_variant	734	C/F						
+6	10556704	C	T	GCNT2	ENST00000316170	missense_variant	94	P/L						
+7	5752914	T	C	RNF216	ENST00000389902	missense_variant	45	M/V						
+7	135598004	C	G	NUP205	ENST00000921547	missense_variant	691	L/V						
+7	138762364	G	T	ATP6V0A4	ENST00000310018	missense_variant	163	P/H						
+X	40597563	G	A	ATP6AP2	ENST00000901377	missense_variant	145	E/K						

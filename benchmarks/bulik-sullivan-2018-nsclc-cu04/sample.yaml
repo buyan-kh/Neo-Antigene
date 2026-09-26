@@ -1,0 +1,14 @@
+# Patient CU04 from Bulik-Sullivan et al., Nature Biotechnology, 2018.
+# DOI 10.1038/nbt.4313. Provenance for every row is in SOURCES.md.
+sample_id: CU04
+cancer_type: lung adenocarcinoma
+hla:
+  - HLA-A*24:26
+  - HLA-A*26:01
+  - HLA-B*18:01
+  - HLA-B*38:01
+  - HLA-C*12:03
+processed:
+  variant_tsv: variants.tsv
+  expression_tsv: expression.tsv
+  proteome_fasta: reference/Homo_sapiens.GRCh38.pep.all.fa.gz
