@@ -117,3 +117,35 @@ for the same reason.
 - Results filtering and sorting happen client-side over the returned page,
   which is fine at shortlist size and would not be at genome scale.
 - Mobile is not a target; the layout is built for a laptop screen share.
+
+## Deploy the UI on Vercel
+
+The frontend deploys to Vercel. The API does **not**: MHCflurry runs take
+minutes and need a long-lived process, so host the API separately (Railway,
+Render, Fly, a VM) and point the UI at it.
+
+**1. Import from GitHub (permanent)**
+
+1. [vercel.com/new](https://vercel.com/new) → import `buyan-kh/Neo-Antigene`
+2. Set **Root Directory** to `apps/web`
+3. Add environment variable:
+   - `NEXT_PUBLIC_API_BASE` = your API URL (e.g. `https://api.example.com`)
+4. Deploy
+
+**2. CLI**
+
+```bash
+cd apps/web
+npx vercel login
+npx vercel link          # root directory is already apps/web
+npx vercel env add NEXT_PUBLIC_API_BASE production
+npx vercel --prod
+```
+
+**3. CORS**
+
+The API allows `*.vercel.app` origins. If the API runs elsewhere, add its
+origin in `apps/api/neoantigene_api/main.py`.
+
+Without `NEXT_PUBLIC_API_BASE`, the UI defaults to `http://127.0.0.1:8000`,
+which only works on your laptop.
