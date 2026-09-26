@@ -1,6 +1,6 @@
 # CU04 results
 
-Binding-only beats Neo Antigene on the only cut that can separate them.
+The pooled read of this case and Ott 2017 is in [`docs/BENCHMARK.md`](../../docs/BENCHMARK.md). Binding-only beats Neo Antigene on the only cut of this case that can separate them.
 
 Commands were run from this repo on 26 September 2026, on the default config (`config/default.yaml`, presentation backend `mhcflurry`). Weights were not changed. Labels were not used to pick a threshold, a transcript, or a patient after seeing the scores. Patient CU04 was chosen before the run because Supplementary Data 4 gives that patient three individual-peptide positives, the most among patients whose peptides were tested one at a time.
 
