@@ -62,7 +62,7 @@ def power_vs_chance(
 
     p_slot = min(enrichment * n_pos / n_pool, 1.0)
     # Effective positives visible to this ranker in the region it selects from.
-    eff_pos = min(int(round(p_slot * n_pool)), n_pos if enrichment <= 1 else n_pool)
+    eff_pos = min(round(p_slot * n_pool), n_pos if enrichment <= 1 else n_pool)
     eff_pos = min(eff_pos, n_pool)
     draws = hypergeom.rvs(n_pool, eff_pos, k, size=n_sim, random_state=RNG)
     draws = np.minimum(draws, n_pos)
@@ -87,7 +87,7 @@ def power_paired(
     which is exactly why pairing helps: only the (1 - overlap) * k discordant
     slots carry signal.
     """
-    k_disc = max(int(round((1.0 - overlap) * k)), 1)
+    k_disc = max(round((1.0 - overlap) * k), 1)
     rejects = 0
     for _ in range(n_sim):
         # Per-patient hit counts in the discordant slots only.
@@ -116,8 +116,7 @@ def two_proportion_n(p0: float, p1: float, alpha: float, power: float) -> int:
     z_b = norm.ppf(power)
     p_bar = (p0 + p1) / 2
     num = (
-        z_a * np.sqrt(2 * p_bar * (1 - p_bar))
-        + z_b * np.sqrt(p0 * (1 - p0) + p1 * (1 - p1))
+        z_a * np.sqrt(2 * p_bar * (1 - p_bar)) + z_b * np.sqrt(p0 * (1 - p0) + p1 * (1 - p1))
     ) ** 2
     return int(np.ceil(num / (p1 - p0) ** 2))
 
@@ -141,7 +140,7 @@ def main() -> None:
     print()
     print("Bulik-Sullivan CU04 as benchmarked: N=19, P=3")
     crit = hypergeom_critical_hits(19, 3, k, ALPHA)
-    print(f"  k=20 exceeds the pool (N=19); top-k is the whole pool -> no test exists")
+    print("  k=20 exceeds the pool (N=19); top-k is the whole pool -> no test exists")
     for kk in (5, 10):
         c = hypergeom_critical_hits(19, 3, kk, ALPHA)
         reachable = "unreachable" if c > kk else f"{c} of {kk}"
