@@ -44,6 +44,18 @@ ALPHABET_SIZE: Final[int] = len(ALPHABET)
 #: wild-type counterpart of any single substitution is found.
 SEED_LENGTH: Final[int] = 4
 
+#: Prefix length used to prefilter exact self matches. Unrelated to SEED_LENGTH,
+#: and chosen for the opposite reason: seeding wants short keys so near matches
+#: are still found, whereas exact matching wants the longest key every candidate
+#: shares so that almost nothing survives the prefilter. 8 is the minimum
+#: supported peptide length, so every candidate has a prefix this long.
+EXACT_PREFIX_LENGTH: Final[int] = 8
+
+#: Residues per chunk when streaming the proteome. Keeps the rolling-key
+#: intermediates in cache-friendly blocks instead of allocating one int64 array
+#: per key over the whole 157 Mb reference.
+_CHUNK_RESIDUES: Final[int] = 1 << 23
+
 #: Code for anything outside the 20 standard residues, including the separator
 #: placed between proteins. Windows containing it are never aligned, so no
 #: match can straddle two proteins.
@@ -67,6 +79,23 @@ def encode(sequence: str) -> np.ndarray:
     """Residues to 0-19 codes, with 20 for anything else."""
     raw = np.frombuffer(sequence.encode("ascii", "replace"), dtype=np.uint8)
     return _CODE_TABLE[raw]
+
+
+def _is_standard(peptide: str) -> bool:
+    """True when every residue is one of the 20 standard amino acids.
+
+    Anything else encodes to the same code as the inter-protein separator, so
+    admitting it would let a peptide "match" self across a protein boundary.
+    """
+    return all(residue in ALPHABET for residue in peptide)
+
+
+def _prefix_key(codes: np.ndarray, length: int) -> int:
+    """Rolling key for the first `length` residues, or -1 if there is no valid one."""
+    keys, valid = _seed_codes(codes[:length], length)
+    if keys.size == 0 or not bool(valid[0]):
+        return -1
+    return int(keys[0])
 
 
 def _seed_codes(codes: np.ndarray, length: int) -> tuple[np.ndarray, np.ndarray]:
@@ -107,6 +136,79 @@ class SelfProteome:
             # match a query seed.
             self._seed_keys = np.where(valid, keys, -1)
         return self._seed_keys
+
+    def exact_matches(self, peptides: Sequence[str]) -> set[str]:
+        """Which of `peptides` occur verbatim in the reference proteome.
+
+        This is the self-peptide hard gate. A candidate identical to a sequence
+        the thymus already screened against is not a neoantigen, whatever its
+        predicted affinity.
+
+        Answering it one peptide at a time costs a substring scan over ~157 Mb
+        per candidate, which dominates a real run. Batching inverts the loop:
+        the proteome is streamed once and every candidate is tested against
+        each position at the same time, so the reference is read once per run
+        rather than once per candidate.
+
+        The prefilter is what makes that cheap. An exact match requires the
+        candidate's first `EXACT_PREFIX_LENGTH` residues to match, and there
+        are 20^8 such prefixes, so for a query set of tens of thousands only a
+        few hundred proteome positions survive and need full comparison.
+        """
+        clean = [p for p in dict.fromkeys(peptides) if p and _is_standard(p)]
+        if not clean:
+            return set()
+
+        by_prefix_length: dict[int, list[str]] = defaultdict(list)
+        for peptide in clean:
+            by_prefix_length[min(EXACT_PREFIX_LENGTH, len(peptide))].append(peptide)
+
+        found: set[str] = set()
+        for prefix_length, group in by_prefix_length.items():
+            found |= self._exact_with_prefix(group, prefix_length)
+        return found
+
+    def _exact_with_prefix(self, queries: Sequence[str], prefix_length: int) -> set[str]:
+        encoded = {peptide: encode(peptide) for peptide in queries}
+        by_prefix: dict[int, list[str]] = defaultdict(list)
+        for peptide in queries:
+            key = _prefix_key(encoded[peptide], prefix_length)
+            if key >= 0:
+                by_prefix[key].append(peptide)
+        if not by_prefix:
+            return set()
+
+        prefix_keys = np.array(sorted(by_prefix), dtype=np.int64)
+        total = self._codes.size
+        found: set[str] = set()
+        pending = {peptide for group in by_prefix.values() for peptide in group}
+
+        start = 0
+        while start + prefix_length <= total and pending:
+            stop = min(start + _CHUNK_RESIDUES + prefix_length - 1, total)
+            keys, valid = _seed_codes(self._codes[start:stop], prefix_length)
+            keys = np.where(valid, keys, -1)
+
+            # prefix_keys is sorted, so searchsorted finds each chunk key's
+            # candidate slot without sorting the chunk itself.
+            slots = np.searchsorted(prefix_keys, keys)
+            np.clip(slots, 0, prefix_keys.size - 1, out=slots)
+            offsets = np.flatnonzero(prefix_keys[slots] == keys)
+
+            for offset in offsets[offsets < _CHUNK_RESIDUES].tolist():
+                for peptide in by_prefix[int(keys[offset])]:
+                    if peptide in pending and self._matches_at(start + offset, encoded[peptide]):
+                        found.add(peptide)
+                        pending.discard(peptide)
+            start += _CHUNK_RESIDUES
+
+        return found
+
+    def _matches_at(self, position: int, codes: np.ndarray) -> bool:
+        end = position + codes.size
+        if end > self._codes.size:
+            return False
+        return bool(np.array_equal(self._codes[position:end], codes))
 
     def nearest_similarity(self, peptides: Sequence[str]) -> dict[str, float]:
         """Best BLOSUM62 similarity to any self peptide, normalized to [0, 1].
