@@ -24,6 +24,13 @@ class TrainingSet(BaseModel):
     x: list[list[float]] = Field(default_factory=list)
     y: list[int] = Field(default_factory=list)
 
+    #: Patient of origin per row, parallel to `x` and `y`. Cross-validation
+    #: must split on this rather than on rows: several features are constant
+    #: within a patient whenever purity or RNA is unavailable, so a random
+    #: split lets the model identify the held-out patient from its training
+    #: rows and score its known response rate. See `learning.train`.
+    groups: list[str] = Field(default_factory=list)
+
     def __len__(self) -> int:
         return len(self.y)
 
@@ -34,6 +41,10 @@ class TrainingSet(BaseModel):
     @property
     def negatives(self) -> int:
         return len(self.y) - self.positives
+
+    @property
+    def group_count(self) -> int:
+        return len(set(self.groups))
 
 
 def load_feature_records(paths: Sequence[Path]) -> dict[str, dict[str, float]]:
@@ -68,4 +79,5 @@ def build_training_set(
         dataset.keys.append(result.key)
         dataset.x.append([float(values.get(name, 0.0)) for name in feature_names])
         dataset.y.append(label)
+        dataset.groups.append(result.sample_id)
     return dataset
