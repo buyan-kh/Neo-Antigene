@@ -19,6 +19,7 @@ cv_auc 0.643 where the grouped split correctly reported 0.494.
 from __future__ import annotations
 
 import logging
+import random
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -172,6 +173,91 @@ def _cross_validate(
         return None, "none"
 
     return float(np.mean(scores)), f"grouped {len(scores)}-fold by patient"
+
+
+def bootstrap_weights(
+    dataset: TrainingSet,
+    rounds: int = 200,
+    regularization_c: float = 0.3,
+    seed: int = 0,
+) -> list[ScoringWeights]:
+    """An ensemble of refits, each on a resample of the labelled data.
+
+    The spread across this ensemble is what `learning.active` needs to know
+    which label would actually teach it something. A single fit cannot say
+    that: its score is a point estimate, and the distance of that point from
+    0.5 measures how uncertain the *outcome* is, not how uncertain the
+    *weights* are. A peptide can sit at 0.5 because the model is confidently
+    ambivalent about it, which is the least informative case, not the most.
+
+    Resampling is at the patient level whenever more than one patient is
+    available, for the same reason cross-validation groups by patient: the
+    dominant uncertainty in a cohort of six is which six, not which peptides
+    within them. With one patient there is no cluster structure to resample,
+    so rows are drawn instead and the resulting spread understates the true
+    uncertainty — it describes only this tumor.
+    """
+    _check_sufficient(dataset)
+
+    try:
+        import numpy as np
+        from sklearn.linear_model import LogisticRegression
+    except ImportError as exc:  # pragma: no cover - depends on optional extra
+        raise ImportError(
+            "refitting requires the learning extra: uv sync --extra learning"
+        ) from exc
+
+    x = np.asarray(dataset.x, dtype=float)
+    y = np.asarray(dataset.y, dtype=int)
+    indices = _resample_indices(dataset, rounds, seed)
+
+    ensemble: list[ScoringWeights] = []
+    for rows in indices:
+        labels = y[rows]
+        if len(set(labels.tolist())) < 2:
+            # A resample with one class cannot be fitted; dropping it biases the
+            # ensemble slightly toward balanced draws, which is preferable to
+            # inventing a member.
+            continue
+        model = LogisticRegression(C=regularization_c, class_weight="balanced", max_iter=2000)
+        model.fit(x[rows], labels)
+        ensemble.append(
+            ScoringWeights(
+                bias=float(model.intercept_[0]),
+                **{
+                    name: float(value)
+                    for name, value in zip(dataset.feature_names, model.coef_[0], strict=True)
+                },
+            )
+        )
+
+    if len(ensemble) < 2:
+        raise InsufficientData(
+            f"could not fit a usable ensemble: only {len(ensemble)} of {rounds} resamples "
+            f"contained both classes"
+        )
+    return ensemble
+
+
+def _resample_indices(dataset: TrainingSet, rounds: int, seed: int) -> list[list[int]]:
+    """Row indices for each bootstrap round, clustered by patient when possible."""
+    rng = random.Random(seed)
+    by_patient: dict[str, list[int]] = {}
+    for row, patient in enumerate(dataset.groups):
+        by_patient.setdefault(patient, []).append(row)
+
+    if len(by_patient) < 2:
+        rows = list(range(len(dataset)))
+        return [[rng.choice(rows) for _ in rows] for _ in range(rounds)]
+
+    patients = list(by_patient)
+    draws: list[list[int]] = []
+    for _ in range(rounds):
+        selected: list[int] = []
+        for _ in patients:
+            selected.extend(by_patient[rng.choice(patients)])
+        draws.append(selected)
+    return draws
 
 
 def compare_to_prior(prior: ScoringWeights, fitted: ScoringWeights) -> list[str]:
