@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import csv
 import json
+from collections.abc import Mapping, Sequence
 from enum import StrEnum
 from pathlib import Path
 from typing import Annotated, Any
@@ -15,7 +16,8 @@ from typing import Annotated, Any
 import typer
 
 from .assays.metrics import compare_rankings, validation_rate_at_k
-from .assays.schema import AssayType, read_results, write_request
+from .assays.schema import AssayResult, AssayType, read_results, write_request
+from .assays.stats import paired_comparison, stratified_auc, top_k_significance
 from .config import PipelineConfig
 from .hla import parse_hla_string
 from .io.manifest import Sample
@@ -158,6 +160,13 @@ def evaluate(
         typer.Option("--baseline", exists=True, help="Comparator ranking over the same peptides."),
     ] = None,
     k: Annotated[int, typer.Option("--k", min=1)] = 20,
+    stats: Annotated[
+        bool,
+        typer.Option(
+            "--stats",
+            help="Add exact hypergeometric tails, rank AUC and a paired permutation test.",
+        ),
+    ] = False,
 ) -> None:
     """Validation rate of the top-k ranked peptides, against a baseline."""
     results = read_results(results_tsv)
@@ -171,6 +180,10 @@ def evaluate(
     for summary in summaries:
         typer.echo(summary.describe())
 
+    if stats:
+        baseline_name = baseline_tsv.stem if baseline_tsv is not None else None
+        _echo_significance(results, rankings, k, baseline=baseline_name)
+
 
 @app.command()
 def benchmark(
@@ -180,6 +193,13 @@ def benchmark(
     backend: Annotated[str | None, typer.Option("--backend")] = None,
     k: Annotated[int, typer.Option("--k", min=1)] = 20,
     allow_null_backend: Annotated[bool, typer.Option("--allow-null-backend")] = False,
+    stats: Annotated[
+        bool,
+        typer.Option(
+            "--stats",
+            help="Add exact hypergeometric tails, rank AUC and a paired permutation test.",
+        ),
+    ] = False,
 ) -> None:
     """Re-rank one sample with every built-in baseline and compare hit rates.
 
@@ -210,6 +230,9 @@ def benchmark(
 
     for summary in compare_rankings(results, rankings, k, baseline="binding_only"):
         typer.echo(summary.describe())
+
+    if stats:
+        _echo_significance(results, rankings, k, baseline="binding_only")
 
 
 @app.command()
@@ -319,6 +342,41 @@ def init_config(
 def _read_tsv(path: Path) -> list[dict[str, Any]]:
     with open(path) as handle:
         return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def _echo_significance(
+    results: Sequence[AssayResult],
+    rankings: Mapping[str, Mapping[str, float]],
+    k: int,
+    baseline: str | None = None,
+) -> None:
+    """Report whether the retrieval numbers above could have happened anyway.
+
+    Printed under `--stats` rather than always, because it costs permutations
+    and because the point estimates are what a lab reads. The paired test is
+    the one that matters: it asks whether the full model beats its own
+    strongest input feature on the same peptides.
+    """
+    typer.echo("")
+    for name, ranking in rankings.items():
+        typer.echo(top_k_significance(results, ranking, k, method=name).describe())
+    typer.echo("")
+    for name, ranking in rankings.items():
+        typer.echo(stratified_auc(results, ranking, method=name).describe())
+
+    reference = baseline if baseline in rankings else None
+    if reference is None or reference == "neoantigene":
+        return
+    typer.echo("")
+    typer.echo(
+        paired_comparison(
+            results,
+            rankings["neoantigene"],
+            rankings[reference],
+            k=k,
+            method_b=reference,
+        ).describe()
+    )
 
 
 def _ranking_from_tsv(path: Path) -> dict[str, float]:
