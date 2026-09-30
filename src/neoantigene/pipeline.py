@@ -130,6 +130,7 @@ def scan_nearest_self(
     proteome: ProteomeIndex,
     calls: Mapping[tuple[str, str], PresentationCall] | None = None,
     config: PipelineConfig | None = None,
+    reference: SelfProteome | None = None,
 ) -> dict[str, float] | None:
     """Nearest-self similarity for plausibly presented peptides, or None if unusable.
 
@@ -154,7 +155,7 @@ def scan_nearest_self(
         logger.info("no peptides cleared presentation, skipping nearest-self search")
         return None
 
-    reference = SelfProteome(proteome.sequences())
+    reference = reference or SelfProteome(proteome.sequences())
     similarities = reference.nearest_similarity(peptides)
     logger.info(
         "scanned %d of %d peptides against %d self residues",
@@ -163,6 +164,41 @@ def scan_nearest_self(
         reference.residues,
     )
     return similarities
+
+
+def scan_self_matches(
+    candidates: Sequence[PeptideCandidate],
+    proteome: ProteomeIndex,
+    calls: Mapping[tuple[str, str], PresentationCall] | None = None,
+    config: PipelineConfig | None = None,
+    reference: SelfProteome | None = None,
+) -> frozenset[str] | None:
+    """Mutant peptides that occur verbatim in the reference proteome.
+
+    Precomputed in one batched pass so the self-peptide gate reads a set
+    membership instead of scanning the whole reference per candidate. `None`
+    means the gate is disabled, in which case feature assembly does not
+    consult it at all.
+
+    Unlike the nearest-self search this still runs against a stub reference.
+    An exact match found in two proteins is a real match; the stub only limits
+    how many matches can be found, which the run report already discloses.
+    """
+    if config is not None and not config.peptides.drop_self_matching:
+        return None
+
+    peptides = _presentable_peptides(candidates, calls, config)
+    if not peptides:
+        return frozenset()
+
+    reference = reference or SelfProteome(proteome.sequences())
+    matches = reference.exact_matches(peptides)
+    logger.info(
+        "self-peptide gate: %d of %d presented peptides match the reference exactly",
+        len(matches),
+        len(peptides),
+    )
+    return frozenset(matches)
 
 
 def _presentable_peptides(
@@ -328,12 +364,16 @@ def run(
     calls = predict_presentation(candidates, alleles, predictor, resolved)
     logger.info("predicted %d peptide-allele pairs", len(calls))
 
+    # One encoded copy of the reference, shared by both proteome scans: the
+    # nearest-self search and the exact self-match gate.
+    reference = SelfProteome(proteome.sequences())
     context = FeatureContext(
         config=resolved,
         expression=expression,
         normal_expression=normal_expression,
         proteome=proteome,
-        self_similarity=scan_nearest_self(candidates, proteome, calls, resolved),
+        self_similarity=scan_nearest_self(candidates, proteome, calls, resolved, reference),
+        self_matches=scan_self_matches(candidates, proteome, calls, resolved, reference),
     )
     all_scored = score_all(build_scored(candidates, alleles, calls, context), resolved.weights)
     report.pairs_scored = len(all_scored)

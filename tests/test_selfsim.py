@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 
 from neoantigene.matrices import BLOSUM62
+from neoantigene.peptides import selfsim
 from neoantigene.peptides.proteome import ProteomeIndex
 from neoantigene.peptides.reference import MIN_REAL_PROTEOME_PROTEINS, provenance
 from neoantigene.peptides.selfsim import SEED_LENGTH, SelfProteome
@@ -92,6 +93,78 @@ class TestNearestSimilarity:
                 starts = range(1, length - SEED_LENGTH + 2)
                 clean = [s for s in starts if not s <= position <= s + SEED_LENGTH - 1]
                 assert clean, f"length {length}, mutation at P{position} has no clean seed"
+
+
+class TestExactMatches:
+    """The self-peptide hard gate, batched.
+
+    `exact_matches` replaced a per-candidate substring scan over the whole
+    reference. Batching is only worth doing if it answers identically, so the
+    equivalence test below is the one that matters; the rest pin the edges
+    where a prefilter-and-verify scheme could plausibly go wrong.
+    """
+
+    @pytest.mark.parametrize("length", [8, 9, 10, 11])
+    def test_a_real_self_peptide_is_found_at_every_offset(self, reference, length):
+        for start in range(len(BACKGROUND) - length + 1):
+            peptide = BACKGROUND[start : start + length]
+            assert reference.exact_matches([peptide]) == {peptide}
+
+    def test_a_single_substitution_is_not_a_self_match(self, reference):
+        native = BACKGROUND[20:29]
+        assert reference.exact_matches([substitute(native, 5)]) == set()
+
+    def test_it_agrees_with_the_per_candidate_scan_it_replaced(self, reference):
+        """The equivalence that licenses the optimization."""
+        index = ProteomeIndex()
+        index._by_protein = {"BACKGROUND": BACKGROUND}
+
+        queries: list[str] = []
+        for length in (8, 9, 10, 11):
+            for start in range(0, len(BACKGROUND) - length + 1, 3):
+                native = BACKGROUND[start : start + length]
+                queries += [native, substitute(native, 1), substitute(native, length)]
+        queries += ["WWWWWWWWW", "GGGGGGGG", BACKGROUND[:11]]
+
+        expected = {q for q in queries if index.contains_peptide(q)}
+        assert reference.exact_matches(queries) == expected
+        assert expected, "the fixture must contain real self matches for this to mean anything"
+
+    def test_no_match_can_span_two_proteins(self):
+        left, right = "MKTAYIAKQ", "RQISFVKSH"
+        proteome = SelfProteome([left, right])
+        straddling = left[-4:] + right[:5]
+        assert proteome.exact_matches([straddling]) == set()
+        assert proteome.exact_matches([left]) == {left}
+
+    def test_peptides_spanning_a_chunk_boundary_are_still_found(self, monkeypatch):
+        """The proteome is streamed, so every boundary offset must be covered.
+
+        Forced to a tiny chunk so the boundaries fall inside the fixture. A
+        peptide whose prefix starts just before a chunk edge is the case an
+        off-by-one in the stride would silently drop.
+        """
+        monkeypatch.setattr(selfsim, "_CHUNK_RESIDUES", 4)
+        proteome = SelfProteome([BACKGROUND])
+        for length in (8, 9, 10, 11):
+            peptides = [
+                BACKGROUND[start : start + length] for start in range(len(BACKGROUND) - length + 1)
+            ]
+            assert proteome.exact_matches(peptides) == set(peptides)
+
+    def test_non_standard_residues_never_match_the_separator(self):
+        """`X` encodes like the inter-protein separator, so it must be rejected."""
+        proteome = SelfProteome(["MKTAYIAKQ", "RQISFVKSH"])
+        assert proteome.exact_matches(["MKTAYIAKX", "XXXXXXXX"]) == set()
+
+    def test_empty_and_degenerate_inputs(self, reference):
+        assert reference.exact_matches([]) == set()
+        assert reference.exact_matches([""]) == set()
+        assert SelfProteome([]).exact_matches(["AGGVGKSAL"]) == set()
+
+    def test_duplicate_queries_are_answered_once(self, reference):
+        peptide = BACKGROUND[10:19]
+        assert reference.exact_matches([peptide] * 5) == {peptide}
 
 
 class TestStubDetection:

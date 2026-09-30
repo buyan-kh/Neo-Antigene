@@ -46,6 +46,13 @@ class FeatureContext:
     #: the feature is neutral rather than optimistic.
     self_similarity: dict[str, float] | None = None
 
+    #: Mutant peptides found verbatim in the reference proteome, precomputed in
+    #: one batched pass by `SelfProteome.exact_matches`. `None` falls back to
+    #: scanning the proteome per candidate, which is correct but costs a full
+    #: substring search each time — fine for a single `explain`, ruinous for a
+    #: whole run.
+    self_matches: frozenset[str] | None = None
+
 
 def expression_feature(tpm: float | None) -> float:
     if tpm is None:
@@ -98,6 +105,14 @@ def self_dissimilarity_feature(similarity: float | None) -> float:
     return _clip(1.0 - similarity)
 
 
+def _is_self_peptide(peptide: str, context: FeatureContext) -> bool:
+    if context.self_matches is not None:
+        return peptide in context.self_matches
+    if context.proteome is not None:
+        return context.proteome.contains_peptide(peptide)
+    return False
+
+
 def _gates(
     candidate: PeptideCandidate,
     mutant_call: PresentationCall,
@@ -119,8 +134,8 @@ def _gates(
     # The proteome scan is the expensive gate, so only peptides that are
     # otherwise viable pay for it.
     self_match = False
-    if config.peptides.drop_self_matching and context.proteome is not None and not gates:
-        self_match = context.proteome.contains_peptide(candidate.mutant_peptide)
+    if config.peptides.drop_self_matching and not gates:
+        self_match = _is_self_peptide(candidate.mutant_peptide, context)
         if self_match:
             gates.append(GateFailure.SELF_PEPTIDE)
 

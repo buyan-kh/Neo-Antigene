@@ -135,6 +135,31 @@ class TestAssayLoop:
         assert "neoantigene" in result.output
         assert "validated" in result.output
 
+    def test_evaluate_stats_adds_inference_without_removing_the_point_estimate(
+        self, ranked, tmp_path
+    ):
+        out, _ = ranked
+        completed = tmp_path / "completed.tsv"
+        _write_completed_from_ranked(out / "EXAMPLE-PDAC-001.ranked.tsv", completed)
+
+        result = runner.invoke(
+            app,
+            [
+                "evaluate",
+                str(completed),
+                "--ranked",
+                str(out / "EXAMPLE-PDAC-001.ranked.tsv"),
+                "--k",
+                "4",
+                "--stats",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        assert "validated" in result.output
+        assert "chance" in result.output
+        assert "p=" in result.output
+        assert "auc" in result.output
+
     def test_refit_refuses_insufficient_data(self, ranked, tmp_path):
         out, _ = ranked
         completed = tmp_path / "completed.tsv"

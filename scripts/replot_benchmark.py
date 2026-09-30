@@ -51,9 +51,7 @@ def main() -> int:
     # Matplotlib will happily render an axis with nothing on it, and an empty
     # figure that looks like a real one is worse than no figure at all.
     assayed = {r.key for r in results}
-    overlap = {
-        method: len(assayed.intersection(ranking)) for method, ranking in rankings.items()
-    }
+    overlap = {method: len(assayed.intersection(ranking)) for method, ranking in rankings.items()}
     if not any(overlap.values()):
         raise SystemExit(
             f"{cache} has no keys in common with {args.labels.name}.\n"
