@@ -72,6 +72,83 @@ def expected_hits(k: int, positives: int, pool: int) -> float:
     return k * positives / pool
 
 
+def minimum_significant_hits(
+    k: int,
+    positives: int,
+    pool: int,
+    alpha: float = 0.05,
+) -> int | None:
+    """Fewest top-k hits that would reach `alpha`, or None if none can.
+
+    Depends only on the shape of the assayed pool, so it is computable before
+    any ranking is scored — and `None` is a complete answer on its own: no
+    outcome this design can produce will clear the threshold, whatever method
+    is run. CU04 at k=10 is such a design, with three positives in nineteen
+    peptides.
+    """
+    reachable = min(k, positives)
+    for hits in range(1, reachable + 1):
+        if hypergeometric_tail(hits, k, positives, pool) <= alpha:
+            return hits
+    return None
+
+
+class DesignCapacity(BaseModel):
+    """What an assayed pool could show, independent of any method.
+
+    Reported before results, deliberately. A benchmark that cannot reject
+    chance at any outcome is not weak evidence about the methods run on it; it
+    is no evidence, and that has to be visible before anyone reads a hit count
+    and forms an impression.
+    """
+
+    k: int
+    pool: int
+    positives: int
+    alpha: float
+    expected_hits: float
+    hits_needed: int | None
+
+    @property
+    def can_reach_significance(self) -> bool:
+        return self.hits_needed is not None
+
+    def describe(self) -> str:
+        head = (
+            f"{self.pool} assayed peptides, {self.positives} positive, k={self.k}. "
+            f"Chance yields {self.expected_hits:.2f} hits."
+        )
+        if self.hits_needed is None:
+            return (
+                f"{head}\nNo outcome reaches p <= {self.alpha:g}: at most "
+                f"{min(self.k, self.positives)} hits are possible and even that is not "
+                f"significant. This design cannot distinguish any method from chance."
+            )
+        chance_rate = self.expected_hits / self.k
+        return (
+            f"{head}\nReaching p <= {self.alpha:g} takes {self.hits_needed} of {self.k} "
+            f"({self.hits_needed / self.k:.0%} precision), against {chance_rate:.0%} "
+            f"from chance."
+        )
+
+
+def design_capacity(
+    pool: int,
+    positives: int,
+    k: int,
+    alpha: float = 0.05,
+) -> DesignCapacity:
+    depth = min(k, pool) if pool > 0 else 0
+    return DesignCapacity(
+        k=depth,
+        pool=pool,
+        positives=positives,
+        alpha=alpha,
+        expected_hits=expected_hits(depth, positives, pool),
+        hits_needed=minimum_significant_hits(depth, positives, pool, alpha),
+    )
+
+
 class TopKSignificance(BaseModel):
     method: str
     k: int

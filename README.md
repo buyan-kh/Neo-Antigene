@@ -340,6 +340,24 @@ uv run neoantigene benchmark sample.yaml assays/completed.tsv --k 20
 NetMHCpan-class workflow of sorting by predicted binding and taking the top N.
 If Neo Antigene cannot beat it on real assay data, there is no product.
 
+### The evaluation harness
+
+`neoantigene compare` audits any set of rankings against one label set,
+including rankings this package did not produce, and reports what the assayed
+pool *could* have detected before reporting what it did:
+
+```bash
+uv run neoantigene compare labels.tsv \
+  -m ours=ranked.tsv -m netmhcpan=theirs.tsv \
+  --baseline netmhcpan --k 20 -o report.md
+```
+
+A pool that cannot reject chance at any outcome says so on the first line and
+exits non-zero, so an inconclusive benchmark cannot be consumed as a passing
+one. Both cases in [`docs/BENCHMARK.md`](docs/BENCHMARK.md) are underpowered
+and one of them is provably inconclusive at any k. Protocol, input formats and
+the rules it enforces are in [`docs/HARNESS.md`](docs/HARNESS.md).
+
 ## Layout
 
 ```
