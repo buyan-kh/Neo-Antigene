@@ -15,6 +15,8 @@ from typing import Annotated, Any
 
 import typer
 
+from . import __version__
+from .assays.harness import SourceFile, build_report
 from .assays.metrics import compare_rankings, validation_rate_at_k
 from .assays.schema import AssayResult, AssayType, read_results, write_request
 from .assays.stats import paired_comparison, stratified_auc, top_k_significance
@@ -34,7 +36,7 @@ from .peptides.reference import (
 )
 from .pipeline import run as run_pipeline
 from .presentation.registry import DEVELOPMENT_BACKENDS, available, get_backend
-from .run import configure_logging, new_run_id
+from .run import configure_logging, file_digest, new_run_id
 from .scoring.baselines import BASELINES
 from .scoring.rank import contributions
 from .wedge import pdac
@@ -183,6 +185,82 @@ def evaluate(
     if stats:
         baseline_name = baseline_tsv.stem if baseline_tsv is not None else None
         _echo_significance(results, rankings, k, baseline=baseline_name)
+
+
+@app.command()
+def compare(
+    results_tsv: Annotated[Path, typer.Argument(help="Ground-truth assay results.", exists=True)],
+    method: Annotated[
+        list[str],
+        typer.Option(
+            "--method",
+            "-m",
+            help="NAME=path.tsv ranking to evaluate. Repeatable. Any tool's output.",
+        ),
+    ],
+    baseline: Annotated[
+        str | None,
+        typer.Option("--baseline", help="Which --method name to run paired tests against."),
+    ] = None,
+    k: Annotated[int, typer.Option("--k", min=1)] = 20,
+    alpha: Annotated[float, typer.Option("--alpha", min=1e-6, max=0.5)] = 0.05,
+    rounds: Annotated[int, typer.Option("--rounds", min=100)] = 10_000,
+    out: Annotated[
+        Path | None, typer.Option("-o", "--out", help="Write a markdown report.")
+    ] = None,
+) -> None:
+    """Audit any set of rankings against one label set.
+
+    Accepts rankings from any tool, not just this one, and reports what the
+    assayed pool could have detected before reporting what it did. A pool that
+    cannot reject chance at any outcome says so at the top of the report.
+
+        neoantigene compare labels.tsv \\
+          -m ours=ranked.tsv -m netmhcpan=theirs.tsv --baseline netmhcpan
+    """
+    run_id = new_run_id()
+    configure_logging(run_id)
+
+    rankings: dict[str, dict[str, float]] = {}
+    sources = [SourceFile(role="labels", path=str(results_tsv), digest=file_digest(results_tsv))]
+    for entry in method:
+        name, _, raw_path = entry.partition("=")
+        if not name or not raw_path:
+            raise typer.BadParameter(f"expected NAME=path.tsv, got {entry!r}")
+        path = Path(raw_path)
+        if not path.exists():
+            raise typer.BadParameter(f"{name}: {path} does not exist")
+        rankings[name] = _ranking_from_tsv(path)
+        sources.append(SourceFile(role=f"ranking:{name}", path=str(path), digest=file_digest(path)))
+
+    if baseline is not None and baseline not in rankings:
+        raise typer.BadParameter(
+            f"--baseline {baseline!r} is not one of the given methods: {sorted(rankings)}"
+        )
+
+    report = build_report(
+        read_results(results_tsv),
+        rankings,
+        run_id=run_id,
+        package_version=__version__,
+        k=k,
+        alpha=alpha,
+        baseline=baseline,
+        sources=sources,
+        rounds=rounds,
+    )
+
+    if out is not None:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(report.to_markdown())
+        typer.echo(f"report -> {out}")
+    else:
+        typer.echo(report.to_markdown())
+
+    # Exit 2 when nothing in the report could sustain a claim, so a pipeline or
+    # a CI job cannot mistake an inconclusive benchmark for a passing one.
+    if not report.supports_a_claim:
+        raise typer.Exit(code=2)
 
 
 @app.command()

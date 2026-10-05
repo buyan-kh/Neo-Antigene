@@ -15,8 +15,10 @@ import pytest
 from neoantigene.assays.schema import AssayCall, AssayResult, AssayType
 from neoantigene.assays.stats import (
     auc_significance,
+    design_capacity,
     expected_hits,
     hypergeometric_tail,
+    minimum_significant_hits,
     paired_comparison,
     rank_auc,
     stratified_auc,
@@ -104,6 +106,54 @@ class TestHypergeometricTail:
     def test_expected_hits_is_the_chance_line(self):
         assert expected_hits(10, 14, 139) == pytest.approx(1.0072, abs=1e-4)
         assert expected_hits(10, 3, 19) == pytest.approx(1.5789, abs=1e-4)
+
+
+class TestDesignCapacity:
+    """What a pool could show, before any method is scored.
+
+    The value of this is the negative answer. A pool that cannot reject chance
+    at any outcome is not weak evidence about the methods run on it, and the
+    only way that stays visible is to compute it from the pool alone.
+    """
+
+    def test_cu04_at_k10_cannot_reach_significance_at_any_outcome(self):
+        """19 assayed peptides, 3 positives: even 3 of 3 gives p = 0.124."""
+        capacity = design_capacity(pool=19, positives=3, k=10)
+        assert capacity.hits_needed is None
+        assert not capacity.can_reach_significance
+        assert "cannot distinguish any method from chance" in capacity.describe()
+
+    def test_ott_at_k20_needs_five_hits(self):
+        capacity = design_capacity(pool=139, positives=14, k=20)
+        assert capacity.hits_needed == 5
+        assert capacity.can_reach_significance
+        assert hypergeometric_tail(5, 20, 14, 139) <= 0.05
+        assert hypergeometric_tail(4, 20, 14, 139) > 0.05
+
+    def test_k_is_clamped_to_the_pool(self):
+        """k=20 on 19 peptides is k=19, and still cannot be significant."""
+        capacity = design_capacity(pool=19, positives=3, k=20)
+        assert capacity.k == 19
+        assert capacity.hits_needed is None
+
+    def test_minimum_hits_is_the_smallest_significant_count(self):
+        needed = minimum_significant_hits(20, 14, 139, alpha=0.05)
+        assert needed is not None
+        assert hypergeometric_tail(needed, 20, 14, 139) <= 0.05
+        assert hypergeometric_tail(needed - 1, 20, 14, 139) > 0.05
+
+    def test_a_stricter_alpha_demands_more_hits(self):
+        lenient = minimum_significant_hits(20, 14, 139, alpha=0.05)
+        strict = minimum_significant_hits(20, 14, 139, alpha=0.001)
+        assert lenient is not None and strict is not None
+        assert strict > lenient
+
+    def test_a_large_pool_makes_significance_easier_to_reach_proportionally(self):
+        """Same prevalence, bigger pool: the hits needed does not grow with n."""
+        small = minimum_significant_hits(20, 14, 139)
+        large = minimum_significant_hits(20, 140, 1390)
+        assert small is not None and large is not None
+        assert large <= small + 1
 
 
 class TestRankAuc:
