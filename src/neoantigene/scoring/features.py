@@ -83,13 +83,41 @@ def presentation_feature(call: PresentationCall) -> float:
 
 
 def agretopicity_feature(raw: float | None) -> float:
+    """Normalized WT/mutant affinity ratio, higher meaning mutation-created binding.
+
+    `None` means there is no positionally matched wild-type peptide to compare
+    against, which is true of every indel, frameshift and neo-ORF. That is
+    scored NEUTRAL rather than 1.0.
+
+    Returning 1.0 was a substantive and unsupported claim. Combined with
+    `wt_dissimilarity`, which had the same default, it granted +0.65 logit —
+    just under a tenth of the model's total absolute weight — to every peptide
+    lacking a comparator, on no evidence. The feature it rewards does not
+    survive contact with well-powered data: Litchfield's 1,008-patient
+    meta-analysis put the differential agretopic index at OR 1.03 (p = 0.79),
+    and IMPROVE measured a rank-based formulation at p = 0.96 over 467
+    positives.
+
+    The failure mode that default creates is specific and bad. Frameshift and
+    neo-ORF peptides are genuinely enriched for real epitopes, so once
+    enumeration supports them every one would arrive pre-boosted and the
+    feature would appear to be working while reporting an imputation.
+    """
     if raw is None:
-        # No WT counterpart at this register: treat as maximally novel, which
-        # is the correct prior for indel and neo-ORF sequences.
-        return 1.0
+        return NEUTRAL
     if raw <= 0:
         return 0.0
     return _clip(math.log10(raw) / AGRETOPICITY_LOG_CEILING + 0.5)
+
+
+def wt_dissimilarity_feature(raw: float | None) -> float:
+    """BLOSUM62 distance from the wild-type peptide, NEUTRAL when there is none.
+
+    Same reasoning as `agretopicity_feature`, and the same reason `_gates` does
+    not treat an absent comparator as a disqualification: unavailable is not
+    informative in either direction.
+    """
+    return NEUTRAL if raw is None else _clip(raw)
 
 
 def self_dissimilarity_feature(similarity: float | None) -> float:
@@ -178,6 +206,16 @@ def assemble(
         else None
     )
 
+    raw_wt_dissimilarity = dissimilarity_to_wildtype(
+        candidate.mutant_peptide, candidate.wildtype_peptide
+    )
+    #: Two features go NEUTRAL together whenever a peptide has no positionally
+    #: matched wild-type, so the fact of that absence is reported as its own
+    #: value. It is not scored — there is no prior worth asserting about it —
+    #: but it is the only way a refit can learn what missingness is worth, and
+    #: the only way an audit can tell a measured 0.5 from an unavailable one.
+    wildtype_missing = candidate.wildtype_peptide is None or raw_agretopicity is None
+
     features: dict[str, float] = {
         "clonality": variant.ccf if variant.ccf is not None else NEUTRAL,
         "expression": expression_feature(tpm),
@@ -186,17 +224,19 @@ def assemble(
         "tumor_selectivity": tumor_selectivity_feature(normal_tpm),
         "mutation_exposure": mutation_exposure(candidate.mutation_position, candidate.length),
         "hydrophobicity": tcr_contact_hydrophobicity(candidate.mutant_peptide),
-        "wt_dissimilarity": dissimilarity_to_wildtype(
-            candidate.mutant_peptide, candidate.wildtype_peptide
-        ),
+        "wt_dissimilarity": wt_dissimilarity_feature(raw_wt_dissimilarity),
         "self_dissimilarity": self_dissimilarity_feature(raw_self_similarity),
         "tpm_raw": tpm if tpm is not None else math.nan,
         "normal_tpm_raw": normal_tpm if normal_tpm is not None else math.nan,
         "agretopicity_raw": raw_agretopicity if raw_agretopicity is not None else math.nan,
+        "wt_dissimilarity_raw": (
+            raw_wt_dissimilarity if raw_wt_dissimilarity is not None else math.nan
+        ),
         "self_similarity_raw": (
             raw_self_similarity if raw_self_similarity is not None else math.nan
         ),
         "self_match": 1.0 if self_match else 0.0,
+        "wildtype_missing": 1.0 if wildtype_missing else 0.0,
     }
 
     return features, tuple(gates)

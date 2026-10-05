@@ -13,10 +13,12 @@ from neoantigene.models import (
 )
 from neoantigene.scoring.baselines import arbitrary, binding_only, expression_only
 from neoantigene.scoring.features import (
+    NEUTRAL,
     agretopicity_feature,
     expression_feature,
     presentation_feature,
     tumor_selectivity_feature,
+    wt_dissimilarity_feature,
 )
 from neoantigene.scoring.immunogenicity import (
     agretopicity,
@@ -59,29 +61,41 @@ def make_scored(
     )
 
 
+def _value(measurement: float | None) -> float:
+    """Narrow an optional measurement, failing loudly if it is absent."""
+    assert measurement is not None
+    return measurement
+
+
 class TestImmunogenicity:
     def test_agretopicity_rewards_mutation_created_binding(self):
         assert agretopicity(50.0, 5000.0) == 100.0
         assert agretopicity(50.0, None) is None
         assert agretopicity(None, 5000.0) is None
 
-    def test_missing_wildtype_is_maximally_novel(self):
-        assert dissimilarity_to_wildtype("SIINFEKL", None) == 1.0
-        assert dissimilarity_to_wildtype("SIINFEKL", "SIINFEKLA") == 1.0
+    def test_missing_wildtype_is_undefined_not_maximal(self):
+        """No positional counterpart means the quantity cannot be measured.
+
+        It previously returned 1.0, the maximum. Together with the same default
+        on `agretopicity` that handed every indel, frameshift and neo-ORF
+        peptide +0.65 logit on no evidence.
+        """
+        assert dissimilarity_to_wildtype("SIINFEKL", None) is None
+        assert dissimilarity_to_wildtype("SIINFEKL", "SIINFEKLA") is None
 
     def test_dissimilarity_ignores_anchor_only_changes(self):
         # Position 2 is an MHC anchor, not a TCR contact.
         assert dissimilarity_to_wildtype("SAINFEKL", "SIINFEKL") == 0.0
-        assert dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL") > 0.0
+        assert _value(dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL")) > 0.0
 
     def test_radical_substitution_scores_above_conservative(self):
-        conservative = dissimilarity_to_wildtype("SIIDFEKL", "SIINFEKL")
-        radical = dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL")
+        conservative = _value(dissimilarity_to_wildtype("SIIDFEKL", "SIINFEKL"))
+        radical = _value(dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL"))
         assert radical > conservative
 
     def test_single_radical_change_is_not_diluted(self):
         """Averaging over substituted positions only, so one big change counts."""
-        assert dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL") > 0.5
+        assert _value(dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL")) > 0.5
 
     def test_hydrophobicity_is_bounded_and_ordered(self):
         hydrophobic = tcr_contact_hydrophobicity("AIVLIVLLV")
@@ -128,7 +142,21 @@ class TestFeatureTransforms:
         assert values == sorted(values)
         assert all(0.0 <= v <= 1.0 for v in values)
         assert agretopicity_feature(1.0) == pytest.approx(0.5)
-        assert agretopicity_feature(None) == 1.0
+
+    def test_an_absent_comparator_scores_neutral_in_both_affected_features(self):
+        """The imputation that would have made frameshifts self-validating.
+
+        Both features defaulted to 1.0, their maximum, so a peptide with no
+        wild-type counterpart collected 0.5 + 0.15 = 0.65 logit for free.
+        """
+        assert agretopicity_feature(None) == NEUTRAL
+        assert wt_dissimilarity_feature(None) == NEUTRAL
+
+    def test_the_absence_itself_is_reported_so_a_refit_can_price_it(self):
+        weights = ScoringWeights()
+        free = weights.agretopicity * 1.0 + weights.wt_dissimilarity * 1.0
+        neutral = (weights.agretopicity + weights.wt_dissimilarity) * NEUTRAL
+        assert free - neutral == pytest.approx(0.325)
 
 
 class TestScoring:
