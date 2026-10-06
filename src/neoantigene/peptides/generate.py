@@ -6,10 +6,33 @@ positionally matched wild-type peptide where one exists. The WT counterpart is
 what makes agretopicity computable, so it is carried through rather than
 recomputed later.
 
-Supported today: missense, inframe insertion, inframe deletion.
-Not yet supported: frameshift and stop-loss neo-ORFs. Those need the mutant
-CDS (or VEP's Downstream plugin output), which the current input contract does
-not carry — see `FrameshiftNotSupported`.
+Supported today: missense, inframe insertion, inframe deletion, and frameshift
+neo-ORFs where the annotation carries the novel tail. Stop-loss is still
+unsupported; VEP maps it to `OTHER` and it never reaches here.
+
+Frameshifts differ from substitutions in three ways that matter here, and all
+three are handled explicitly rather than by letting the substitution logic
+stretch to cover them:
+
+**The novel sequence is not in the reference.** A frameshift reads through in
+a different frame, so its C-terminal tail exists in no proteome. It has to
+arrive on the variant as `downstream_protein`; absent that this module raises
+rather than inventing one.
+
+**Every residue after the shift is altered.** A substitution's altered interval
+is one or two residues, and a window is required to contain all of them. A
+frameshift's altered interval runs to the stop codon, so that rule would admit
+nothing. Windows are instead required only to *overlap* the altered interval,
+which is what lets peptides lying entirely inside the novel tail be emitted —
+and those are the neo-ORF epitopes. One frameshift can therefore yield many
+peptides, which is correct: Roudko et al. (2020) showed single recurrent MSI
+frameshifts producing several independently immunogenic epitopes.
+
+**There is no positionally matched wild-type.** Downstream of the shift there
+is nothing to compare against, so `wildtype_peptide` is None and the features
+that need it go neutral. Never 1.0 — see `scoring.features.agretopicity_feature`
+for why that default would have made this entire variant class look good for
+free.
 """
 
 from __future__ import annotations
@@ -36,16 +59,21 @@ class TranscriptNotFound(PeptideGenerationError):
     pass
 
 
+#: VEP writes the stop codon as `*` and an unresolved residue as `X`. A novel
+#: tail ends at the first of either: past a stop there is no protein, and past
+#: an `X` the sequence is not one we can claim to know.
+_TAIL_TERMINATORS = "*X"
+
+
 def build_mutant_protein(variant: Variant, wildtype: str) -> tuple[str, int, int]:
     """Return (mutant_protein, altered_start, altered_end) in mutant coordinates.
 
     The altered interval is half-open. For pure deletions it is empty and marks
-    the junction, which `_windows` widens to the flanking residues.
+    the junction, which `_windows` widens to the flanking residues. For
+    frameshifts it runs from the shift to the end of the mutant protein.
     """
     if variant.variant_class is VariantClass.FRAMESHIFT:
-        raise FrameshiftNotSupported(
-            f"{variant.hgvsp_short}: frameshift peptides require the mutant CDS"
-        )
+        return _build_frameshift_protein(variant, wildtype)
 
     if variant.aa_ref:
         start = variant.protein_start - 1
@@ -73,13 +101,57 @@ def build_mutant_protein(variant: Variant, wildtype: str) -> tuple[str, int, int
     return mutant, start, start + len(variant.aa_alt)
 
 
+def _build_frameshift_protein(variant: Variant, wildtype: str) -> tuple[str, int, int]:
+    tail = _truncate_tail(variant.downstream_protein or "")
+    if not tail:
+        raise FrameshiftNotSupported(
+            f"{variant.hgvsp_short}: frameshift peptides need the novel tail, which the "
+            f"reference proteome cannot supply. Annotate with VEP's Downstream plugin and "
+            f"carry DownstreamProtein, or supply the mutant protein from pVACtools' "
+            f"Frameshift.pm sliced at protein_start"
+        )
+
+    start = variant.protein_start - 1
+    if start < 0 or start > len(wildtype):
+        raise ReferenceMismatch(
+            f"{variant.hgvsp_short}: frameshift at protein position "
+            f"{variant.protein_start} is outside transcript of length {len(wildtype)}"
+        )
+    if wildtype[start : start + len(tail)] == tail:
+        raise ReferenceMismatch(
+            f"{variant.hgvsp_short}: the annotated downstream protein is identical to the "
+            f"reference from position {variant.protein_start}, so it encodes no frameshift. "
+            f"The annotation and the proteome build are likely mismatched"
+        )
+
+    mutant = wildtype[:start] + tail
+    return mutant, start, len(mutant)
+
+
+def _truncate_tail(tail: str) -> str:
+    for index, residue in enumerate(tail):
+        if residue in _TAIL_TERMINATORS:
+            return tail[:index]
+    return tail
+
+
 def _windows(
     protein_length: int,
     altered_start: int,
     altered_end: int,
     length: int,
+    overlap_only: bool = False,
 ) -> Iterator[int]:
-    """Yield window start offsets of `length` that overlap the altered interval.
+    """Yield window start offsets of `length` that cover the altered interval.
+
+    By default a window must contain the whole altered interval, which is the
+    right rule for a substitution or a short indel: a peptide carrying only
+    part of an insertion is a different hypothesis from one carrying all of it.
+
+    `overlap_only` relaxes that to intersecting the interval, which is required
+    once the interval is a frameshift's novel tail. Demanding containment of a
+    hundred-residue tail inside a 9-mer admits nothing, and the peptides lying
+    wholly inside the tail are exactly the neo-ORF epitopes.
 
     For a zero-length interval (a pure deletion) the window must straddle the
     junction, so it has to contain the residues on both sides of it.
@@ -87,8 +159,12 @@ def _windows(
     if length > protein_length:
         return
     if altered_end > altered_start:
-        lowest = altered_end - length
-        highest = altered_start
+        if overlap_only:
+            lowest = altered_start - length + 1
+            highest = altered_end - 1
+        else:
+            lowest = altered_end - length
+            highest = altered_start
     else:
         lowest = altered_start + 1 - length
         highest = altered_start - 1
@@ -102,9 +178,14 @@ def _is_clean(peptide: str) -> bool:
 
 
 def _mutation_position(peptide_start: int, altered_start: int, altered_end: int) -> int:
-    """1-based offset of the first altered residue within the peptide."""
+    """1-based offset of the first altered residue within the peptide.
+
+    Clamped to 1 because a peptide can lie entirely downstream of a frameshift,
+    in which case the first altered residue precedes the peptide and every
+    residue in it is novel.
+    """
     anchor = altered_start if altered_end > altered_start else max(altered_start - 1, 0)
-    return anchor - peptide_start + 1
+    return max(1, anchor - peptide_start + 1)
 
 
 def generate_for_variant(
@@ -120,12 +201,19 @@ def generate_for_variant(
         )
 
     mutant, altered_start, altered_end = build_mutant_protein(variant, wildtype)
-    same_register = len(mutant) == len(wildtype)
+    frameshift = variant.variant_class is VariantClass.FRAMESHIFT
+    # A frameshift changes the reading frame, so even when the mutant protein
+    # happens to come out the same length there is no positional counterpart
+    # downstream of the shift. Comparing lengths alone would occasionally pair a
+    # neo-ORF peptide with an unrelated wild-type one.
+    same_register = not frameshift and len(mutant) == len(wildtype)
 
     candidates: list[PeptideCandidate] = []
     seen: set[str] = set()
     for length in lengths:
-        for start in _windows(len(mutant), altered_start, altered_end, length):
+        for start in _windows(
+            len(mutant), altered_start, altered_end, length, overlap_only=frameshift
+        ):
             mutant_peptide = mutant[start : start + length]
             if not _is_clean(mutant_peptide) or mutant_peptide in seen:
                 continue

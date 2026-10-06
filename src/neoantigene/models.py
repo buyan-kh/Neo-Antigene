@@ -79,10 +79,30 @@ class Variant(Frozen):
     filters: tuple[str, ...] = ()
     ccf: Fraction | None = None
 
+    #: The novel protein sequence a frameshift produces, from `protein_start`
+    #: onward. It cannot be derived from the reference proteome — that is the
+    #: whole point of a frameshift — so it has to arrive with the annotation.
+    #:
+    #: The convention is "residues from `protein_start` to the first in-frame
+    #: stop". VEP's `Downstream` plugin emits this as `DownstreamProtein`.
+    #: pVACtools' `Frameshift.pm` emits the entire mutant protein from residue
+    #: 1 instead, so take `sequence[protein_start - 1:]` from it.
+    #:
+    #: A frameshift variant without this is read and reported but cannot yield
+    #: peptides; `peptides.generate` raises rather than inventing a tail.
+    downstream_protein: str | None = None
+
     @field_validator("aa_ref", "aa_alt")
     @classmethod
     def _residues_only(cls, value: str) -> str:
         return _validate_residues(value, "amino acid", ANNOTATION_RESIDUES)
+
+    @field_validator("downstream_protein")
+    @classmethod
+    def _annotation_residues_only(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return _validate_residues(value, "downstream protein", ANNOTATION_RESIDUES)
 
     @model_validator(mode="after")
     def _coherent_protein_span(self) -> Self:
@@ -104,6 +124,11 @@ class Variant(Frozen):
 
     @property
     def hgvsp_short(self) -> str:
+        # A frameshift is not a deletion even when its annotation looks like
+        # one, and it reaches logs, gate reports and the ranked output, so the
+        # distinction has to survive to the surface.
+        if self.variant_class is VariantClass.FRAMESHIFT:
+            return f"{self.gene} p.{self.aa_ref}{self.span}fs"
         if self.aa_ref and self.aa_alt:
             return f"{self.gene} p.{self.aa_ref}{self.span}{self.aa_alt}"
         if self.aa_ref:

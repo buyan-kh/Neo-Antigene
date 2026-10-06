@@ -45,6 +45,14 @@ CODING_CLASSES = frozenset(
 
 _TSV_REQUIRED = ("chrom", "pos", "ref", "alt", "transcript", "protein_position", "amino_acids")
 
+#: CSQ keys that may carry a frameshift's novel tail, most specific first.
+#: `DownstreamProtein` is VEP's Downstream plugin, which ships in
+#: Ensembl/VEP_plugins. `FrameshiftSequence` is pVACtools' Frameshift.pm, which
+#: does not — it ships inside pVACtools — and which emits the whole mutant
+#: protein from residue 1 rather than the tail, so it is sliced on read.
+_DOWNSTREAM_KEYS = ("DownstreamProtein", "FrameshiftSequence")
+_WHOLE_PROTEIN_KEYS = frozenset({"FrameshiftSequence"})
+
 
 class VCFError(ValueError):
     pass
@@ -242,7 +250,24 @@ def _build_variant(
         tumor_depth=depth,
         population_af=population_af,
         filters=filters,
+        downstream_protein=_downstream_protein(entry, protein_position[0]),
     )
+
+
+def _downstream_protein(entry: dict[str, str], protein_start: int) -> str | None:
+    """Novel frameshift tail from whichever plugin annotated the VCF.
+
+    Normalized to "residues from `protein_start` onward", so a whole-protein
+    field is sliced and a tail field is taken as given.
+    """
+    for key in _DOWNSTREAM_KEYS:
+        value = (entry.get(key) or "").strip()
+        if not value or value == "-":
+            continue
+        if key in _WHOLE_PROTEIN_KEYS:
+            return value[protein_start - 1 :] or None
+        return value
+    return None
 
 
 def _sample_metrics(
@@ -270,7 +295,12 @@ def read_variant_tsv(path: Path) -> Iterator[Variant]:
 
     Required columns: chrom, pos, ref, alt, transcript, protein_position,
     amino_acids (`G/D`), consequence.
-    Optional: gene, dna_vaf, rna_vaf, tumor_depth, copy_number, population_af, filter.
+    Optional: gene, dna_vaf, rna_vaf, tumor_depth, copy_number, population_af, filter,
+    downstream_protein.
+
+    `downstream_protein` is the novel tail a frameshift produces, from
+    `protein_position` to the first stop. Frameshift rows without it are read
+    and reported but yield no peptides.
     """
     with open(path) as handle:
         reader = csv.DictReader(handle, delimiter="\t")
@@ -302,6 +332,7 @@ def read_variant_tsv(path: Path) -> Iterator[Variant]:
                 copy_number=_maybe_float(record.get("copy_number")),
                 population_af=_maybe_float(record.get("population_af")),
                 filters=tuple(f for f in (record.get("filter") or "").split(";") if f),
+                downstream_protein=(record.get("downstream_protein") or "").strip() or None,
             )
 
 
