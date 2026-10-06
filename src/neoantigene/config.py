@@ -106,6 +106,23 @@ class ScoringWeights(ConfigModel):
 class OutputConfig(ConfigModel):
     top_n: int = Field(default=50, gt=0)
     max_per_variant: int = Field(default=2, gt=0)
+
+    #: A frameshift is allowed more of the shortlist than a substitution,
+    #: because it has more independent epitopes to offer rather than more
+    #: registers of the same one.
+    #:
+    #: `max_per_variant` exists to stop one strong variant filling the list
+    #: with overlapping windows of a single hypothesis. Downstream of a
+    #: frameshift that reasoning inverts: Roudko et al. (2020) showed single
+    #: recurrent MSI frameshifts producing several independently immunogenic
+    #: epitopes from the novel tail, so capping at two discards distinct
+    #: hypotheses rather than redundant ones.
+    #:
+    #: 6 is a deliberate choice, not a fitted one. The evidence says "several",
+    #: not a number. Lower it to `max_per_variant` to recover the previous
+    #: behaviour.
+    max_per_frameshift_variant: int = Field(default=6, gt=0)
+
     include_failed: bool = False
 
 

@@ -35,6 +35,7 @@ def make_scored(
     allele: str = "HLA-A*02:01",
     features: dict[str, float] | None = None,
     gates: tuple[GateFailure, ...] = (),
+    variant_class: VariantClass = VariantClass.MISSENSE,
     **call_kwargs,
 ) -> ScoredCandidate:
     variant = Variant(
@@ -44,7 +45,7 @@ def make_scored(
         alt="T",
         gene="G",
         transcript="ENST1",
-        variant_class=VariantClass.MISSENSE,
+        variant_class=variant_class,
         protein_start=10,
         protein_end=10,
         aa_ref="A",
@@ -199,6 +200,41 @@ class TestShortlist:
         for item in selected:
             counts[item.candidate.variant.key] = counts.get(item.candidate.variant.key, 0) + 1
         assert set(counts.values()) == {2}
+
+    def test_a_frameshift_gets_its_own_larger_cap(self):
+        """Downstream of a shift, extra peptides are distinct hypotheses.
+
+        The substitution cap exists to stop one variant filling the list with
+        overlapping registers of a single hypothesis. That reasoning inverts
+        for a neo-ORF tail, where the extra peptides are independent epitopes,
+        so applying the substitution cap would discard the poly-epitope
+        structure that makes frameshifts worth enumerating.
+        """
+        peptides = [f"AIVLIVLL{residue}" for residue in "VILMFWY"]
+        missense = [make_scored(1, score=0.9 - i * 0.01, peptide=p) for i, p in enumerate(peptides)]
+        frameshift = [
+            make_scored(2, score=0.9 - i * 0.01, peptide=p, variant_class=VariantClass.FRAMESHIFT)
+            for i, p in enumerate(peptides)
+        ]
+        config = OutputConfig(top_n=50, max_per_variant=2, max_per_frameshift_variant=5)
+
+        selected = shortlist(missense + frameshift, config)
+        by_class: dict[VariantClass, int] = {}
+        for item in selected:
+            key = item.candidate.variant.variant_class
+            by_class[key] = by_class.get(key, 0) + 1
+
+        assert by_class[VariantClass.MISSENSE] == 2
+        assert by_class[VariantClass.FRAMESHIFT] == 5
+
+    def test_lowering_the_frameshift_cap_recovers_the_old_behaviour(self):
+        peptides = [f"AIVLIVLL{residue}" for residue in "VILMF"]
+        frameshift = [
+            make_scored(1, score=0.9 - i * 0.01, peptide=p, variant_class=VariantClass.FRAMESHIFT)
+            for i, p in enumerate(peptides)
+        ]
+        config = OutputConfig(top_n=50, max_per_variant=2, max_per_frameshift_variant=2)
+        assert len(shortlist(frameshift, config)) == 2
 
     def test_respects_top_n(self):
         scored = [make_scored(i, score=0.5) for i in range(1, 20)]

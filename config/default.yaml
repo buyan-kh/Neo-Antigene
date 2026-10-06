@@ -75,4 +75,13 @@ weights:
 output:
   top_n: 50
   max_per_variant: 2
+
+  # Frameshifts earn more of the shortlist than substitutions do. The cap
+  # exists to stop one variant filling the list with overlapping registers of
+  # the same hypothesis; downstream of a frameshift the extra peptides are
+  # distinct hypotheses instead. Roudko 2020 observed single recurrent MSI
+  # frameshifts yielding several independently immunogenic epitopes. 6 is a
+  # deliberate choice, not a fitted one — the evidence says "several".
+  max_per_frameshift_variant: 6
+
   include_failed: false
