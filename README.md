@@ -35,12 +35,18 @@ somatic VCF + RNA expression + HLA type
 ```
 
 Implemented: ingestion, somatic filtering with purity-corrected CCF, peptide
-enumeration, presentation prediction, ranking, assay request sheets, the KPI
-metric, weight refitting, and active-learning batch selection.
+enumeration including frameshift / neo-ORF tails, presentation prediction,
+ranking, assay request sheets, the KPI metric, weight refitting, and
+active-learning batch selection.
 
-Not implemented: the FASTQ/BAM front end (`neoantigene.fastq`), the AlphaFold 3
-pMHC secondary filter (`neoantigene.structure`), and frameshift / neo-ORF
-peptides. Each raises a clear error rather than silently degrading.
+Frameshift peptides need the novel tail, which no reference proteome contains.
+Annotate with VEP's `Downstream` plugin and the pipeline picks up
+`DownstreamProtein` automatically; a frameshift without it is reported but
+yields no peptides rather than being given an invented sequence.
+
+Not implemented: the FASTQ/BAM front end (`neoantigene.fastq`) and the pMHC
+structure filter (`neoantigene.structure`). Each raises a clear error rather
+than silently degrading.
 
 ## Install
 
@@ -122,9 +128,12 @@ underpowered, and that is fixed with assay labels, not code.
 Three of nine features (`expression`, `tumor_selectivity`, `clonality`) are
 inert in this benchmark because the paper publishes RNA only for
 vaccine-selected peptides and no per-patient purity — using them would leak
-which peptides were assayed. Four of 18 positives were never scored: three are
-frameshift/neo-ORF peptides this package cannot enumerate, one is lost to
-hg19-to-GRCh38 isoform harmonization.
+which peptides were assayed. Four of 18 positive peptide-HLA pairs were never
+scored in that run: three are frameshift/neo-ORF peptides the generator could
+not build at the time, one is lost to hg19-to-GRCh38 isoform harmonization.
+Frameshift enumeration has since landed, so re-running the benchmark with
+`DownstreamProtein` annotation should recover those three — the benchmark
+numbers above predate it and have not been regenerated.
 
 Nothing was tuned against this benchmark. The run uses `config/default.yaml`
 as shipped, whose weights are literature-derived priors frozen beforehand and
