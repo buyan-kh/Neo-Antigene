@@ -20,6 +20,8 @@ from .assays.harness import SourceFile, build_report
 from .assays.metrics import compare_rankings, validation_rate_at_k
 from .assays.schema import AssayResult, AssayType, read_results, write_request
 from .assays.stats import paired_comparison, stratified_auc, top_k_significance
+from .audit.reconcile import SymbolIndex, read_claims, write_report
+from .audit.reconcile import reconcile as reconcile_claims
 from .config import PipelineConfig
 from .hla import parse_hla_string
 from .io.manifest import Sample
@@ -261,6 +263,50 @@ def compare(
     # a CI job cannot mistake an inconclusive benchmark for a passing one.
     if not report.supports_a_claim:
         raise typer.Exit(code=2)
+
+
+@app.command()
+def reconcile(
+    claims_tsv: Annotated[
+        Path,
+        typer.Argument(help="Published claims: peptide, gene, protein_change.", exists=True),
+    ],
+    proteome: Annotated[
+        Path, typer.Option("--proteome", help="Ensembl pep.all FASTA.", exists=True)
+    ],
+    aliases: Annotated[
+        Path | None,
+        typer.Option(
+            "--aliases",
+            exists=True,
+            help="JSON map of retired gene symbol to current symbol. Without it, a "
+            "renamed gene reads as missing rather than as a rename.",
+        ),
+    ] = None,
+    out: Annotated[Path | None, typer.Option("-o", "--out", help="Write a TSV verdict.")] = None,
+) -> None:
+    """Check whether published epitopes are derivable from their published variants.
+
+    An exact-arithmetic oracle: either the reference proteome yields the claimed
+    peptide from the claimed change or it does not. A claim that does not
+    reconcile invalidates a row in whichever benchmark uses it.
+
+    `unverifiable` is reported separately from `contradicted`, because a
+    frameshift with no supplied tail cannot be checked against any proteome and
+    saying otherwise would manufacture a finding.
+    """
+    run_id = new_run_id()
+    configure_logging(run_id)
+
+    index = SymbolIndex.from_fasta(proteome)
+    if aliases is not None:
+        typer.echo(f"loaded {index.load_aliases(aliases)} usable symbol renames")
+
+    report = reconcile_claims(read_claims(claims_tsv), index)
+    typer.echo(report.describe())
+
+    if out is not None:
+        typer.echo(f"\nverdicts -> {write_report(report, out)}")
 
 
 @app.command()
