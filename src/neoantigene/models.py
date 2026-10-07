@@ -79,10 +79,52 @@ class Variant(Frozen):
     filters: tuple[str, ...] = ()
     ccf: Fraction | None = None
 
+    #: The novel protein sequence a frameshift produces. It cannot be derived
+    #: from the reference proteome — that is the whole point of a frameshift —
+    #: so it has to arrive with the annotation.
+    #:
+    #: pVACtools' `Frameshift.pm` emits the entire mutant protein from residue
+    #: 1; the VCF reader slices it to `sequence[protein_start - 1:]` and
+    #: prefers it over `DownstreamProtein` when both are present, because the
+    #: slice includes the altered residue. VEP's `Downstream` plugin emits a
+    #: tail. Through Ensembl 111 that tail starts at `protein_start`. From
+    #: Ensembl 112 it starts one residue later when the variant hits the
+    #: third base of a codon, and the plugin version string stays `2.4`
+    #: either way. From Ensembl 114, `protein_length_change` says where the
+    #: tail starts. It does not contain the omitted residue: an insertion
+    #: copies that residue from the reference, and a deletion uses it only
+    #: when `Amino_acids` states it.
+    #:
+    #: A frameshift variant without this is read and reported but cannot yield
+    #: peptides; `peptides.generate` raises rather than inventing a tail.
+    downstream_protein: str | None = None
+
+    #: Ensembl release of the VEP that wrote this record, from the `##VEP`
+    #: header (`ensembl=114`, else the major of `v114`). Absent on a TSV
+    #: unless the column is supplied. The Downstream plugin's own version
+    #: string does not change when its coordinates do, so this is the number
+    #: that selects a join.
+    vep_release: int | None = Field(default=None, ge=1)
+
+    #: VEP `ProteinLengthChange`. From Ensembl 114 this is the full mutant
+    #: peptide length minus the reference length, and the frameshift join
+    #: uses it. On releases 112 and 113 it is a different quantity
+    #: (`min(translation start, end) + len(tail) - len(reference)`) and is
+    #: ignored, because applying the later formula to it shifts tails that
+    #: were already aligned.
+    protein_length_change: int | None = None
+
     @field_validator("aa_ref", "aa_alt")
     @classmethod
     def _residues_only(cls, value: str) -> str:
         return _validate_residues(value, "amino acid", ANNOTATION_RESIDUES)
+
+    @field_validator("downstream_protein")
+    @classmethod
+    def _annotation_residues_only(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return _validate_residues(value, "downstream protein", ANNOTATION_RESIDUES)
 
     @model_validator(mode="after")
     def _coherent_protein_span(self) -> Self:
@@ -104,6 +146,11 @@ class Variant(Frozen):
 
     @property
     def hgvsp_short(self) -> str:
+        # A frameshift is not a deletion even when its annotation looks like
+        # one, and it reaches logs, gate reports and the ranked output, so the
+        # distinction has to survive to the surface.
+        if self.variant_class is VariantClass.FRAMESHIFT:
+            return f"{self.gene} p.{self.aa_ref}{self.span}fs"
         if self.aa_ref and self.aa_alt:
             return f"{self.gene} p.{self.aa_ref}{self.span}{self.aa_alt}"
         if self.aa_ref:

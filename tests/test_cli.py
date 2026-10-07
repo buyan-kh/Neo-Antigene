@@ -160,6 +160,70 @@ class TestAssayLoop:
         assert "p=" in result.output
         assert "auc" in result.output
 
+    def test_compare_audits_arbitrary_rankings_and_writes_a_report(self, ranked, tmp_path):
+        """The harness must work on files it did not produce."""
+        out, _ = ranked
+        completed = tmp_path / "completed.tsv"
+        _write_completed_from_ranked(out / "EXAMPLE-PDAC-001.ranked.tsv", completed)
+
+        ranking = out / "EXAMPLE-PDAC-001.ranked.tsv"
+        report = tmp_path / "report.md"
+        result = runner.invoke(
+            app,
+            [
+                "compare",
+                str(completed),
+                "-m",
+                f"ours={ranking}",
+                "-m",
+                f"theirs={ranking}",
+                "--baseline",
+                "theirs",
+                "--k",
+                "4",
+                "--rounds",
+                "200",
+                "-o",
+                str(report),
+            ],
+        )
+        assert result.exit_code in (0, 2), result.output
+        body = report.read_text()
+        assert body.startswith("# Neoantigen ranking evaluation")
+        assert "What this design could detect" in body
+        assert "sha256:" in body
+        assert "Reading this honestly" in body
+
+    def test_compare_rejects_a_malformed_method_argument(self, ranked, tmp_path):
+        out, _ = ranked
+        completed = tmp_path / "completed.tsv"
+        _write_completed_from_ranked(out / "EXAMPLE-PDAC-001.ranked.tsv", completed)
+
+        result = runner.invoke(
+            app, ["compare", str(completed), "-m", str(out / "EXAMPLE-PDAC-001.ranked.tsv")]
+        )
+        assert result.exit_code != 0
+        assert "NAME=path" in result.output
+
+    def test_compare_rejects_a_baseline_that_is_not_a_given_method(self, ranked, tmp_path):
+        out, _ = ranked
+        completed = tmp_path / "completed.tsv"
+        _write_completed_from_ranked(out / "EXAMPLE-PDAC-001.ranked.tsv", completed)
+
+        result = runner.invoke(
+            app,
+            [
+                "compare",
+                str(completed),
+                "-m",
+                f"ours={out / 'EXAMPLE-PDAC-001.ranked.tsv'}",
+                "--baseline",
+                "netmhcpan",
+            ],
+        )
+        assert result.exit_code != 0
+        assert "not one of the given methods" in result.output
+
     def test_refit_refuses_insufficient_data(self, ranked, tmp_path):
         out, _ = ranked
         completed = tmp_path / "completed.tsv"

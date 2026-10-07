@@ -13,10 +13,12 @@ from neoantigene.models import (
 )
 from neoantigene.scoring.baselines import arbitrary, binding_only, expression_only
 from neoantigene.scoring.features import (
+    NEUTRAL,
     agretopicity_feature,
     expression_feature,
     presentation_feature,
     tumor_selectivity_feature,
+    wt_dissimilarity_feature,
 )
 from neoantigene.scoring.immunogenicity import (
     agretopicity,
@@ -33,6 +35,7 @@ def make_scored(
     allele: str = "HLA-A*02:01",
     features: dict[str, float] | None = None,
     gates: tuple[GateFailure, ...] = (),
+    variant_class: VariantClass = VariantClass.MISSENSE,
     **call_kwargs,
 ) -> ScoredCandidate:
     variant = Variant(
@@ -42,7 +45,7 @@ def make_scored(
         alt="T",
         gene="G",
         transcript="ENST1",
-        variant_class=VariantClass.MISSENSE,
+        variant_class=variant_class,
         protein_start=10,
         protein_end=10,
         aa_ref="A",
@@ -59,29 +62,41 @@ def make_scored(
     )
 
 
+def _value(measurement: float | None) -> float:
+    """Narrow an optional measurement, failing loudly if it is absent."""
+    assert measurement is not None
+    return measurement
+
+
 class TestImmunogenicity:
     def test_agretopicity_rewards_mutation_created_binding(self):
         assert agretopicity(50.0, 5000.0) == 100.0
         assert agretopicity(50.0, None) is None
         assert agretopicity(None, 5000.0) is None
 
-    def test_missing_wildtype_is_maximally_novel(self):
-        assert dissimilarity_to_wildtype("SIINFEKL", None) == 1.0
-        assert dissimilarity_to_wildtype("SIINFEKL", "SIINFEKLA") == 1.0
+    def test_missing_wildtype_is_undefined_not_maximal(self):
+        """No positional counterpart means the quantity cannot be measured.
+
+        It previously returned 1.0, the maximum. Together with the same default
+        on `agretopicity` that handed every indel, frameshift and neo-ORF
+        peptide +0.65 logit on no evidence.
+        """
+        assert dissimilarity_to_wildtype("SIINFEKL", None) is None
+        assert dissimilarity_to_wildtype("SIINFEKL", "SIINFEKLA") is None
 
     def test_dissimilarity_ignores_anchor_only_changes(self):
         # Position 2 is an MHC anchor, not a TCR contact.
         assert dissimilarity_to_wildtype("SAINFEKL", "SIINFEKL") == 0.0
-        assert dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL") > 0.0
+        assert _value(dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL")) > 0.0
 
     def test_radical_substitution_scores_above_conservative(self):
-        conservative = dissimilarity_to_wildtype("SIIDFEKL", "SIINFEKL")
-        radical = dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL")
+        conservative = _value(dissimilarity_to_wildtype("SIIDFEKL", "SIINFEKL"))
+        radical = _value(dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL"))
         assert radical > conservative
 
     def test_single_radical_change_is_not_diluted(self):
         """Averaging over substituted positions only, so one big change counts."""
-        assert dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL") > 0.5
+        assert _value(dissimilarity_to_wildtype("SIIWFEKL", "SIINFEKL")) > 0.5
 
     def test_hydrophobicity_is_bounded_and_ordered(self):
         hydrophobic = tcr_contact_hydrophobicity("AIVLIVLLV")
@@ -128,7 +143,21 @@ class TestFeatureTransforms:
         assert values == sorted(values)
         assert all(0.0 <= v <= 1.0 for v in values)
         assert agretopicity_feature(1.0) == pytest.approx(0.5)
-        assert agretopicity_feature(None) == 1.0
+
+    def test_an_absent_comparator_scores_neutral_in_both_affected_features(self):
+        """The imputation that would have made frameshifts self-validating.
+
+        Both features defaulted to 1.0, their maximum, so a peptide with no
+        wild-type counterpart collected 0.5 + 0.15 = 0.65 logit for free.
+        """
+        assert agretopicity_feature(None) == NEUTRAL
+        assert wt_dissimilarity_feature(None) == NEUTRAL
+
+    def test_the_absence_itself_is_reported_so_a_refit_can_price_it(self):
+        weights = ScoringWeights()
+        free = weights.agretopicity * 1.0 + weights.wt_dissimilarity * 1.0
+        neutral = (weights.agretopicity + weights.wt_dissimilarity) * NEUTRAL
+        assert free - neutral == pytest.approx(0.325)
 
 
 class TestScoring:
@@ -171,6 +200,41 @@ class TestShortlist:
         for item in selected:
             counts[item.candidate.variant.key] = counts.get(item.candidate.variant.key, 0) + 1
         assert set(counts.values()) == {2}
+
+    def test_a_frameshift_gets_its_own_larger_cap(self):
+        """Downstream of a shift, extra peptides are distinct hypotheses.
+
+        The substitution cap exists to stop one variant filling the list with
+        overlapping registers of a single hypothesis. That reasoning inverts
+        for a neo-ORF tail, where the extra peptides are independent epitopes,
+        so applying the substitution cap would discard the poly-epitope
+        structure that makes frameshifts worth enumerating.
+        """
+        peptides = [f"AIVLIVLL{residue}" for residue in "VILMFWY"]
+        missense = [make_scored(1, score=0.9 - i * 0.01, peptide=p) for i, p in enumerate(peptides)]
+        frameshift = [
+            make_scored(2, score=0.9 - i * 0.01, peptide=p, variant_class=VariantClass.FRAMESHIFT)
+            for i, p in enumerate(peptides)
+        ]
+        config = OutputConfig(top_n=50, max_per_variant=2, max_per_frameshift_variant=5)
+
+        selected = shortlist(missense + frameshift, config)
+        by_class: dict[VariantClass, int] = {}
+        for item in selected:
+            key = item.candidate.variant.variant_class
+            by_class[key] = by_class.get(key, 0) + 1
+
+        assert by_class[VariantClass.MISSENSE] == 2
+        assert by_class[VariantClass.FRAMESHIFT] == 5
+
+    def test_lowering_the_frameshift_cap_recovers_the_old_behaviour(self):
+        peptides = [f"AIVLIVLL{residue}" for residue in "VILMF"]
+        frameshift = [
+            make_scored(1, score=0.9 - i * 0.01, peptide=p, variant_class=VariantClass.FRAMESHIFT)
+            for i, p in enumerate(peptides)
+        ]
+        config = OutputConfig(top_n=50, max_per_variant=2, max_per_frameshift_variant=2)
+        assert len(shortlist(frameshift, config)) == 2
 
     def test_respects_top_n(self):
         scored = [make_scored(i, score=0.5) for i in range(1, 20)]

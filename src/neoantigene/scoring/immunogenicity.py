@@ -107,18 +107,21 @@ def agretopicity(
     return wildtype_affinity_nm / mutant_affinity_nm
 
 
-def dissimilarity_to_wildtype(mutant: str, wildtype: str | None) -> float:
+def dissimilarity_to_wildtype(mutant: str, wildtype: str | None) -> float | None:
     """Mean BLOSUM62 dissimilarity over substituted TCR-facing positions, in [0, 1].
 
     A conservative substitution buried against the MHC groove is invisible to
     a T cell; a radical one at P5 is the whole point. Averaging over only the
     substituted positions keeps a single radical change from being diluted by
     the unchanged residues around it.
+
+    `None` when the peptide has no positionally matched wild-type counterpart,
+    which is the case for every indel, frameshift and neo-ORF. That is an
+    undefined measurement, not a maximal one — see `features.wt_dissimilarity`
+    for why the distinction matters.
     """
     if wildtype is None or len(mutant) != len(wildtype):
-        # No positional WT counterpart exists (indel / neo-ORF): the surface is
-        # novel by construction.
-        return 1.0
+        return None
     positions = tcr_contact_positions(len(mutant))
     substituted = [p for p in positions if mutant[p - 1] != wildtype[p - 1]]
     if not substituted:

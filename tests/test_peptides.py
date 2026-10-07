@@ -30,6 +30,36 @@ def kras_g12d(**overrides) -> Variant:
     return Variant(**{**payload, **overrides})
 
 
+#: An invented novel tail. No claim is made about it being a real sequence —
+#: the tests assert structure, not biology. Deliberately free of residues that
+#: would collide with the synthetic reference, so "not in wildtype" is a
+#: meaningful assertion.
+TAIL = "WYFMKWYFHKWYFQKWYFRKWYFNK"
+
+#: A longer tail with no 9-mer in common with `TAIL`, so doubling the novel
+#: sequence genuinely doubles the candidate count instead of being collapsed
+#: by the generator's deduplication.
+LONGER_TAIL = TAIL + "AGCDEAGCTEAGCSEAGCVEAGCIE"
+
+
+def synth_frameshift(**overrides) -> Variant:
+    payload = {
+        "chrom": "1",
+        "pos": 1000420,
+        "ref": "CT",
+        "alt": "C",
+        "gene": "SYNTHA",
+        "transcript": SYNTH_TRANSCRIPT,
+        "variant_class": VariantClass.FRAMESHIFT,
+        "protein_start": 41,
+        "protein_end": 41,
+        "aa_ref": "L",
+        "aa_alt": "",
+        "downstream_protein": TAIL,
+    }
+    return Variant(**{**payload, **overrides})
+
+
 def synth_deletion() -> Variant:
     return Variant(
         chrom="1",
@@ -64,9 +94,10 @@ class TestMutantProtein:
         with pytest.raises(ReferenceMismatch, match="outside transcript"):
             build_mutant_protein(variant, proteome.get(KRAS_TRANSCRIPT))
 
-    def test_frameshift_is_explicitly_unsupported(self, proteome):
+    def test_frameshift_without_its_novel_tail_is_refused(self, proteome):
+        """The tail is not derivable from the reference, so it must be supplied."""
         variant = kras_g12d(variant_class=VariantClass.FRAMESHIFT)
-        with pytest.raises(FrameshiftNotSupported, match="mutant CDS"):
+        with pytest.raises(FrameshiftNotSupported, match="novel tail"):
             build_mutant_protein(variant, proteome.get(KRAS_TRANSCRIPT))
 
     def test_deletion_shortens_the_protein_at_the_junction(self, proteome):
@@ -95,6 +126,208 @@ class TestMutantProtein:
         assert (start, end) == (41, 43)
         assert mutant[:41] == wildtype[:41]
         assert mutant[43:] == wildtype[41:]
+
+
+class TestFrameshift:
+    """Neo-ORF enumeration.
+
+    The payoff is poly-epitope: one frameshift can produce several
+    independently immunogenic peptides, which is why windows must be allowed
+    to sit entirely inside the novel tail rather than being required to
+    contain the whole altered interval. Frameshifts were 0.8% of candidate
+    variants in the Ott benchmark and ~17% of its validated positives.
+    """
+
+    def test_an_insertion_keeps_the_reference_residue_the_tail_skipped(self, proteome):
+        """An insertion between codons skips a residue that was never changed."""
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        shift_at = 41
+        tail = "WYFMKWYFH"
+        # Tail begins at residue 42. The mutant is the reference through 41, then the tail.
+        change = shift_at + len(tail) - len(wildtype)
+        variant = synth_frameshift(
+            protein_end=shift_at + 1,
+            aa_ref="",
+            aa_alt="X",
+            downstream_protein=tail,
+            protein_length_change=change,
+            vep_release=114,
+        )
+
+        mutant, start, _ = build_mutant_protein(variant, wildtype)
+
+        assert start == shift_at
+        assert mutant[:shift_at] == wildtype[:shift_at]
+        assert mutant[shift_at:] == tail
+
+    def test_a_deletion_uses_the_stated_new_residue_not_the_reference(self, proteome):
+        """The residue a third-base deletion omits is new. The reference is the wrong one."""
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        shift_at = 41
+        tail = "WYFMKWYFH"
+        change = (shift_at - 1) + 1 + len(tail) - len(wildtype)
+        variant = synth_frameshift(
+            aa_ref=wildtype[shift_at - 1],
+            aa_alt="N",
+            downstream_protein=tail,
+            protein_length_change=change,
+            vep_release=114,
+        )
+
+        mutant, start, _ = build_mutant_protein(variant, wildtype)
+
+        assert start == shift_at - 1
+        assert mutant[:start] == wildtype[:start]
+        assert mutant[start] == "N"
+        assert mutant[start] != wildtype[start]
+        assert mutant[start + 1 :] == tail
+
+    def test_a_deletion_with_an_unknown_new_residue_is_refused(self, proteome):
+        """`K/X` does not say what the omitted residue is, so no peptide is invented."""
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        shift_at = 41
+        tail = "WYFMKWYFH"
+        change = shift_at + len(tail) - len(wildtype)
+        variant = synth_frameshift(
+            aa_alt="X",
+            downstream_protein=tail,
+            protein_length_change=change,
+            vep_release=114,
+        )
+        with pytest.raises(FrameshiftNotSupported, match="does not state"):
+            build_mutant_protein(variant, wildtype)
+
+    def test_a_length_change_that_agrees_with_protein_start_does_not_move_it(self, proteome):
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        shift_at = 41
+        change = (shift_at - 1) + len(TAIL) - len(wildtype)
+        variant = synth_frameshift(protein_length_change=change, vep_release=114)
+
+        mutant, start, _ = build_mutant_protein(variant, wildtype)
+
+        assert start == shift_at - 1
+        assert mutant[start:] == TAIL
+
+    def test_ensembl_113_length_change_is_a_different_quantity_and_is_ignored(self, proteome):
+        """Releases 112 and 113 can drop a residue, and their length change cannot say so."""
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        variant = synth_frameshift(protein_length_change=99, vep_release=113)
+
+        mutant, start, _ = build_mutant_protein(variant, wildtype)
+
+        assert start == variant.protein_start - 1
+        assert mutant[start:] == TAIL
+
+    def test_length_change_without_a_release_does_not_move_the_join(self, proteome):
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        variant = synth_frameshift(protein_length_change=4)
+
+        _, start, _ = build_mutant_protein(variant, wildtype)
+
+        assert start == variant.protein_start - 1
+
+    def test_an_impossible_length_change_is_rejected(self, proteome):
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        variant = synth_frameshift(protein_length_change=10**6, vep_release=116)
+        with pytest.raises(ReferenceMismatch, match="ProteinLengthChange"):
+            build_mutant_protein(variant, wildtype)
+
+    def test_the_tail_replaces_everything_from_the_shift(self, proteome):
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        variant = synth_frameshift()
+        mutant, start, end = build_mutant_protein(variant, wildtype)
+
+        assert start == variant.protein_start - 1
+        assert end == len(mutant)
+        assert mutant[:start] == wildtype[:start]
+        assert mutant[start:] == TAIL
+
+    @pytest.mark.parametrize("terminator", ["*", "X"])
+    def test_the_tail_is_truncated_at_the_first_terminator(self, proteome, terminator):
+        """Past a stop there is no protein; past an `X` there is no known one."""
+        variant = synth_frameshift(downstream_protein=f"{TAIL}{terminator}GGKKWW")
+        mutant, _, _ = build_mutant_protein(variant, proteome.get(SYNTH_TRANSCRIPT))
+        assert mutant.endswith(TAIL)
+        assert terminator not in mutant
+
+    def test_a_tail_identical_to_the_reference_is_rejected(self, proteome):
+        """If the annotated tail matches the reference it encodes no shift."""
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        variant = synth_frameshift(downstream_protein=wildtype[40:60])
+        with pytest.raises(ReferenceMismatch, match="encodes no frameshift"):
+            build_mutant_protein(variant, wildtype)
+
+    def test_a_shift_beyond_the_transcript_is_rejected(self, proteome):
+        variant = synth_frameshift(protein_start=9999, protein_end=9999)
+        with pytest.raises(ReferenceMismatch, match="outside transcript"):
+            build_mutant_protein(variant, proteome.get(SYNTH_TRANSCRIPT))
+
+    def test_every_peptide_carries_novel_sequence(self, proteome):
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        candidates = generate_for_variant(synth_frameshift(), proteome, lengths=[9])
+
+        assert candidates
+        for candidate in candidates:
+            assert candidate.mutant_peptide not in wildtype
+
+    def test_peptides_wholly_inside_the_tail_are_emitted(self, proteome):
+        """The neo-ORF epitopes. A containment rule would drop all of these."""
+        candidates = generate_for_variant(synth_frameshift(), proteome, lengths=[9])
+        wholly_novel = [c for c in candidates if c.mutant_peptide in TAIL]
+
+        assert len(wholly_novel) >= len(TAIL) - 8, (
+            "every 9-mer window inside the novel tail should be a candidate"
+        )
+
+    def test_the_peptide_count_scales_with_the_tail_not_the_peptide_length(self, proteome):
+        """The poly-epitope property, and what the per-variant cap must not erase.
+
+        A substitution yields exactly one window per register, so its count is
+        the peptide length and nothing else. A frameshift's count tracks how
+        much novel sequence there is, so doubling the tail roughly doubles the
+        candidates.
+        """
+        missense = generate_for_variant(kras_g12d(), proteome, lengths=[9])
+        short = generate_for_variant(synth_frameshift(), proteome, lengths=[9])
+        longer = generate_for_variant(
+            synth_frameshift(downstream_protein=LONGER_TAIL), proteome, lengths=[9]
+        )
+
+        assert len(missense) == 9, "a substitution yields one window per register"
+        assert len(short) > len(missense)
+        assert len(longer) >= 2 * len(short) - 9
+
+    def test_no_peptide_gets_a_wildtype_counterpart(self, proteome):
+        """Nothing downstream of a shift has a positional counterpart."""
+        for candidate in generate_for_variant(synth_frameshift(), proteome, lengths=[9, 10]):
+            assert candidate.wildtype_peptide is None
+
+    def test_a_same_length_frameshift_still_gets_no_counterpart(self, proteome):
+        """Equal protein lengths must not be mistaken for a shared register."""
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        shift_at = 41
+        tail = "".join("WYFMK"[i % 5] for i in range(len(wildtype) - shift_at + 1))
+        variant = synth_frameshift(downstream_protein=tail)
+
+        mutant, _, _ = build_mutant_protein(variant, wildtype)
+        assert len(mutant) == len(wildtype), "fixture must produce an equal-length protein"
+        for candidate in generate_for_variant(variant, proteome, lengths=[9]):
+            assert candidate.wildtype_peptide is None
+
+    def test_mutation_position_stays_inside_the_peptide(self, proteome):
+        """A peptide downstream of the shift is entirely novel, so position 1."""
+        candidates = generate_for_variant(synth_frameshift(), proteome, lengths=[9])
+        for candidate in candidates:
+            assert 1 <= candidate.mutation_position <= candidate.length
+        assert any(c.mutation_position == 1 for c in candidates)
+
+    def test_flanks_come_from_the_mutant_protein(self, proteome):
+        candidates = generate_for_variant(synth_frameshift(), proteome, lengths=[9])
+        inside = next(c for c in candidates if c.mutant_peptide in TAIL)
+        assert inside.n_flank or inside.c_flank
+        combined = f"{inside.n_flank}{inside.mutant_peptide}{inside.c_flank}"
+        mutant, _, _ = build_mutant_protein(synth_frameshift(), proteome.get(SYNTH_TRANSCRIPT))
+        assert combined in mutant
 
 
 class TestGeneration:

@@ -35,12 +35,23 @@ somatic VCF + RNA expression + HLA type
 ```
 
 Implemented: ingestion, somatic filtering with purity-corrected CCF, peptide
-enumeration, presentation prediction, ranking, assay request sheets, the KPI
-metric, weight refitting, and active-learning batch selection.
+enumeration including frameshift / neo-ORF tails, presentation prediction,
+ranking, assay request sheets, the KPI metric, weight refitting, and
+active-learning batch selection.
 
-Not implemented: the FASTQ/BAM front end (`neoantigene.fastq`), the AlphaFold 3
-pMHC secondary filter (`neoantigene.structure`), and frameshift / neo-ORF
-peptides. Each raises a clear error rather than silently degrading.
+Frameshift peptides need the novel tail, which no reference proteome contains.
+Annotate with VEP's `Downstream` plugin and the pipeline picks up
+`DownstreamProtein` automatically; a frameshift without it is reported but
+yields no peptides rather than being given an invented sequence. From Ensembl
+114, `ProteinLengthChange` says where that tail starts. A deletion can omit
+the new residue itself; that peptide is built only when the amino-acid
+annotation states it, and refused otherwise. Releases 112 and 113 can omit
+it too, and their length change cannot place it; see
+[`docs/AUDIT.md`](docs/AUDIT.md).
+
+Not implemented: the FASTQ/BAM front end (`neoantigene.fastq`) and the pMHC
+structure filter (`neoantigene.structure`). Each raises a clear error rather
+than silently degrading.
 
 ## Install
 
@@ -122,9 +133,12 @@ underpowered, and that is fixed with assay labels, not code.
 Three of nine features (`expression`, `tumor_selectivity`, `clonality`) are
 inert in this benchmark because the paper publishes RNA only for
 vaccine-selected peptides and no per-patient purity — using them would leak
-which peptides were assayed. Four of 18 positives were never scored: three are
-frameshift/neo-ORF peptides this package cannot enumerate, one is lost to
-hg19-to-GRCh38 isoform harmonization.
+which peptides were assayed. Four of 18 positive peptide-HLA pairs were never
+scored in that run: three are frameshift/neo-ORF peptides the generator could
+not build at the time, one is lost to hg19-to-GRCh38 isoform harmonization.
+Frameshift enumeration has since landed, so re-running the benchmark with
+`DownstreamProtein` annotation should recover those three — the benchmark
+numbers above predate it and have not been regenerated.
 
 Nothing was tuned against this benchmark. The run uses `config/default.yaml`
 as shipped, whose weights are literature-derived priors frozen beforehand and
@@ -339,6 +353,24 @@ uv run neoantigene benchmark sample.yaml assays/completed.tsv --k 20
 `binding_only` is the one that matters commercially — it is the
 NetMHCpan-class workflow of sorting by predicted binding and taking the top N.
 If Neo Antigene cannot beat it on real assay data, there is no product.
+
+### The evaluation harness
+
+`neoantigene compare` audits any set of rankings against one label set,
+including rankings this package did not produce, and reports what the assayed
+pool *could* have detected before reporting what it did:
+
+```bash
+uv run neoantigene compare labels.tsv \
+  -m ours=ranked.tsv -m netmhcpan=theirs.tsv \
+  --baseline netmhcpan --k 20 -o report.md
+```
+
+A pool that cannot reject chance at any outcome says so on the first line and
+exits non-zero, so an inconclusive benchmark cannot be consumed as a passing
+one. Both cases in [`docs/BENCHMARK.md`](docs/BENCHMARK.md) are underpowered
+and one of them is provably inconclusive at any k. Protocol, input formats and
+the rules it enforces are in [`docs/HARNESS.md`](docs/HARNESS.md).
 
 ## Layout
 
