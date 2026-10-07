@@ -1,10 +1,12 @@
 """A blinded evaluation harness for neoantigen rankings.
 
-The published literature cannot currently tell whether its own methods work.
-A model trained on the HLA allele alone, with no peptide, outscored all
-fifteen entrants in one published benchmark. PRIME 1.0 had roughly 70% of its
-training peptides inside a CEDAR-derived evaluation set, as measured by a
-third party, and lost performance when that overlap was removed. IEDB's
+The published literature struggles to tell whether its own methods work.
+PRIME 1.0 had roughly 70% of its training peptides inside a CEDAR-derived
+evaluation set, as measured by a third party, and lost performance when that
+overlap was removed. A model given only the HLA allele, with the peptide
+masked, outscored all fifteen entrants in one published comparison — on an
+infectious-disease benchmark where every entrant sat near chance, so the
+lesson is about that benchmark rather than about allele frequency. IEDB's
 curation manual permits a prediction to supersede a coarser experimental
 restriction.
 

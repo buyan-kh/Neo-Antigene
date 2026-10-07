@@ -15,9 +15,23 @@ uv run neoantigene compare labels.tsv \
 Published neoantigen immunogenicity predictors cannot currently be compared,
 and the reasons are specific rather than vague:
 
-- A model trained on the **HLA allele alone, with no peptide**, outscored all
-  fifteen entrants in one published benchmark. Those benchmarks partly measure
-  intra-HLA class imbalance.
+- A model given **only the HLA allele, with the peptide masked out**, outscored
+  all fifteen entrants in a published comparison, because the benchmark rewards
+  memorizing each allele's positive rate. Zhang et al., *Cell Genomics* 2026
+  (ImmuBPI / ImmUni), DOI
+  [10.1016/j.xgen.2026.101214](https://doi.org/10.1016/j.xgen.2026.101214).
+
+  Three qualifications are mandatory whenever this is cited, because the
+  unqualified version says something stronger and less true. The fifteen are
+  predictor *configurations* from one comparison table, not fifteen
+  independent tools, and three of them are that table's own authors' models.
+  The benchmark is IEDB's **infectious-disease** immunogenicity set, not
+  neoantigens and not CEDAR. And the whole comparison sits near chance — the
+  strongest prior entrant scored AUROC 0.595 — so the finding is that the
+  benchmark is weak, **not** that allele frequency predicts immunogenicity.
+  It is also a single group with no independent replication, and the group's
+  own debiasing method is the proposed fix, so cite the problem rather than
+  the solution.
 - **PRIME 1.0** had roughly 70% of its training peptides inside a
   CEDAR-derived evaluation set, and its performance dropped when that overlap
   was removed. Attribute this carefully: the measurement is third-party, by
