@@ -61,8 +61,8 @@ def test_filters_and_population_frequency_are_carried(variants):
     assert common.population_af == pytest.approx(0.0231)
 
 
-def test_ensembl_release_and_downstream_tail_are_read_together(tmp_path):
-    """ProteinLengthChange belongs to DownstreamProtein, not to a whole-protein field."""
+def test_frameshift_sequence_wins_when_downstream_omits_the_altered_residue(tmp_path):
+    """The whole-protein field includes the residue DownstreamProtein can drop."""
     path = tmp_path / "frameshift.vcf"
     path.write_text(
         "##fileformat=VCFv4.2\n"
@@ -74,13 +74,31 @@ def test_ensembl_release_and_downstream_tail_are_read_together(tmp_path):
         "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
         "1\t100\t.\tCT\tC\t.\tPASS\t"
         "CSQ=C|frameshift_variant|SYNTHA|ENST90000000001|41|L/-|WYFMKWYFH|4|"
-        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWYFMKWYFH\n"
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNWYFMKWYFH\n"
     )
     variant = next(read_vep_vcf(path))
     assert variant.vep_release == 114
+    assert variant.downstream_protein == "NWYFMKWYFH"
+    assert variant.protein_length_change is None
+    assert variant.variant_class is VariantClass.FRAMESHIFT
+
+
+def test_downstream_protein_keeps_its_length_change(tmp_path):
+    path = tmp_path / "downstream-only.vcf"
+    path.write_text(
+        "##fileformat=VCFv4.2\n"
+        '##VEP="v114.2" ensembl=114\n'
+        '##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations '
+        "from Ensembl VEP. Format: Allele|Consequence|SYMBOL|Feature|"
+        'Protein_position|Amino_acids|DownstreamProtein|ProteinLengthChange">\n'
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+        "1\t100\t.\tCT\tC\t.\tPASS\t"
+        "CSQ=C|frameshift_variant|SYNTHA|ENST90000000001|41|L/N|WYFMKWYFH|4\n"
+    )
+    variant = next(read_vep_vcf(path))
     assert variant.downstream_protein == "WYFMKWYFH"
     assert variant.protein_length_change == 4
-    assert variant.variant_class is VariantClass.FRAMESHIFT
+    assert variant.aa_alt == "N"
 
 
 def test_vep_version_is_the_release_when_the_cache_line_is_absent(tmp_path):

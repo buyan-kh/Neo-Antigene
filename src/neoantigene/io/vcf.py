@@ -55,7 +55,10 @@ _TSV_REQUIRED = ("chrom", "pos", "ref", "alt", "transcript", "protein_position",
 #: Ensembl/VEP_plugins. `FrameshiftSequence` is pVACtools' Frameshift.pm, which
 #: does not — it ships inside pVACtools — and which emits the whole mutant
 #: protein from residue 1 rather than the tail, so it is sliced on read.
-_DOWNSTREAM_KEYS = ("DownstreamProtein", "FrameshiftSequence")
+#: FrameshiftSequence is the whole mutant protein and includes the altered
+#: residue. DownstreamProtein can omit that residue from Ensembl 112 on, so
+#: the whole-protein field wins when a VCF carries both.
+_DOWNSTREAM_KEYS = ("FrameshiftSequence", "DownstreamProtein")
 _WHOLE_PROTEIN_KEYS = frozenset({"FrameshiftSequence"})
 
 

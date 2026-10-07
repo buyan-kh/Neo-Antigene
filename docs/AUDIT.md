@@ -298,18 +298,29 @@ the reference is rejected. The dropped residue is not the reference residue.
 from both the reference and the true mutant, and the check does not fire.
 Peptides from that protein are silently wrong.
 
-From release 114 the length change places the tail:
-`tail_start = len(reference) + ProteinLengthChange - len(tail) + 1`. The
-generator does this when `vep_release` is 114 or later and
-`protein_length_change` is present. The same formula applied to a 112 or 113
-length change would shift tails that were already aligned, so those releases
-are left on the annotated position. A VCF with no `##VEP` header is left
-there too: the number required to choose is the Ensembl release, and the
-plugin version cannot supply it.
+From release 114 the length change says where the tail starts in the mutant:
+`tail_start = len(reference) + ProteinLengthChange - len(tail) + 1`. That
+index is not a license to copy the reference into the gap. Two cases share
+`tail_start = protein_position + 1`:
 
-pVACtools' `FrameshiftSequence` is the whole mutant protein from residue 1.
-It is sliced at `protein_start` on read, and a `ProteinLengthChange` sitting
-next to it is discarded, because that number describes `DownstreamProtein`.
+- An insertion between codons skips a residue that was never changed.
+  Keeping that reference residue and then the tail reconstructs the mutant.
+- A deletion of the third base of a codon skips a **new** amino acid, present
+  in neither the reference nor the tail. Writing the reference residue there
+  is a different wrong protein. The generator uses that residue only when
+  `Amino_acids` states it (`K/N`, or `K/NX`). When the annotation is `K/X`
+  or empty, it raises `FrameshiftNotSupported` instead of emitting a peptide.
+
+The same formula applied to a 112 or 113 length change would move tails that
+were already aligned, so those releases are left on the annotated position. A
+VCF with no `##VEP` header is left there too: the number required to choose
+is the Ensembl release, and the plugin version cannot supply it.
+
+pVACtools' `FrameshiftSequence` is the whole mutant protein from residue 1,
+including the altered residue. It is preferred over `DownstreamProtein` when
+a VCF carries both, sliced at `protein_start` on read, and a
+`ProteinLengthChange` sitting next to it is discarded, because that number
+describes `DownstreamProtein`.
 
 ## Open, pending a primary source
 

@@ -138,22 +138,17 @@ class TestFrameshift:
     variants in the Ott benchmark and ~17% of its validated positives.
     """
 
-    def test_ensembl_114_length_change_keeps_the_residue_the_tail_omits(self, proteome):
-        """A current Downstream.pm tail can start one residue after protein_start.
-
-        When the variant hits the third base of a codon, Ensembl 112+ omits
-        that residue from DownstreamProtein. From release 114,
-        ProteinLengthChange is the full mutant length minus the reference
-        length, which puts the omitted residue back in front of the tail.
-        """
+    def test_an_insertion_keeps_the_reference_residue_the_tail_skipped(self, proteome):
+        """An insertion between codons skips a residue that was never changed."""
         wildtype = proteome.get(SYNTH_TRANSCRIPT)
         shift_at = 41
-        omitted = wildtype[shift_at - 1]
         tail = "WYFMKWYFH"
-        # Mutant keeps the reference through `shift_at` and then takes the tail,
-        # so the tail's first residue is reference position shift_at + 1.
+        # Tail begins at residue 42. The mutant is the reference through 41, then the tail.
         change = shift_at + len(tail) - len(wildtype)
         variant = synth_frameshift(
+            protein_end=shift_at + 1,
+            aa_ref="",
+            aa_alt="X",
             downstream_protein=tail,
             protein_length_change=change,
             vep_release=114,
@@ -163,8 +158,44 @@ class TestFrameshift:
 
         assert start == shift_at
         assert mutant[:shift_at] == wildtype[:shift_at]
-        assert mutant[shift_at - 1] == omitted
         assert mutant[shift_at:] == tail
+
+    def test_a_deletion_uses_the_stated_new_residue_not_the_reference(self, proteome):
+        """The residue a third-base deletion omits is new. The reference is the wrong one."""
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        shift_at = 41
+        tail = "WYFMKWYFH"
+        change = (shift_at - 1) + 1 + len(tail) - len(wildtype)
+        variant = synth_frameshift(
+            aa_ref=wildtype[shift_at - 1],
+            aa_alt="N",
+            downstream_protein=tail,
+            protein_length_change=change,
+            vep_release=114,
+        )
+
+        mutant, start, _ = build_mutant_protein(variant, wildtype)
+
+        assert start == shift_at - 1
+        assert mutant[:start] == wildtype[:start]
+        assert mutant[start] == "N"
+        assert mutant[start] != wildtype[start]
+        assert mutant[start + 1 :] == tail
+
+    def test_a_deletion_with_an_unknown_new_residue_is_refused(self, proteome):
+        """`K/X` does not say what the omitted residue is, so no peptide is invented."""
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        shift_at = 41
+        tail = "WYFMKWYFH"
+        change = shift_at + len(tail) - len(wildtype)
+        variant = synth_frameshift(
+            aa_alt="X",
+            downstream_protein=tail,
+            protein_length_change=change,
+            vep_release=114,
+        )
+        with pytest.raises(FrameshiftNotSupported, match="does not state"):
+            build_mutant_protein(variant, wildtype)
 
     def test_a_length_change_that_agrees_with_protein_start_does_not_move_it(self, proteome):
         wildtype = proteome.get(SYNTH_TRANSCRIPT)

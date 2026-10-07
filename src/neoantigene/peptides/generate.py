@@ -36,10 +36,13 @@ free.
 
 **Where the tail starts depends on the annotator.** A tail is joined at
 `protein_start` unless the record carries an Ensembl release of 114 or later
-and `ProteinLengthChange`. That pair places the tail: Ensembl 112 and later
-can omit the altered residue, and a tail that merely differs from the
-reference does not trip `ReferenceMismatch`. Releases 112 and 113 report a
-`ProteinLengthChange` that cannot place the tail, so it is ignored there.
+and `ProteinLengthChange`. That pair says where the tail starts in the mutant
+protein. It does not contain a residue the plugin omitted. An insertion
+between codons omits a reference residue, which is copied from the proteome.
+A deletion that omits the new residue is built only when `Amino_acids` states
+that residue; otherwise this module raises rather than writing the reference
+residue in its place. Releases 112 and 113 report a `ProteinLengthChange`
+that cannot place the tail, so it is ignored there.
 """
 
 from __future__ import annotations
@@ -126,46 +129,104 @@ def _build_frameshift_protein(variant: Variant, wildtype: str) -> tuple[str, int
             f"Frameshift.pm sliced at protein_start"
         )
 
-    start = _frameshift_prefix(variant, wildtype, tail)
-    if start < 0 or start > len(wildtype):
+    mutant, start = _assemble_frameshift(variant, wildtype, tail)
+    return mutant, start, len(mutant)
+
+
+def _assemble_frameshift(variant: Variant, wildtype: str, tail: str) -> tuple[str, int]:
+    """Return (mutant protein, 0-based index of the first altered residue).
+
+    Without a usable length change the tail is taken to begin at
+    `protein_start`. That matches pVACtools sliced at that position, and
+    Downstream.pm through Ensembl 111.
+
+    From Ensembl 114, `ProteinLengthChange` is the mutant length minus the
+    reference length, so it says which mutant residue the tail starts at.
+    When that is later than `protein_start`, the missing residue is not in
+    the tail. Copying it from the reference is right for an insertion
+    between codons, where the skipped residue was never changed, and wrong
+    for a deletion, where the skipped residue is a new amino acid. A deletion
+    is built only from the residue `Amino_acids` actually states.
+    """
+    annotated = variant.protein_start - 1
+    if annotated < 0 or annotated > len(wildtype):
         raise ReferenceMismatch(
             f"{variant.hgvsp_short}: frameshift at protein position "
             f"{variant.protein_start} is outside transcript of length {len(wildtype)}"
         )
-    if wildtype[start : start + len(tail)] == tail:
+
+    tail_start = _tail_start(variant, wildtype, tail)
+    if tail_start is None or tail_start == variant.protein_start:
+        _reject_reference_tail(variant, wildtype, annotated, tail)
+        return wildtype[:annotated] + tail, annotated
+
+    if tail_start < variant.protein_start or tail_start > len(wildtype) + 1:
         raise ReferenceMismatch(
-            f"{variant.hgvsp_short}: the annotated downstream protein is identical to the "
-            f"reference from position {start + 1}, so it encodes no frameshift. "
-            f"The annotation and the proteome build are likely mismatched"
+            f"{variant.hgvsp_short}: ProteinLengthChange {variant.protein_length_change} "
+            f"places the novel tail at residue {tail_start}, which does not follow "
+            f"protein position {variant.protein_start}"
         )
 
-    mutant = wildtype[:start] + tail
-    return mutant, start, len(mutant)
+    gap = tail_start - variant.protein_start
+    if not variant.aa_ref:
+        # Nothing in the reference was replaced. The residues the tail
+        # started after are still the reference residues.
+        _reject_reference_tail(variant, wildtype, tail_start - 1, tail)
+        return wildtype[: tail_start - 1] + tail, tail_start - 1
+
+    bridge = _known_variant_residues(variant.aa_alt)
+    observed = wildtype[annotated : annotated + len(variant.aa_ref)]
+    if observed != variant.aa_ref:
+        raise ReferenceMismatch(
+            f"{variant.hgvsp_short}: reference residue {observed!r} at "
+            f"{variant.protein_start} does not match annotated {variant.aa_ref!r}; "
+            "proteome build and annotation are likely mismatched"
+        )
+    if len(bridge) != gap:
+        raise FrameshiftNotSupported(
+            f"{variant.hgvsp_short}: DownstreamProtein starts at residue {tail_start}, "
+            f"so the {gap} residue(s) at position {variant.protein_start} are absent "
+            f"from the tail. They are not the reference, and the amino-acid annotation "
+            f"{variant.aa_alt!r} does not state them. Supply pVACtools FrameshiftSequence, "
+            f"which includes the altered residue, or a DownstreamProtein that does."
+        )
+    return wildtype[:annotated] + bridge + tail, annotated
 
 
-def _frameshift_prefix(variant: Variant, wildtype: str, tail: str) -> int:
-    """Reference residues to keep before `tail`.
-
-    Without a usable length change the tail is taken to begin at
-    `protein_start`. That matches pVACtools sliced at that position, and
-    Downstream.pm through Ensembl 111. From Ensembl 114 the length change
-    places the tail even when Downstream.pm started it a residue late.
-    """
-    annotated = variant.protein_start - 1
+def _tail_start(variant: Variant, wildtype: str, tail: str) -> int | None:
+    """1-based mutant index where `tail` begins, when the release makes it knowable."""
     release = variant.vep_release
     change = variant.protein_length_change
     if release is None or change is None or release < DOWNSTREAM_LENGTH_CHANGE_RELEASE:
-        return annotated
-
-    # tail_start is 1-based. length(prefix) + length(tail) = length(mutant),
-    # and ProteinLengthChange is length(mutant) - length(reference).
+        return None
+    # length(prefix) + length(tail) = length(mutant), and ProteinLengthChange
+    # is length(mutant) - length(reference).
     tail_start = len(wildtype) + change - len(tail) + 1
     if tail_start < 1 or tail_start > len(wildtype) + 1:
         raise ReferenceMismatch(
             f"{variant.hgvsp_short}: ProteinLengthChange {change} places the novel "
             f"tail at residue {tail_start}, outside a transcript of length {len(wildtype)}"
         )
-    return tail_start - 1
+    return tail_start
+
+
+def _known_variant_residues(amino_acids: str) -> str:
+    """Standard residues before the first unknown (`X`) or stop (`*`)."""
+    known: list[str] = []
+    for residue in amino_acids:
+        if residue not in AMINO_ACIDS:
+            break
+        known.append(residue)
+    return "".join(known)
+
+
+def _reject_reference_tail(variant: Variant, wildtype: str, start: int, tail: str) -> None:
+    if wildtype[start : start + len(tail)] == tail:
+        raise ReferenceMismatch(
+            f"{variant.hgvsp_short}: the annotated downstream protein is identical to the "
+            f"reference from position {start + 1}, so it encodes no frameshift. "
+            f"The annotation and the proteome build are likely mismatched"
+        )
 
 
 def _truncate_tail(tail: str) -> str:

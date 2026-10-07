@@ -84,12 +84,16 @@ class Variant(Frozen):
     #: so it has to arrive with the annotation.
     #:
     #: pVACtools' `Frameshift.pm` emits the entire mutant protein from residue
-    #: 1; the VCF reader slices it to `sequence[protein_start - 1:]`. VEP's
-    #: `Downstream` plugin emits a tail. Through Ensembl 111 that tail starts
-    #: at `protein_start`. From Ensembl 112 it starts one residue later when
-    #: the variant hits the third base of a codon, and the plugin version
-    #: string stays `2.4` either way. From Ensembl 114, `protein_length_change`
-    #: is enough to place the tail; `peptides.generate` does that.
+    #: 1; the VCF reader slices it to `sequence[protein_start - 1:]` and
+    #: prefers it over `DownstreamProtein` when both are present, because the
+    #: slice includes the altered residue. VEP's `Downstream` plugin emits a
+    #: tail. Through Ensembl 111 that tail starts at `protein_start`. From
+    #: Ensembl 112 it starts one residue later when the variant hits the
+    #: third base of a codon, and the plugin version string stays `2.4`
+    #: either way. From Ensembl 114, `protein_length_change` says where the
+    #: tail starts. It does not contain the omitted residue: an insertion
+    #: copies that residue from the reference, and a deletion uses it only
+    #: when `Amino_acids` states it.
     #:
     #: A frameshift variant without this is read and reported but cannot yield
     #: peptides; `peptides.generate` raises rather than inventing a tail.
