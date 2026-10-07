@@ -2,11 +2,16 @@
 
 The published literature cannot currently tell whether its own methods work.
 A model trained on the HLA allele alone, with no peptide, outscored all
-fifteen entrants in one published benchmark. PRIME had roughly 70% of its
-training data inside its own evaluation set. NetMHCpan-4.2 is fine-tuned on
-CEDAR, so CEDAR is no longer a clean test set for anything built on recent
-NetMHCpan. IEDB's curation manual permits a prediction to supersede a coarser
-experimental restriction.
+fifteen entrants in one published benchmark. PRIME 1.0 had roughly 70% of its
+training peptides inside a CEDAR-derived evaluation set, as measured by a
+third party, and lost performance when that overlap was removed. IEDB's
+curation manual permits a prediction to supersede a coarser experimental
+restriction.
+
+Contamination is not uniform, which is the reason to measure rather than
+assume: IMPROVE's in-house set has exactly zero overlap with the CEDAR
+benchmark on the same join key. An audit that presumed leakage everywhere
+would be making the error it exists to detect.
 
 This module is the measurement layer that absence implies. It takes a label
 set and any number of named rankings — from this package or from any other

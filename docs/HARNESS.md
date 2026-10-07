@@ -18,10 +18,23 @@ and the reasons are specific rather than vague:
 - A model trained on the **HLA allele alone, with no peptide**, outscored all
   fifteen entrants in one published benchmark. Those benchmarks partly measure
   intra-HLA class imbalance.
-- **PRIME** had roughly 70% of its training data inside the CEDAR benchmark it
-  was evaluated on; performance dropped when the overlap was removed.
-- **NetMHCpan-4.2** is fine-tuned on CEDAR neoepitopes, so CEDAR is not a
-  clean test set for any method using recent NetMHCpan as a feature.
+- **PRIME 1.0** had roughly 70% of its training peptides inside a
+  CEDAR-derived evaluation set, and its performance dropped when that overlap
+  was removed. Attribute this carefully: the measurement is third-party, by
+  the IMPROVE authors (*Front Immunol* 2024), not a self-report, and it
+  concerns version 1.0 rather than PRIME 2.0. PRIME's own authors used
+  leave-one-study-out cross-validation precisely because "standard
+  cross-validation results can be artificially boosted by batch effects", so
+  the overlap is with a benchmark that postdates the model, not carelessness.
+- **NetMHCpan-4.2** is reported to be fine-tuned on CEDAR neoepitopes, which
+  would mean CEDAR is not a clean test set for any method using recent
+  NetMHCpan as a feature. Treat as unconfirmed pending a primary source.
+- Contamination is **not** uniform, and assuming it is would be its own error.
+  IMPROVE's in-house training set (17,520 peptide-HLA pairs, 467 positives)
+  has **exactly zero** overlap with the CEDAR benchmark (2,436 pairs, 548
+  positives), by peptide-plus-allele and by peptide alone. Some groups
+  separate their data properly; the point of an audit is to find out which,
+  not to assume.
 - **IEDB's curation manual** instructs curators to record the most *precise*
   restriction rather than the most *direct* one, so a prediction can supersede
   a coarser experimental call. Prediction-derived labels are not confined to
