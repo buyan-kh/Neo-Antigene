@@ -138,6 +138,69 @@ class TestFrameshift:
     variants in the Ott benchmark and ~17% of its validated positives.
     """
 
+    def test_ensembl_114_length_change_keeps_the_residue_the_tail_omits(self, proteome):
+        """A current Downstream.pm tail can start one residue after protein_start.
+
+        When the variant hits the third base of a codon, Ensembl 112+ omits
+        that residue from DownstreamProtein. From release 114,
+        ProteinLengthChange is the full mutant length minus the reference
+        length, which puts the omitted residue back in front of the tail.
+        """
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        shift_at = 41
+        omitted = wildtype[shift_at - 1]
+        tail = "WYFMKWYFH"
+        # Mutant keeps the reference through `shift_at` and then takes the tail,
+        # so the tail's first residue is reference position shift_at + 1.
+        change = shift_at + len(tail) - len(wildtype)
+        variant = synth_frameshift(
+            downstream_protein=tail,
+            protein_length_change=change,
+            vep_release=114,
+        )
+
+        mutant, start, _ = build_mutant_protein(variant, wildtype)
+
+        assert start == shift_at
+        assert mutant[:shift_at] == wildtype[:shift_at]
+        assert mutant[shift_at - 1] == omitted
+        assert mutant[shift_at:] == tail
+
+    def test_a_length_change_that_agrees_with_protein_start_does_not_move_it(self, proteome):
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        shift_at = 41
+        change = (shift_at - 1) + len(TAIL) - len(wildtype)
+        variant = synth_frameshift(protein_length_change=change, vep_release=114)
+
+        mutant, start, _ = build_mutant_protein(variant, wildtype)
+
+        assert start == shift_at - 1
+        assert mutant[start:] == TAIL
+
+    def test_ensembl_113_length_change_is_a_different_quantity_and_is_ignored(self, proteome):
+        """Releases 112 and 113 can drop a residue, and their length change cannot say so."""
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        variant = synth_frameshift(protein_length_change=99, vep_release=113)
+
+        mutant, start, _ = build_mutant_protein(variant, wildtype)
+
+        assert start == variant.protein_start - 1
+        assert mutant[start:] == TAIL
+
+    def test_length_change_without_a_release_does_not_move_the_join(self, proteome):
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        variant = synth_frameshift(protein_length_change=4)
+
+        _, start, _ = build_mutant_protein(variant, wildtype)
+
+        assert start == variant.protein_start - 1
+
+    def test_an_impossible_length_change_is_rejected(self, proteome):
+        wildtype = proteome.get(SYNTH_TRANSCRIPT)
+        variant = synth_frameshift(protein_length_change=10**6, vep_release=116)
+        with pytest.raises(ReferenceMismatch, match="ProteinLengthChange"):
+            build_mutant_protein(variant, wildtype)
+
     def test_the_tail_replaces_everything_from_the_shift(self, proteome):
         wildtype = proteome.get(SYNTH_TRANSCRIPT)
         variant = synth_frameshift()

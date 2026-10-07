@@ -79,18 +79,36 @@ class Variant(Frozen):
     filters: tuple[str, ...] = ()
     ccf: Fraction | None = None
 
-    #: The novel protein sequence a frameshift produces, from `protein_start`
-    #: onward. It cannot be derived from the reference proteome — that is the
-    #: whole point of a frameshift — so it has to arrive with the annotation.
+    #: The novel protein sequence a frameshift produces. It cannot be derived
+    #: from the reference proteome — that is the whole point of a frameshift —
+    #: so it has to arrive with the annotation.
     #:
-    #: The convention is "residues from `protein_start` to the first in-frame
-    #: stop". VEP's `Downstream` plugin emits this as `DownstreamProtein`.
     #: pVACtools' `Frameshift.pm` emits the entire mutant protein from residue
-    #: 1 instead, so take `sequence[protein_start - 1:]` from it.
+    #: 1; the VCF reader slices it to `sequence[protein_start - 1:]`. VEP's
+    #: `Downstream` plugin emits a tail. Through Ensembl 111 that tail starts
+    #: at `protein_start`. From Ensembl 112 it starts one residue later when
+    #: the variant hits the third base of a codon, and the plugin version
+    #: string stays `2.4` either way. From Ensembl 114, `protein_length_change`
+    #: is enough to place the tail; `peptides.generate` does that.
     #:
     #: A frameshift variant without this is read and reported but cannot yield
     #: peptides; `peptides.generate` raises rather than inventing a tail.
     downstream_protein: str | None = None
+
+    #: Ensembl release of the VEP that wrote this record, from the `##VEP`
+    #: header (`ensembl=114`, else the major of `v114`). Absent on a TSV
+    #: unless the column is supplied. The Downstream plugin's own version
+    #: string does not change when its coordinates do, so this is the number
+    #: that selects a join.
+    vep_release: int | None = Field(default=None, ge=1)
+
+    #: VEP `ProteinLengthChange`. From Ensembl 114 this is the full mutant
+    #: peptide length minus the reference length, and the frameshift join
+    #: uses it. On releases 112 and 113 it is a different quantity
+    #: (`min(translation start, end) + len(tail) - len(reference)`) and is
+    #: ignored, because applying the later formula to it shifts tails that
+    #: were already aligned.
+    protein_length_change: int | None = None
 
     @field_validator("aa_ref", "aa_alt")
     @classmethod

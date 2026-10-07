@@ -40,9 +40,15 @@ and the reasons are specific rather than vague:
   leave-one-study-out cross-validation precisely because "standard
   cross-validation results can be artificially boosted by batch effects", so
   the overlap is with a benchmark that postdates the model, not carelessness.
-- **NetMHCpan-4.2** is reported to be fine-tuned on CEDAR neoepitopes, which
-  would mean CEDAR is not a clean test set for any method using recent
-  NetMHCpan as a feature. Treat as unconfirmed pending a primary source.
+- **Released NetMHCpan-4.2** was fine-tuned on the whole CEDAR set, including
+  the split the paper held out. All 1,486 `cedar_test` peptide–allele pairs
+  are in the shipped `c00*_cedar` training files (5,172 records; Nilsson et
+  al., *Front Immunol* 2025, DOI
+  [10.3389/fimmu.2025.1616113](https://doi.org/10.3389/fimmu.2025.1616113)).
+  CEDAR is not a clean test set for that neoepitope mode. It is the wrong
+  conclusion for NetMHCpan-4.1, whose released training files have no CEDAR
+  partition, and it is a weaker claim for 4.2's binding-affinity partition,
+  which contains 706 of 5,027 CEDAR peptides as binding measurements.
 - Contamination is **not** uniform, and assuming it is would be its own error.
   IMPROVE's in-house training set (17,520 peptide-HLA pairs, 467 positives)
   has **exactly zero** overlap with the CEDAR benchmark (2,436 pairs, 548

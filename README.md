@@ -42,7 +42,10 @@ active-learning batch selection.
 Frameshift peptides need the novel tail, which no reference proteome contains.
 Annotate with VEP's `Downstream` plugin and the pipeline picks up
 `DownstreamProtein` automatically; a frameshift without it is reported but
-yields no peptides rather than being given an invented sequence.
+yields no peptides rather than being given an invented sequence. From Ensembl
+114 the tail is placed with `ProteinLengthChange`, because that release can
+omit one residue. Releases 112 and 113 can omit it too, and their length
+change cannot place it; see [`docs/AUDIT.md`](docs/AUDIT.md).
 
 Not implemented: the FASTQ/BAM front end (`neoantigene.fastq`) and the pMHC
 structure filter (`neoantigene.structure`). Each raises a clear error rather

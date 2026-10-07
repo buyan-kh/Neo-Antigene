@@ -23,6 +23,11 @@ from typing import IO
 from ..models import Variant, VariantClass
 
 _CSQ_FORMAT_RE = re.compile(r"Format:\s*([^\"']+)")
+#: `ensembl=114` is the release branch Downstream.pm was taken from. Fall back
+#: to the major of `##VEP="v114.2"` when the cache line is absent. A word
+#: boundary keeps `ensembl-io=114` from matching.
+_VEP_ENSEMBL_RE = re.compile(r"\bensembl=(\d+)")
+_VEP_VERSION_RE = re.compile(r'##VEP="v(\d+)')
 
 _CONSEQUENCE_MAP = {
     "missense_variant": VariantClass.MISSENSE,
@@ -179,6 +184,7 @@ def read_vep_vcf(
     header_lines: list[str] = []
     columns: list[str] = []
     csq_keys: list[str] = []
+    vep_release: int | None = None
 
     with _open(Path(path)) as handle:
         for raw_line in handle:
@@ -189,6 +195,7 @@ def read_vep_vcf(
             if line.startswith("#CHROM"):
                 columns = line.lstrip("#").split("\t")
                 csq_keys = _csq_fields(header_lines)
+                vep_release = _vep_release(header_lines)
                 continue
             if not line:
                 continue
@@ -214,9 +221,25 @@ def read_vep_vcf(
             for entry in selected:
                 if not entry:
                     continue
-                variant = _build_variant(row, entry, vaf, depth, population_af, filters)
+                variant = _build_variant(
+                    row, entry, vaf, depth, population_af, filters, vep_release
+                )
                 if variant is not None:
                     yield variant
+
+
+def _vep_release(header_lines: Sequence[str]) -> int | None:
+    """Ensembl release recorded on the VEP header, if the VCF still has one."""
+    for line in header_lines:
+        if not line.startswith("##VEP="):
+            continue
+        ensembl = _VEP_ENSEMBL_RE.search(line)
+        if ensembl:
+            return int(ensembl.group(1))
+        version = _VEP_VERSION_RE.search(line)
+        if version:
+            return int(version.group(1))
+    return None
 
 
 def _build_variant(
@@ -226,6 +249,7 @@ def _build_variant(
     depth: int | None,
     population_af: float | None,
     filters: tuple[str, ...],
+    vep_release: int | None,
 ) -> Variant | None:
     variant_class = _classify(entry.get("Consequence", ""))
     if variant_class not in CODING_CLASSES:
@@ -234,6 +258,7 @@ def _build_variant(
     if protein_position is None:
         return None
     aa_ref, aa_alt = _parse_amino_acids(entry.get("Amino_acids", ""))
+    tail, length_change = _downstream_annotation(entry, protein_position[0])
     return Variant(
         chrom=row["CHROM"],
         pos=int(row["POS"]),
@@ -250,24 +275,31 @@ def _build_variant(
         tumor_depth=depth,
         population_af=population_af,
         filters=filters,
-        downstream_protein=_downstream_protein(entry, protein_position[0]),
+        downstream_protein=tail,
+        protein_length_change=length_change,
+        vep_release=vep_release,
     )
 
 
-def _downstream_protein(entry: dict[str, str], protein_start: int) -> str | None:
-    """Novel frameshift tail from whichever plugin annotated the VCF.
+def _downstream_annotation(
+    entry: dict[str, str], protein_start: int
+) -> tuple[str | None, int | None]:
+    """Novel frameshift tail, and a length change only when the tail is VEP's.
 
-    Normalized to "residues from `protein_start` onward", so a whole-protein
-    field is sliced and a tail field is taken as given.
+    A whole-protein field (`FrameshiftSequence`) is sliced to start at
+    `protein_start`. Its length change is dropped: pVACtools does not emit
+    one, and VEP's number describes `DownstreamProtein`, not this slice.
+    `ProteinLengthChange` is kept only for `DownstreamProtein`, which is the
+    field it was computed from.
     """
     for key in _DOWNSTREAM_KEYS:
         value = (entry.get(key) or "").strip()
         if not value or value == "-":
             continue
         if key in _WHOLE_PROTEIN_KEYS:
-            return value[protein_start - 1 :] or None
-        return value
-    return None
+            return value[protein_start - 1 :] or None, None
+        return value, _maybe_int(entry.get("ProteinLengthChange"))
+    return None, None
 
 
 def _sample_metrics(
@@ -296,11 +328,14 @@ def read_variant_tsv(path: Path) -> Iterator[Variant]:
     Required columns: chrom, pos, ref, alt, transcript, protein_position,
     amino_acids (`G/D`), consequence.
     Optional: gene, dna_vaf, rna_vaf, tumor_depth, copy_number, population_af, filter,
-    downstream_protein.
+    downstream_protein, protein_length_change, vep_release.
 
-    `downstream_protein` is the novel tail a frameshift produces, from
-    `protein_position` to the first stop. Frameshift rows without it are read
-    and reported but yield no peptides.
+    `downstream_protein` is the novel tail a frameshift produces. Frameshift
+    rows without it are read and reported but yield no peptides. Supply
+    `vep_release` of 114 or later together with `protein_length_change` when
+    the tail is VEP `DownstreamProtein` from that release; the generator uses
+    the pair to place the tail. Either column alone leaves the join at
+    `protein_position`.
     """
     with open(path) as handle:
         reader = csv.DictReader(handle, delimiter="\t")
@@ -333,6 +368,8 @@ def read_variant_tsv(path: Path) -> Iterator[Variant]:
                 population_af=_maybe_float(record.get("population_af")),
                 filters=tuple(f for f in (record.get("filter") or "").split(";") if f),
                 downstream_protein=(record.get("downstream_protein") or "").strip() or None,
+                protein_length_change=_maybe_int(record.get("protein_length_change")),
+                vep_release=_maybe_int(record.get("vep_release")),
             )
 
 

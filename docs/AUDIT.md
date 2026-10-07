@@ -232,20 +232,89 @@ Three conventions observed in three datasets we intend to join:
 | PRIME released files | `A0201` |
 | IEDB / CEDAR | `HLA-A*02:01` |
 | IMPROVE released tables | `HLA-A02:01` |
+| NetMHCpan 4.2 `c00*_cedar` | `HLA-A02:01` |
 
 Any overlap computation must normalize centrally. Leaving normalization to the
 caller is how a leakage audit silently reports zero overlap because the keys
 never matched.
 
+## NetMHCpan-4.2 and CEDAR
+
+Nilsson, Greenbaum, Peters and Nielsen, *Front Immunol* 2025, DOI
+[10.3389/fimmu.2025.1616113](https://doi.org/10.3389/fimmu.2025.1616113).
+The paper's own methods, and the training files shipped beside the method.
+
+The paper states that the models included in NetMHCpan-4.2 "were fine-tuned
+on the entire IEDB or CEDAR epitope training sets without removed data points
+for the purpose of external test set construction." The CEDAR construction in
+the same methods section is 5,172 data points (1,188 positive, 3,984
+negative).
+
+The released files match that count and then go further. `NetMHCpan_train`
+contains `c000_cedar` through `c004_cedar`: **5,172 records, 1,188 labeled
+positive and 3,984 labeled negative, over 92 alleles.** One pair is repeated
+(`SLLSLPLSL` / `HLA-A02:01`), so there are 5,171 distinct pairs. The
+companion `cedar_test` file has **1,486 pairs, and all 1,486 are in those
+training files.** For the neoepitope mode that ships, the paper's held-out
+CEDAR split is not held out.
+
+Two limits, both checked on the released files rather than inferred:
+
+- **NetMHCpan-4.1's training directory has no CEDAR partition.** It contains
+  `c00*_ba`, `c00*_el`, `allelelist` and `MHC_pseudo.dat` only. A pipeline on
+  4.1 is not contaminated by this finding. Most published neoantigen work
+  used 4.1.
+- **The 4.2 binding-affinity partition is a different exposure.** 706 of the
+  5,027 distinct CEDAR peptides also appear in `c00*_ba` (14.0%). Those rows
+  are binding measurements. That is peptide-level exposure of the default
+  presentation mode, not the immunogenicity labels sitting in `c00*_cedar`.
+
+Allele strings in the CEDAR training files are `HLA-A02:01`: locus, hyphen,
+no asterisk. Joining them to an IEDB export of `HLA-A*02:01` without
+normalizing reports a false zero.
+
+## VEP `DownstreamProtein` does not always start at `protein_position`
+
+Read from `Downstream.pm` on the Ensembl VEP_plugins branches. The plugin's
+own version string is `2.4` on every one of them, so the version cannot
+select the convention.
+
+| Ensembl release | where `DownstreamProtein` starts | `ProteinLengthChange` |
+| --- | --- | --- |
+| 111 and earlier | `protein_position` | `min(translation start, end) + len(tail) - len(reference)` |
+| 112 and 113 | one residue later, when the variant hits the third base of a codon | the same older definition |
+| 114 and later, including current `main` | the same one-residue-later case | `len(mutant peptide) - len(reference)` |
+
+The 112 change is `last_complete_codon = low_pos - (low_pos % 3)` after the
+variant has already been written into the CDS. Offset `3m` is the start of
+codon `m+1`, so a deletion or insertion whose first affected base is the
+third base of a codon drops that codon from the tail. The header still says
+the tail includes "any amino acids overlapped by the variant itself."
+
+**This corrects a claim this repository made.** The earlier note said a
+wrong join would surface as `ReferenceMismatch`, because a tail identical to
+the reference is rejected. The dropped residue is not the reference residue.
+`wildtype[:protein_position - 1] + tail` then builds a protein that differs
+from both the reference and the true mutant, and the check does not fire.
+Peptides from that protein are silently wrong.
+
+From release 114 the length change places the tail:
+`tail_start = len(reference) + ProteinLengthChange - len(tail) + 1`. The
+generator does this when `vep_release` is 114 or later and
+`protein_length_change` is present. The same formula applied to a 112 or 113
+length change would shift tails that were already aligned, so those releases
+are left on the annotated position. A VCF with no `##VEP` header is left
+there too: the number required to choose is the Ensembl release, and the
+plugin version cannot supply it.
+
+pVACtools' `FrameshiftSequence` is the whole mutant protein from residue 1.
+It is sliced at `protein_start` on read, and a `ProteinLengthChange` sitting
+next to it is discarded, because that number describes `DownstreamProtein`.
+
 ## Open, pending a primary source
 
-- **NetMHCpan-4.2 is fine-tuned on CEDAR neoepitopes.** If true, CEDAR is not
-  a clean test set for any method using recent NetMHCpan as a feature, which
-  would be the single most consequential finding in the audit. Currently
-  sourced only secondhand. Do not quote it until it resolves.
-- **VEP `Downstream.pm` coordinate convention.** Our frameshift enumeration
-  reconstructs the mutant protein as
-  `wildtype[:protein_position - 1] + downstream_tail`. If `DownstreamProtein`
-  begins at the last complete codon rather than at `protein_position`, that is
-  off by one. A mismatch surfaces as a loud `ReferenceMismatch` rather than as
-  wrong peptides, but the convention needs confirming.
+- **Whether a given CEDAR HLA restriction was measured or predicted.** The
+  4.2 filter kept neoepitopes "with HLA allele typing." It did not require
+  the restriction to be experimental. A prediction-guided restriction would
+  bias every binding-predictor evaluation on CEDAR, separately from the
+  training-file overlap above. No breakdown of that fraction was found.
