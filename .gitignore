@@ -11,6 +11,7 @@ dist/
 .coverage
 htmlcov/
 .DS_Store
+.vercel/
 
 results/
 *.ranked.tsv

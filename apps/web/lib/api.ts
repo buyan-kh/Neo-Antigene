@@ -46,8 +46,18 @@ export type ExampleSample = {
   proteome_fasta: string | null;
 };
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:8000";
+/**
+ * Origin of the FastAPI app, without a trailing slash.
+ *
+ * `next.config.ts` inlines this. On Vercel it is empty, so the browser calls
+ * `/api/...` on this same host and the project rewrite sends that to the
+ * `api` service. `make demo` sets an absolute `http://127.0.0.1:8000`.
+ * A service binding is not read here: this file runs in the browser, and
+ * bindings are injected only into server functions.
+ */
+export const API_BASE = (
+  process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:8000"
+).replace(/\/$/, "");
 
 /**
  * An error carrying whatever the API actually said.
@@ -83,7 +93,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new ApiError(
       0,
-      `Cannot reach the API at ${API_BASE}. Is it running? Try \`make api\`.`,
+      `Cannot reach the API${API_BASE ? ` at ${API_BASE}` : ""}. Is it running? Try \`make api\`.`,
     );
   }
 
