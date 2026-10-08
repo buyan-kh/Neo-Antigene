@@ -10,7 +10,7 @@
     "api": {
       "root": ".",
       "framework": "fastapi",
-      "runtime": "python3.12",
+      "runtime": "python",
       "entrypoint": "app:app",
       "installCommand": "uv sync --frozen --no-dev --no-editable --extra api --extra presentation",
       "functions": {
