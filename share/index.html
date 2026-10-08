@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Neo Antigene — the list, checked on blood</title>
+  <meta name="description" content="A personal cancer vaccine is real. Which bits of the tumor go into it is still a guess. We check that guess on the patient's own blood." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,460;9..144,560&family=Outfit:wght@380;460;560&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper: #f4f0e6;
+      --ink: #1c1914;
+      --muted: #5e584e;
+      --line: #e2dacb;
+      --card: #fffcf7;
+      --green: #1b6b48;
+      --green-soft: #e4f3eb;
+      --clay: #8d4038;
+      --clay-soft: #f8ebe7;
+      --gold: #c4a46a;
+      --shadow: 0 18px 50px rgba(40, 32, 18, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Outfit, sans-serif;
+      font-weight: 380;
+      font-size: 1.125rem;
+      line-height: 1.55;
+    }
+
+    .progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0;
+      background: var(--green);
+      z-index: 20;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 1.25rem 8vw 0;
+      font-size: 0.92rem;
+      letter-spacing: 0.01em;
+    }
+    header strong { font-weight: 560; }
+    header span { color: var(--muted); }
+
+    main { padding: 0 8vw 6rem; max-width: 1180px; }
+
+    section { padding: 5.5rem 0 1rem; }
+    section h2 {
+      font-family: Fraunces, serif;
+      font-weight: 460;
+      font-size: clamp(2.1rem, 4.6vw, 3.5rem);
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      margin: 0 0 1rem;
+      max-width: 16ch;
+    }
+    .lede { max-width: 38rem; color: var(--muted); margin: 0; }
+
+    .js .reveal {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .js .reveal.show { opacity: 1; transform: none; }
+    .js .d1 { transition-delay: 0.08s; }
+    .js .d2 { transition-delay: 0.16s; }
+    .js .d3 { transition-delay: 0.26s; }
+    .js .d4 { transition-delay: 0.36s; }
+
+    .hero { padding-top: 6vh; }
+    .kicker {
+      color: var(--green);
+      font-weight: 560;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-family: Fraunces, serif;
+      font-weight: 460;
+      font-size: clamp(2.6rem, 5.4vw, 4.4rem);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      margin: 0 0 1.25rem;
+      max-width: 14ch;
+    }
+    .hero p { max-width: 36rem; font-size: 1.25rem; }
+
+    .field-wrap { margin-top: 2rem; max-width: 560px; }
+    .field {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px;
+      min-height: 180px;
+    }
+    .dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #c8bfae;
+      justify-self: center;
+      transition: transform 0.7s ease, background 0.7s ease, opacity 0.7s ease;
+    }
+    .field.settled .dot { opacity: 0.28; transform: scale(0.72); }
+    .field.settled .dot.keep {
+      opacity: 1;
+      transform: scale(1.35);
+      background: var(--green);
+    }
+    .caption {
+      margin-top: 1rem;
+      min-height: 1.6em;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .news {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 2rem;
+      align-items: start;
+    }
+    .date-card, .card, .person, .note, .ask {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    .date-card { padding: 1.5rem 1.6rem 1.4rem; }
+    .date-card .when {
+      font-family: Fraunces, serif;
+      font-size: 1.8rem;
+      margin: 0 0 0.4rem;
+    }
+    .facts { list-style: none; padding: 0; margin: 1.5rem 0 0; }
+    .facts li {
+      padding: 0.85rem 0;
+      border-top: 1px solid var(--line);
+    }
+    .facts strong { font-weight: 560; }
+
+    .steps { display: grid; gap: 0.8rem; margin-top: 1.6rem; }
+    .step {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.9rem;
+      align-items: start;
+      padding: 0.9rem 1rem;
+      background: var(--card);
+      border-radius: 14px;
+      border: 1px solid var(--line);
+    }
+    .n {
+      width: 1.8rem; height: 1.8rem;
+      border-radius: 50%;
+      background: var(--green-soft);
+      color: var(--green);
+      display: grid; place-items: center;
+      font-weight: 560;
+      font-size: 0.9rem;
+    }
+
+    .bits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.4rem;
+    }
+    .bit {
+      width: 92px;
+      height: 64px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      display: grid;
+      place-items: center;
+      font-weight: 560;
+      position: relative;
+      overflow: hidden;
+    }
+    .bit .q, .bit .a {
+      position: absolute;
+      transition: transform 0.45s ease, opacity 0.45s ease;
+    }
+    .bit .a { opacity: 0; transform: translateY(8px); }
+    .bits.show .bit .q { opacity: 0; transform: translateY(-8px); }
+    .bits.show .bit .a { opacity: 1; transform: none; }
+    .bit.yes .a { color: var(--green); }
+    .bit.no .a { color: var(--clay); }
+
+    .people {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.4rem;
+    }
+    .person { padding: 1.3rem 1.4rem 1.2rem; }
+    .person h3 { margin: 0 0 0.4rem; font-size: 1.15rem; font-weight: 560; }
+    .person p { margin: 0; color: var(--muted); }
+
+    .scale {
+      margin-top: 1.6rem;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 1.3rem 1.4rem;
+    }
+    .bar {
+      height: 14px;
+      border-radius: 99px;
+      background: #efe8da;
+      overflow: hidden;
+      display: flex;
+    }
+    .bar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--green);
+      transition: width 1s ease;
+    }
+    .scale.in .bar i { width: 68%; }
+    .scale .labels {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 0.55rem;
+    }
+
+    .money {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.8rem;
+      margin-top: 1.4rem;
+    }
+    .card { padding: 1.2rem 1.15rem; }
+    .card .num {
+      font-family: Fraunces, serif;
+      font-size: 1.7rem;
+      margin: 0 0 0.3rem;
+    }
+    .card p { margin: 0; color: var(--muted); font-size: 1rem; }
+
+    .notes { display: grid; gap: 0.7rem; margin-top: 1.2rem; }
+    .note { padding: 1rem 1.15rem; }
+    .note strong { font-weight: 560; }
+
+    .ask {
+      margin-top: 1.2rem;
+      padding: 1.5rem 1.4rem;
+      background: var(--green);
+      color: #f6fff9;
+      border: none;
+    }
+    .ask p { margin: 0.4rem 0 0; max-width: 38rem; }
+
+    footer {
+      padding: 0 8vw 3rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 1180px;
+    }
+
+    @media (max-width: 800px) {
+      header, main, footer { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .news, .people, .money { grid-template-columns: 1fr; }
+      .hero { min-height: auto; padding-top: 3.5rem; }
+      section { padding-top: 3.4rem; }
+      .field { gap: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .js .reveal { opacity: 1; transform: none; transition: none; }
+      .dot, .bit .q, .bit .a, .bar i { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <header>
+    <strong>Neo Antigene</strong>
+    <span>About four minutes</span>
+  </header>
+
+  <main>
+    <section class="hero" id="start">
+      <p class="kicker reveal">What we do</p>
+      <h1 class="reveal d1">The vaccine is real. The list is still a guess.</h1>
+      <p class="reveal d2">A personal cancer vaccine holds a few dozen bits of one person’s tumor. A computer chooses the bits. We check that choice on the patient’s own blood.</p>
+      <div class="field-wrap reveal d3">
+        <div class="field" id="field" aria-hidden="true"></div>
+        <p class="caption" id="caption">A tumor has thousands of possible bits.</p>
+      </div>
+    </section>
+
+    <section id="news">
+      <div class="news">
+        <div>
+          <h2 class="reveal">What changed in August</h2>
+          <p class="lede reveal d1">Moderna and Merck reported that a vaccine built from a patient’s own tumor, given with Keytruda after the melanoma was removed, kept the cancer away longer than Keytruda alone.</p>
+        </div>
+        <aside class="date-card reveal d2">
+          <p class="when">August 2026</p>
+          <p>First time this kind of vaccine has won a large trial. The size of the benefit is not public yet. Full numbers are expected later this month. Survival is still being counted.</p>
+        </aside>
+      </div>
+      <ul class="facts">
+        <li class="reveal"><strong>Keytruda</strong> is a drug that lets immune cells keep going. The vaccine names the target. Keytruda lets the response run.</li>
+        <li class="reveal d1"><strong>The patients</strong> had melanoma that had been fully cut out. The goal was to stop it coming back.</li>
+        <li class="reveal d2"><strong>The shot</strong> is different for every person. The COVID vaccine is one recipe for everyone. This one is written from that tumor.</li>
+      </ul>
+    </section>
+
+    <section id="gap">
+      <h2 class="reveal">Their trial left one question open</h2>
+      <p class="lede reveal d1">The package works. The trial was not built to ask whether a better choice of bits would have kept more people well.</p>
+      <div class="steps">
+        <div class="step reveal"><span class="n">1</span><div>Sequence the tumor, a normal sample, and the tumor’s RNA. Type the patient’s HLA, the slots that display protein pieces to immune cells.</div></div>
+        <div class="step reveal d1"><span class="n">2</span><div>A private program picks up to 34 bits and writes them into one strand of mRNA.</div></div>
+        <div class="step reveal d2"><span class="n">3</span><div>The person is injected. Success is whether the cancer stays away. The 34 bits are never scored one by one in public.</div></div>
+      </div>
+    </section>
+
+    <section id="check">
+      <h2 class="reveal">We lock the list, then ask the blood</h2>
+      <p class="lede reveal d1">For each patient we choose about twenty bits and freeze that choice before anyone sees a result. A lab makes the bits and mixes them with a sample of that person’s blood. Each bit comes back yes or no.</p>
+      <div class="bits" id="bits" aria-label="Example results from a blood test">
+        <div class="bit yes"><span class="q">?</span><span class="a">Yes</span></div>
+        <div class="bit no"><span class="q">?</span><span class="a">No</span></div>
+        <div class="bit no"><span class="q">?</span><span class="a">No</span></div>
+        <div class="bit yes"><span class="q">?</span><span class="a">Yes</span></div>
+        <div class="bit no"><span class="q">?</span><span class="a">No</span></div>
+        <div class="bit yes"><span class="q">?</span><span class="a">Yes</span></div>
+        <div class="bit no"><span class="q">?</span><span class="a">No</span></div>
+        <div class="bit no"><span class="q">?</span><span class="a">No</span></div>
+      </div>
+      <p class="lede reveal d2" style="margin-top:1rem">A computer score is a guess. The blood test is the answer. We do not inject a vaccine in this study.</p>
+    </section>
+
+    <section id="people">
+      <h2 class="reveal">Two other parties, one door</h2>
+      <div class="people">
+        <article class="person reveal">
+          <h3>A cancer center</h3>
+          <p>Consents the patient and connects the blood sample to that person’s tumor. A hired lab cannot supply the patients. This introduction is the part we need.</p>
+        </article>
+        <article class="person reveal d1">
+          <h3>A contract lab</h3>
+          <p>Makes the bits and runs the immune-cell test. About twenty-five thousand dollars a person. They send back yes or no. They do not own the result.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="forty">
+      <h2 class="reveal">Forty people, one question</h2>
+      <p class="lede reveal d1">Did our locked list get about twice as many immune yeses as the usual computer guess?</p>
+      <div class="scale" id="scale">
+        <div class="bar" role="img" aria-label="A clear gap is visible. A small gap is not."><i></i></div>
+        <div class="labels"><span>Usual guess</span><span>About twice as many yeses</span></div>
+      </div>
+      <ul class="facts">
+        <li class="reveal">A gap that large can show up in about forty people.</li>
+        <li class="reveal d1">A smaller gap means this study cannot tell. We will say that. It is a result.</li>
+        <li class="reveal d2">These forty grade the rule we walked in with. A later group is the first place a new rule can be trained, then tested on people it has never seen.</li>
+      </ul>
+    </section>
+
+    <section id="money">
+      <h2 class="reveal">How this becomes a business</h2>
+      <div class="money">
+        <article class="card reveal">
+          <p class="num">$0</p>
+          <p>Patients do not pay us.</p>
+        </article>
+        <article class="card reveal d1">
+          <p class="num">Raising</p>
+          <p>This study is what the raise is for.</p>
+        </article>
+        <article class="card reveal d2">
+          <p class="num">A license</p>
+          <p>If the list is clearly better, a company that already makes these vaccines can pay to use it.</p>
+        </article>
+      </div>
+      <p class="lede reveal d3" style="margin-top:1.2rem">If the study cannot tell our list from the usual guess, there is nothing to license yet.</p>
+    </section>
+
+    <section id="detail">
+      <h2 class="reveal">Finer points, still in plain words</h2>
+      <div class="notes">
+        <article class="note reveal"><strong>One person does not transfer.</strong> The bits that work for one tumor are usually absent from the next person. A rule learned across many people can be reused. A list copied from one patient cannot.</article>
+        <article class="note reveal d1"><strong>Their recipe is private.</strong> We know Moderna’s inputs and that the cap is 34 bits. We do not have the weights. On 29 colon cancers, immune cells had already recognized 64 bits. Their list included 26 of those 64. They never published which 26, so that score cannot be copied.</article>
+        <article class="note reveal d2"><strong>A public paper names 94 colon hits,</strong> as a gene and the letter that changed, across 51 patients. That is a larger, related list. It is not Moderna’s score sheet, and it is not enough, by itself, to crown a better program.</article>
+        <article class="note reveal d3"><strong>We have not shown our list is better.</strong> The study is how we find out. A clean “we cannot tell” is a result we can stand behind.</article>
+      </div>
+    </section>
+
+    <section id="ask">
+      <h2 class="reveal">What we need</h2>
+      <div class="ask reveal d1">
+        <strong>One cancer center.</strong>
+        <p>It consents patients and matches each blood sample to that person’s tumor. Everything else in this study can be hired.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Neo Antigene. This page explains the study. It is not a claim that our list is already better.
+  </footer>
+
+  <script>
+    document.documentElement.classList.add("js");
+    const field = document.getElementById("field");
+    const caption = document.getElementById("caption");
+    const keep = new Set([2, 5, 8, 11, 15, 18, 22, 27, 31, 36, 40, 44, 49, 53, 58, 62, 66, 70, 74, 79]);
+    for (let i = 0; i < 84; i++) {
+      const dot = document.createElement("span");
+      dot.className = "dot" + (keep.has(i) ? " keep" : "");
+      field.appendChild(dot);
+    }
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const settle = () => {
+      field.classList.add("settled");
+      caption.textContent = "A vaccine can carry about twenty. Those are the ones we test.";
+    };
+    if (reduced) settle();
+    else setTimeout(settle, 900);
+
+    const bits = document.getElementById("bits");
+    const scale = document.getElementById("scale");
+    const watcher = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("show");
+        if (entry.target === scale) entry.target.classList.add("in");
+      });
+    }, { threshold: 0.35 });
+    document.querySelectorAll(".reveal").forEach((el) => watcher.observe(el));
+    watcher.observe(bits);
+    watcher.observe(scale);
+
+    const bar = document.getElementById("progress");
+    const onScroll = () => {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%";
+    };
+    document.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>
