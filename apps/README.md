@@ -118,34 +118,30 @@ for the same reason.
   which is fine at shortlist size and would not be at genome scale.
 - Mobile is not a target; the layout is built for a laptop screen share.
 
-## Deploy the UI on Vercel
+## Deploy on Vercel
 
-The frontend deploys to Vercel. The API does **not**: MHCflurry runs take
-minutes and need a long-lived process, so host the API separately (Railway,
-Render, Fly, a VM) and point the UI at it.
+One Vercel project, two services, configured in the repository-root
+`vercel.json`. Leave the project's Root Directory at the repository root.
+Do not point it at `apps/web`.
 
-**1. Import from GitHub (permanent)**
+| Service | Root | Public path |
+| --- | --- | --- |
+| `web` | `apps/web` | everything except `/api` |
+| `api` | repository root (`app:app`) | `/api` and `/api/*` |
 
-1. [vercel.com/new](https://vercel.com/new) → import `buyan-kh/Neo-Antigene`
-2. Set **Root Directory** to `apps/web`
-3. Add environment variable:
-   - `NEXT_PUBLIC_API_BASE` = your API URL (e.g. `https://api.example.com`)
-4. Deploy
-
-**2. CLI**
+The browser calls `/api/...` on the same host as the UI. No
+`NEXT_PUBLIC_API_BASE` is required for that deploy. Set it only when the UI
+should call an API on a different host. `make demo` still sets it to the
+local uvicorn origin.
 
 ```bash
-cd apps/web
 npx vercel login
-npx vercel link          # root directory is already apps/web
-npx vercel env add NEXT_PUBLIC_API_BASE production
+npx vercel link    # from the repository root
+npx vercel dev     # both services
 npx vercel --prod
 ```
 
-**3. CORS**
-
-The API allows `*.vercel.app` origins. If the API runs elsewhere, add its
-origin in `apps/api/neoantigene_api/main.py`.
-
-Without `NEXT_PUBLIC_API_BASE`, the UI defaults to `http://127.0.0.1:8000`,
-which only works on your laptop.
+The API process is still in-memory, and a ranking run can outlive one
+function instance. MHCflurry's downloaded model weights are not part of the
+deploy; until they are present the API reports that presentation models are
+missing. The static page in `share/` is not one of these services.
