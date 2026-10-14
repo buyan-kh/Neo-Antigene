@@ -1,0 +1,20 @@
+{
+  "bug_class": "correction_applied_after_prefiltering",
+  "bug_found": true,
+  "corrected_method": "benjamini_hochberg",
+  "corrected_significant": [
+    "feat_0103",
+    "feat_0123",
+    "feat_0129",
+    "feat_0398",
+    "feat_0405",
+    "feat_0433",
+    "feat_0451",
+    "feat_0472"
+  ],
+  "location": {
+    "file": "bin/select_candidates.py",
+    "line_end": 48,
+    "line_start": 34
+  }
+}

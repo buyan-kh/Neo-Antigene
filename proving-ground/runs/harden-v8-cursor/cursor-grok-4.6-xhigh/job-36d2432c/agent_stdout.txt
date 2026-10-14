@@ -1,0 +1,5 @@
+Wrote `output/submission.json`.
+
+**30** alleles appear in both files; **16** of those matches are written differently across the two sources.
+
+Normalization used the two-field form `HLA-<gene>*<dd>:<dd>` (with expression/group suffixes kept), including compact names, missing asterisks, extra fields, `Cw` → `C`, and serological aliases such as A3, B7, B27, Cw7, and DQ8. Names that already parse as complete alleles were not folded into a different allele via the alias table, so `A0206` stays `HLA-A*02:06` and `A*0104` stays `HLA-A*01:04`.

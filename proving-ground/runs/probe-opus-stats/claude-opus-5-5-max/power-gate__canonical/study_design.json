@@ -1,0 +1,14 @@
+{
+  "alpha": 0.05,
+  "claimed_effect": {
+    "type": "odds_ratio",
+    "value": 2.5
+  },
+  "notes": "Power is defined as the probability, under Fisher's noncentral hypergeometric distribution with the stated odds ratio, of observing at least the critical overlap; the critical overlap is the smallest count whose upper-tail probability under the central hypergeometric null is at most alpha.",
+  "observed_overlap": 5,
+  "population_size": 5000,
+  "power_definition": "fishers_noncentral_hypergeometric",
+  "sample_size": 60,
+  "successes_in_population": 120,
+  "target_power": 0.8
+}

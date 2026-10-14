@@ -1,0 +1,9 @@
+The pipeline results have been evaluated against `transcripts.fasta`, `annotation.gff3` (Ensembl release 114), and `variants.vcf`.
+
+### Findings
+- **Drift Detected:** `true`
+- **Mechanism:** `annotation_release_mismatch` (`cds_offsets.py` was built from Ensembl release 113, whereas sequence and annotation files are from Ensembl release 114).
+- **Magnitude:** `1` codon `upstream` (CDS start coordinates in `cds_offsets.py` were 3 bp / 1 codon upstream of the annotated release 114 CDS start for affected transcripts).
+- **Affected Variants:** `ENST00000000003:104`, `ENST00000000005:76`, `ENST00000000007:195`, `ENST00000000008:174`, `ENST00000000009:63`, `ENST00000000010:342`, `ENST00000000012:303`.
+
+The corrected results have been calculated directly from the sequences and annotation and written to `./output/submission.json`.

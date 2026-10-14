@@ -1,0 +1,7 @@
+The reported neoORFs are wrong. Every variant is affected.
+
+`enumerate_downstream.py` starts the new stretch **one codon after** the codon that contains the variant (`first_codon = zero_based // 3 + 1`). The stretch should begin at that codon itself. Cached CDS spans match the GFF, REF alleles match the sequences, and translation uses the standard code and stops at `*`.
+
+That is a **1-codon downstream** shift on all 12 variants. Reported peptides are the correct ones with the first residue dropped (and for `ENST00000000003:131` the first codon is already a stop, so the reported tail is translation past that stop).
+
+Corrected results are in `output/submission.json`.

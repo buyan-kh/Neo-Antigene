@@ -1,0 +1,13 @@
+The benchmark test set was contaminated by overlap with the training set (`predictor_training_set.csv`). Out of 1,486 total benchmark pairs, 594 pairs were present in the training set under non-standard string representations (differing in whitespace, character casing, and HLA allele nomenclature formatting).
+
+Due to this leakage, the reported benchmark metric was artificially inflated (AUROC of 1.000 on leaked pairs vs. a full reported AUROC of ~0.897). Evaluating strictly on the 892 genuinely unseen test pairs yields a corrected AUROC of ~0.7428.
+
+The review results and full list of leaked pairs have been written to `./output/submission.json`.The evaluation has been completed and written to `./output/submission.json`.
+
+### Summary of Results
+- **Status**: Contaminated (`"train_test_overlap"`)
+- **Total benchmark pairs**: 1,486
+- **Leaked pairs detected**: 594 (overlapping training records with varying whitespace, casing, or HLA formatting)
+- **Clean unseen pairs**: 892
+- **Trusted metric**: `false`
+- **Corrected AUROC**: `0.742775` (down from reported full benchmark AUROC of `0.897448`)

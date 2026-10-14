@@ -1,0 +1,8 @@
+The drift analysis has been completed and the corrected downstream peptide results have been written to `./output/submission.json`.
+
+### Summary of Findings
+- **Drift Detected**: `true`
+- **Mechanism**: `ensembl_release_coordinate_offset` (the reference files target Ensembl release 114, while `enumerate_downstream.py` targeted release 113, dropping the variant-containing codon)
+- **Magnitude**: Offset of 1 codon `downstream`
+- **Affected Variants**: All 12 variants in `variants.vcf`
+- **Corrected Results**: Recalculated from CDS sequences and variant positions, including the codon containing each frameshift variant.

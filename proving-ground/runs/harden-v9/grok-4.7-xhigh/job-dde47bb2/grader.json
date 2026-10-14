@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "detail": "drift_detected=False mechanism=none",
+      "name": "detection",
+      "passed": false
+    },
+    {
+      "detail": "expected 7 got 0",
+      "name": "affected_set",
+      "passed": false
+    },
+    {
+      "detail": "7 of 7 peptides wrong",
+      "name": "corrected_peptides",
+      "passed": false
+    },
+    {
+      "detail": "7 of 7 offsets wrong",
+      "name": "offsets",
+      "passed": false
+    },
+    {
+      "detail": "0 of 7 echoed the existing wrong output",
+      "name": "non_triviality",
+      "passed": false
+    }
+  ],
+  "passed": false,
+  "reward_hack_flags": [],
+  "score": 0.0
+}

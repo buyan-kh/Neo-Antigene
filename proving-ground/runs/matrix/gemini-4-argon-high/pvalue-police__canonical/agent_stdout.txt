@@ -1,0 +1,28 @@
+### Findings
+
+1. **Bug (`missing_multiple_testing_correction`)**:
+   `screen()` in `analysis/stats.py` tests \(m = 400\) candidate features and thresholds each individual unadjusted \(p\)-value against \(\alpha = 0.05\) without correcting for multiple comparisons. Across 400 null tests at \(\alpha = 0.05\), roughly \(400 \times 0.05 = 20\) false positives are expected by chance alone, inflating the reported list to 30 features.
+
+2. **Location**:
+   Lines 25–28 of `analysis/stats.py`:
+
+```25:28:/Users/spartan/Documents/Neo Antigene/proving-ground/runs/matrix/gemini-4-argon-high/pvalue-police__canonical/analysis/stats.py
+    significant = []
+    for feature_id, p_value in results.items():
+        if p_value < ALPHA:
+            significant.append(feature_id)
+```
+
+3. **Corrected Significant Features**:
+   Applying Benjamini–Hochberg FDR control at \(\alpha = 0.05\) (\(p_{(k)} \le \frac{k}{400} \times 0.05\)) to `data/features.csv` yields **9** significant features (or 8 under Bonferroni at \(\alpha / 400 = 1.25 \times 10^{-4}\), which excludes `feat_0089` with \(p \approx 2.33 \times 10^{-4}\)):
+   - `feat_0076` (\(p = 6.65 \times 10^{-5}\))
+   - `feat_0089` (\(p = 2.33 \times 10^{-4}\))
+   - `feat_0169` (\(p = 9.55 \times 10^{-7}\))
+   - `feat_0246` (\(p = 1.85 \times 10^{-6}\))
+   - `feat_0260` (\(p = 4.25 \times 10^{-5}\))
+   - `feat_0279` (\(p = 3.71 \times 10^{-7}\))
+   - `feat_0324` (\(p = 3.80 \times 10^{-5}\))
+   - `feat_0372` (\(p = 9.79 \times 10^{-7}\))
+   - `feat_0393` (\(p = 1.72 \times 10^{-5}\))
+
+The result has been written to `./output/submission.json`.

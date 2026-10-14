@@ -1,0 +1,11 @@
+## Verdict
+
+The reported list **cannot be trusted**. Benjamini–Hochberg is implemented correctly in `stats.py`, but **`analysis/prepare.py` drops every feature with raw two-sided p ≥ 0.05** before `run.py` ever sees them. FDR is then run on only those 34 survivors (`m = 34`), not on all **400** measured features. That inflates significance: the pipeline calls **34** hits; with BH on the full panel at 5% FDR there are **8**.
+
+**Bug class:** `correction_applied_after_prefiltering`  
+**Location:** `analysis/prepare.py` lines 33–37 (the `kept` set built with `two_sided_p(...) < ALPHA`).
+
+**Corrected significant features (BH, all 400 features, q ≤ 0.05):**  
+`feat_0011`, `feat_0039`, `feat_0103`, `feat_0129`, `feat_0135`, `feat_0180`, `feat_0273`, `feat_0293`
+
+Written to [`output/submission.json`](output/submission.json).

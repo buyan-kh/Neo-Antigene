@@ -1,0 +1,3 @@
+run dir: /Users/spartan/Documents/Neo Antigene/proving-ground/runs/probe-opus-stats
+
+>>> claude-opus-5-5-max | power-gate:canonical

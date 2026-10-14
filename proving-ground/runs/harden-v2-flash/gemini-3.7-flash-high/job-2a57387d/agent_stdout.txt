@@ -1,0 +1,28 @@
+The analysis code was reviewed, and a multiple-testing flaw was identified: FDR correction is applied only after prefiltering candidates using an uncorrected p-value threshold (`p_value < ALPHA`). When prefiltered to candidates with $p < 0.05$, the highest candidate p-value trivially satisfies $q \le 0.05$, resulting in all 34 prefiltered candidates being accepted.
+
+Applying the Benjamini-Hochberg procedure across all 400 features yields 8 significant features at FDR $q \le 0.05$.
+
+The results have been written to `./output/submission.json`:
+
+```json
+{
+  "bug_found": true,
+  "bug_class": "correction_applied_after_prefiltering",
+  "location": {
+    "file": "analysis/stats.py",
+    "line_start": 40,
+    "line_end": 45
+  },
+  "corrected_method": "benjamini_hochberg",
+  "corrected_significant": [
+    "feat_0011",
+    "feat_0039",
+    "feat_0103",
+    "feat_0129",
+    "feat_0135",
+    "feat_0180",
+    "feat_0273",
+    "feat_0293"
+  ]
+}
+```

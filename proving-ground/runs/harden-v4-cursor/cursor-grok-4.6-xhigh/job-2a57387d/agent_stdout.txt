@@ -1,0 +1,9 @@
+The reported list cannot be trusted. Benjamini–Hochberg is applied only after `analysis/prepare.py` drops every feature with an uncorrected p ≥ 0.05, so the FDR correction never sees the full panel of 400 tests.
+
+Wrote `output/submission.json` with:
+
+- **bug_class:** `correction_applied_after_prefiltering` (`analysis/prepare.py` lines 33–37)
+- **corrected_method:** Benjamini–Hochberg at 5% on all measured features
+- **corrected_significant:** `feat_0011`, `feat_0039`, `feat_0103`, `feat_0129`, `feat_0135`, `feat_0180`, `feat_0273`, `feat_0293`
+
+The project’s z-test is kept; only the multiple-testing family is restored. That cuts the reported 34 features down to 8.

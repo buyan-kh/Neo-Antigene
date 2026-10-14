@@ -1,0 +1,3 @@
+The reported list cannot be trusted. `analysis/prepare.py` drops every feature whose raw two-sided z-test p-value is not below 0.05, and Benjamini–Hochberg is then applied only to those 34 survivors. That makes the false-discovery-rate threshold too easy, so the screen calls 34 features significant instead of the 8 that survive when the same test and a 5% Benjamini–Hochberg correction are applied to all 400 measured features.
+
+The corrected significant features are `feat_0011`, `feat_0039`, `feat_0103`, `feat_0129`, `feat_0135`, `feat_0180`, `feat_0273`, and `feat_0293`. That result is in `output/submission.json`.

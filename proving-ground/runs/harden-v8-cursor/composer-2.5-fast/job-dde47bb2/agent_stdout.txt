@@ -1,0 +1,31 @@
+## Verdict
+
+**Drift detected.** Every row in `reported_neoorfs.csv` matches what `enumerate_downstream.py` produces, but that logic is wrong for all 12 variants.
+
+## Mechanism
+
+`downstream_start_skips_variant_codon` — in `downstream_peptide`, the tail starts at `(zero_based // 3 + 1) * 3`, i.e. one codon **after** the codon that contains the indel. The reported `start_offset` uses the same off-by-one (`zero_based // 3 + 1` instead of zero-based `zero_based // 3`).
+
+```89:95:enumerate_downstream.py
+def downstream_peptide(cds, cds_pos_1based, ref, alt):
+    """Return the frameshifted tail and the zero-based codon it starts at."""
+    zero_based = cds_pos_1based - 1
+    mutant = cds[:zero_based] + alt + cds[zero_based + len(ref):]
+    first_codon = zero_based // 3 + 1
+    tail = mutant[first_codon * 3:]
+    return translate(tail), first_codon
+```
+
+CDS extraction from `cds_offsets.py` matches `annotation.gff3` (no release mismatch).
+
+## Magnitude
+
+**1 codon downstream** for every variant (`start_offset` too high by 1; translation begins one codon late, usually dropping the first residue of the neo-ORF).
+
+## Notable case
+
+`ENST00000000003:131`: including the variant codon yields `*` immediately; skipping it yields a long bogus peptide (`ENSDCKIYSPLLSREMRPLAWVCDRVQLLVLDL*`).
+
+## Output
+
+Corrected results for all 12 variants are in `./output/submission.json`.

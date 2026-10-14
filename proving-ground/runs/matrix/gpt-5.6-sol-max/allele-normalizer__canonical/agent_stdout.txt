@@ -1,0 +1,5 @@
+Created `output/submission.json`.
+
+- Joined rows: 30
+- Missed by exact-text matching: 30
+- Mapping covers all 69 raw names.

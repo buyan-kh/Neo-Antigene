@@ -1,0 +1,23 @@
+## Verdict
+
+**Drift detected.** All 12 variants in `reported_neoorfs.csv` are wrong.
+
+## Mechanism
+
+In `enumerate_downstream.py`, `downstream_peptide` sets `first_codon = zero_based // 3 + 1` and slices from `first_codon * 3`. That skips the codon that contains the variant and starts one codon **downstream**. The spec requires the neoORF to begin at the **first codon containing the variant** (zero-based codon index `zero_based // 3`).
+
+The README’s note about stale `cds_offsets.py` is a red herring: cached CDS spans match `annotation.gff3` when transcript coordinates use `genomic − transcript_origin` (1000000).
+
+## Magnitude
+
+- **1 codon** downstream (both `start_offset` and peptide sequence are shifted by one codon).
+
+## Output
+
+Full corrected results are in [`output/submission.json`](output/submission.json), including all affected variant IDs and independently computed peptides. Examples:
+
+| Variant | Reported | Corrected |
+|---------|----------|-----------|
+| `ENST00000000001:268` | `G*` @ 90 | `HG*` @ 89 |
+| `ENST00000000003:131` | long peptide @ 44 | `*` @ 43 (stop in variant codon) |
+| `ENST00000000011:200` | `SQVIRN...` @ 67 | `DSQVIRN...` @ 66 |

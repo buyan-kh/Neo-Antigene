@@ -1,0 +1,5 @@
+The merged table is in `output/submission.json`.
+
+- **30** alleles appear in both files (`joined_count`).
+- **16** of those are spelled differently in the two files (`naive_dropped_count`), so an exact string join would drop them.
+- Names were reconciled to the two-field form `HLA-<gene>*<dd>:<dd>`, with expression or group suffix letters kept (`N`, `G`). Extra fields were collapsed, missing `HLA-` or `*` were restored, and serological shorthand (`A3`, `Cw7`) was taken from the alias table. `HLA-A*01:04` and `HLA-A*01:04N`, and `HLA-A*02:01` and `HLA-A*02:01G`, stay separate.

@@ -1,0 +1,8 @@
+The review of the screening analysis is complete.
+
+### Findings
+- **Bug Class**: `correction_applied_after_prefiltering`
+- **Location**: `analysis/stats.py`, lines 39–44. The code filters features with raw p-values below `ALPHA` into a `candidates` dictionary before calling `adjust_fdr(candidates)`. This distorts the total hypothesis count $m$ and applies Benjamini-Hochberg FDR control only to pre-screened features.
+- **Corrected Significant Features (Benjamini-Hochberg at $\alpha = 0.05$)**: 9 features (`feat_0076`, `feat_0089`, `feat_0169`, `feat_0246`, `feat_0260`, `feat_0279`, `feat_0324`, `feat_0372`, `feat_0393`).
+
+The results have been written to `./output/submission.json`.

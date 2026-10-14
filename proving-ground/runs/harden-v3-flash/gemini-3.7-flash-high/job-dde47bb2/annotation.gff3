@@ -1,0 +1,39 @@
+##gff-version 3
+##ensembl-release 114
+##coordinates transcript-relative, 1-based inclusive
+ENST00000000001	ensembl	five_prime_UTR	1	61	.	+	.	Parent=transcript:ENST00000000001
+ENST00000000001	ensembl	CDS	62	601	.	+	0	ID=CDS:ENST00000000001;Parent=transcript:ENST00000000001
+ENST00000000001	ensembl	three_prime_UTR	602	684	.	+	.	Parent=transcript:ENST00000000001
+ENST00000000002	ensembl	five_prime_UTR	1	89	.	+	.	Parent=transcript:ENST00000000002
+ENST00000000002	ensembl	CDS	90	629	.	+	0	ID=CDS:ENST00000000002;Parent=transcript:ENST00000000002
+ENST00000000002	ensembl	three_prime_UTR	630	708	.	+	.	Parent=transcript:ENST00000000002
+ENST00000000003	ensembl	five_prime_UTR	1	70	.	+	.	Parent=transcript:ENST00000000003
+ENST00000000003	ensembl	CDS	71	610	.	+	0	ID=CDS:ENST00000000003;Parent=transcript:ENST00000000003
+ENST00000000003	ensembl	three_prime_UTR	611	657	.	+	.	Parent=transcript:ENST00000000003
+ENST00000000004	ensembl	five_prime_UTR	1	89	.	+	.	Parent=transcript:ENST00000000004
+ENST00000000004	ensembl	CDS	90	629	.	+	0	ID=CDS:ENST00000000004;Parent=transcript:ENST00000000004
+ENST00000000004	ensembl	three_prime_UTR	630	734	.	+	.	Parent=transcript:ENST00000000004
+ENST00000000005	ensembl	five_prime_UTR	1	22	.	+	.	Parent=transcript:ENST00000000005
+ENST00000000005	ensembl	CDS	23	562	.	+	0	ID=CDS:ENST00000000005;Parent=transcript:ENST00000000005
+ENST00000000005	ensembl	three_prime_UTR	563	639	.	+	.	Parent=transcript:ENST00000000005
+ENST00000000006	ensembl	five_prime_UTR	1	86	.	+	.	Parent=transcript:ENST00000000006
+ENST00000000006	ensembl	CDS	87	626	.	+	0	ID=CDS:ENST00000000006;Parent=transcript:ENST00000000006
+ENST00000000006	ensembl	three_prime_UTR	627	737	.	+	.	Parent=transcript:ENST00000000006
+ENST00000000007	ensembl	five_prime_UTR	1	56	.	+	.	Parent=transcript:ENST00000000007
+ENST00000000007	ensembl	CDS	57	596	.	+	0	ID=CDS:ENST00000000007;Parent=transcript:ENST00000000007
+ENST00000000007	ensembl	three_prime_UTR	597	669	.	+	.	Parent=transcript:ENST00000000007
+ENST00000000008	ensembl	five_prime_UTR	1	31	.	+	.	Parent=transcript:ENST00000000008
+ENST00000000008	ensembl	CDS	32	571	.	+	0	ID=CDS:ENST00000000008;Parent=transcript:ENST00000000008
+ENST00000000008	ensembl	three_prime_UTR	572	634	.	+	.	Parent=transcript:ENST00000000008
+ENST00000000009	ensembl	five_prime_UTR	1	25	.	+	.	Parent=transcript:ENST00000000009
+ENST00000000009	ensembl	CDS	26	565	.	+	0	ID=CDS:ENST00000000009;Parent=transcript:ENST00000000009
+ENST00000000009	ensembl	three_prime_UTR	566	651	.	+	.	Parent=transcript:ENST00000000009
+ENST00000000010	ensembl	five_prime_UTR	1	84	.	+	.	Parent=transcript:ENST00000000010
+ENST00000000010	ensembl	CDS	85	624	.	+	0	ID=CDS:ENST00000000010;Parent=transcript:ENST00000000010
+ENST00000000010	ensembl	three_prime_UTR	625	715	.	+	.	Parent=transcript:ENST00000000010
+ENST00000000011	ensembl	five_prime_UTR	1	33	.	+	.	Parent=transcript:ENST00000000011
+ENST00000000011	ensembl	CDS	34	573	.	+	0	ID=CDS:ENST00000000011;Parent=transcript:ENST00000000011
+ENST00000000011	ensembl	three_prime_UTR	574	693	.	+	.	Parent=transcript:ENST00000000011
+ENST00000000012	ensembl	five_prime_UTR	1	87	.	+	.	Parent=transcript:ENST00000000012
+ENST00000000012	ensembl	CDS	88	627	.	+	0	ID=CDS:ENST00000000012;Parent=transcript:ENST00000000012
+ENST00000000012	ensembl	three_prime_UTR	628	716	.	+	.	Parent=transcript:ENST00000000012

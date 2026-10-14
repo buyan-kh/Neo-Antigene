@@ -1,0 +1,3 @@
+Created `output/submission.json`.
+
+Identified an uncorrected per-feature p-value threshold at `analysis/stats.py:26-28`. Benjamini–Hochberg selects 9 of 400 features; the JSON was validated.

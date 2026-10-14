@@ -1,0 +1,21 @@
+{
+  "bug_found": true,
+  "bug_class": "missing_multiple_testing_correction",
+  "location": {
+    "file": "analysis/stats.py",
+    "line_start": 25,
+    "line_end": 28
+  },
+  "corrected_method": "benjamini_hochberg",
+  "corrected_significant": [
+    "feat_0076",
+    "feat_0089",
+    "feat_0169",
+    "feat_0246",
+    "feat_0260",
+    "feat_0279",
+    "feat_0324",
+    "feat_0372",
+    "feat_0393"
+  ]
+}

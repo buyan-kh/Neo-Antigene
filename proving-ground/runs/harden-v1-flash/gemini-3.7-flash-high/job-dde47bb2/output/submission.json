@@ -1,0 +1,54 @@
+{
+  "drift_detected": true,
+  "mechanism": "annotation_release_mismatch",
+  "magnitude": {
+    "offset": 1,
+    "direction": "upstream"
+  },
+  "affected_variants": [
+    "ENST00000000003:104",
+    "ENST00000000005:76",
+    "ENST00000000007:195",
+    "ENST00000000008:174",
+    "ENST00000000009:63",
+    "ENST00000000010:342",
+    "ENST00000000012:362"
+  ],
+  "corrected": [
+    {
+      "variant_id": "ENST00000000003:104",
+      "downstream_peptide": "GEMRPLAWVCDRVQLLVLDL*",
+      "start_offset": 34
+    },
+    {
+      "variant_id": "ENST00000000005:76",
+      "downstream_peptide": "SCKYAPWTPSYSEA*",
+      "start_offset": 25
+    },
+    {
+      "variant_id": "ENST00000000007:195",
+      "downstream_peptide": "PTIGI*",
+      "start_offset": 64
+    },
+    {
+      "variant_id": "ENST00000000008:174",
+      "downstream_peptide": "DNVP*",
+      "start_offset": 57
+    },
+    {
+      "variant_id": "ENST00000000009:63",
+      "downstream_peptide": "GPVWPHRVLQLFVY*",
+      "start_offset": 20
+    },
+    {
+      "variant_id": "ENST00000000010:342",
+      "downstream_peptide": "NTNISHIPEYSS*",
+      "start_offset": 113
+    },
+    {
+      "variant_id": "ENST00000000012:362",
+      "downstream_peptide": "*",
+      "start_offset": 120
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+The reported peptides are **not** correct. The enumerator used a stale CDS span table (`cds_offsets.py`) after the transcript sequences and GFF3 were updated, so it sliced the wrong coding window.
+
+**What went wrong.** For 7 transcripts the cached CDS starts **3 nt (1 codon) upstream** of the annotated CDS. Variants were therefore applied one codon too early. `start_offset` is computed from CDSPOS alone, so those indices stayed right; only the peptides drifted. Five other variants matched because their cached spans already agreed with the annotation, or because an extra 3′ tail never reached translation.
+
+**Affected variants and corrected peptides** (independent translation of the annotated CDS, standard code, stop at first `*`):
+
+| variant | peptide | start_offset |
+| --- | --- | --- |
+| ENST00000000003:88 | `PPLLSREMRPLAWVCDRVQLLVLDL*` | 29 |
+| ENST00000000005:275 | `SHSDYCQHVGHVASDQHLSYTTRNGGGPTDSTVHQIGSGQYLGASINIRAFVNAPD*` | 91 |
+| ENST00000000007:112 | `FQAQLDEIVRCSRLDLRISIAEQFCPCPSIGI*` | 37 |
+| ENST00000000008:285 | `RGEAAQSVPHRADSAECLSQKRP*` | 94 |
+| ENST00000000009:259 | `TTG*` | 86 |
+| ENST00000000010:260 | `LSEGHQGIMGLTRTSR*` | 86 |
+| ENST00000000012:155 | `PAVRHPVDPGAHATIQIRVSWFMATPMDSHQQQGPLIRDINKENNNGYVGPLCLMCRPRHTKLGTGKHYI*` | 51 |
+
+Written to `output/submission.json` (`annotation_release_mismatch`, offset 1 codon upstream).

@@ -1,0 +1,7 @@
+The benchmark is contaminated. **514** of the 1,486 test pairs are also in the records the predictor was fit on, so the published score is not trustworthy.
+
+Those pairs sit in the three training panels (`panel_a.csv`, `panel_b.tsv`, and `panel_c.csv`). Matching them required normalizing allele names (`HLA-A*02:01`, `A*0201`, `A0201`, four-field IDs, and the `allele_id` map) and taking the uppercase core peptide out of the flanked sequences in `panel_b.tsv`. The 80 pairs listed in `held_out_from_fit.csv` are in the panels but were excluded from the fit, so they are not counted as leaked. The same peptide–allele pair never shows up in more than one panel.
+
+On the leaked pairs the predictor’s AUROC is 1.0. On the **972** test pairs that were not used to build it, the AUROC is **0.780**.
+
+The result is in `output/submission.json` (`mechanism`: `train_test_overlap`).

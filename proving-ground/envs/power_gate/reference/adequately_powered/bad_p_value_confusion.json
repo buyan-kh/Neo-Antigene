@@ -1,0 +1,8 @@
+{
+  "endorse_claim": true,
+  "min_sample_size_for_target_power": 235,
+  "p_value": 0.0,
+  "power": 0.0,
+  "reason_code": "adequately_powered",
+  "underpowered": false
+}

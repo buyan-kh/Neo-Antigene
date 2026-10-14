@@ -1,0 +1,60 @@
+The pipeline output contained errors caused by an annotation release mismatch (`cds_offsets.py` was derived from Ensembl release 113, whereas the transcripts, annotation, and variants were updated to release 114). For affected transcripts, the cached CDS start coordinate was shifted 1 codon (3 bp) upstream.
+
+The results have been analyzed and corrected peptides computed directly from the sequences and annotation. The submission has been written to `./output/submission.json`:
+
+```json
+{
+  "drift_detected": true,
+  "mechanism": "annotation_release_mismatch",
+  "magnitude": {
+    "offset": 1,
+    "direction": "upstream"
+  },
+  "affected_variants": [
+    "ENST00000000003:88",
+    "ENST00000000005:275",
+    "ENST00000000007:112",
+    "ENST00000000008:285",
+    "ENST00000000009:259",
+    "ENST00000000010:260",
+    "ENST00000000012:155"
+  ],
+  "corrected": [
+    {
+      "variant_id": "ENST00000000003:88",
+      "downstream_peptide": "PPLLSREMRPLAWVCDRVQLLVLDL*",
+      "start_offset": 29
+    },
+    {
+      "variant_id": "ENST00000000005:275",
+      "downstream_peptide": "SHSDYCQHVGHVASDQHLSYTTRNGGGPTDSTVHQIGSGQYLGASINIRAFVNAPD*",
+      "start_offset": 91
+    },
+    {
+      "variant_id": "ENST00000000007:112",
+      "downstream_peptide": "FQAQLDEIVRCSRLDLRISIAEQFCPCPSIGI*",
+      "start_offset": 37
+    },
+    {
+      "variant_id": "ENST00000000008:285",
+      "downstream_peptide": "RGEAAQSVPHRADSAECLSQKRP*",
+      "start_offset": 94
+    },
+    {
+      "variant_id": "ENST00000000009:259",
+      "downstream_peptide": "TTG*",
+      "start_offset": 86
+    },
+    {
+      "variant_id": "ENST00000000010:260",
+      "downstream_peptide": "LSEGHQGIMGLTRTSR*",
+      "start_offset": 86
+    },
+    {
+      "variant_id": "ENST00000000012:155",
+      "downstream_peptide": "PAVRHPVDPGAHATIQIRVSWFMATPMDSHQQQGPLIRDINKENNNGYVGPLCLMCRPRHTKLGTGKHYI*",
+      "start_offset": 51
+    }
+  ]
+}
+```

@@ -1,0 +1,7 @@
+{
+  "drift_detected": false,
+  "mechanism": "none",
+  "magnitude": {"offset": 0, "direction": "none"},
+  "affected_variants": [],
+  "corrected": []
+}

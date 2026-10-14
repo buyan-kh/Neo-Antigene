@@ -1,0 +1,20 @@
+Wrote **`output/submission.json`** after normalizing allele names (gene aliases, HLA formatting, two-field canonical form with expression/group suffixes) and inner-joining on canonical allele.
+
+### Results
+| Metric | Value |
+|--------|-------|
+| **joined_count** | **30** alleles in both sources |
+| **naive_dropped_count** | **16** matches where the raw strings differ between files |
+
+### Normalization (high level)
+- **`gene_aliases.tsv`**: short symbols (e.g. `A3`, `B7`, `Cw7`) → standard two-field names  
+- **Formatting fixes**: missing `HLA-`/`*`, compact 4-digit codes (`B1501`, `DQB10201`), `Cw` → `C`, extra resolution fields collapsed to two fields  
+- **Suffixes kept** where relevant (e.g. `HLA-A*02:01:01:01G` → `HLA-A*02:01G`, `HLA-A*01:04N` unchanged)
+
+### Not joined (panel-only in one file)
+- **A only**: `HLA-B*13:02`, `HLA-B*14:02`, `HLA-C*05:01`, `HLA-C*07:01` (from `Cw7`), `HLA-A*31:01`  
+- **B only**: `HLA-A*01:04N`, `HLA-A*02:01G`, `HLA-B*38:01`, `HLA-C*04:01`, `HLA-C*07:02`, `HLA-DRB1*04:01`, haplotype `DQA1*01:02-DQB1*05:01`
+
+The **`mapping`** object includes all **58** distinct raw strings from both CSVs. Payloads were checked against the source rows.
+
+Reproducible logic is in `merge.py` (`python3 merge.py` regenerates the JSON).

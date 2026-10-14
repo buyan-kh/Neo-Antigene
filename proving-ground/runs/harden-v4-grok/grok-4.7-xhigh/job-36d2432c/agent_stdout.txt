@@ -1,0 +1,5 @@
+30 alleles appear in both files. 16 of those are not spelled the same way in the two files.
+
+The merged table is in `output/submission.json`. Each allele is in the two-field form `HLA-<gene>*<dd>:<dd>`, with an expression or group suffix kept when the name has one. Payloads stay with their source.
+
+Names were matched by reading them as the same HLA allele when the spelling differed: missing `HLA-` or `*`, missing colons, letter case, extra resolution fields, trailing spaces, and the older serological names in the alias table (`A3` to `HLA-A*03:01`, `Cw7` to `HLA-C*07:01`). `HLA-A*01:04N` and `HLA-A*02:01G` stay distinct from `HLA-A*01:04` and `HLA-A*02:01`.

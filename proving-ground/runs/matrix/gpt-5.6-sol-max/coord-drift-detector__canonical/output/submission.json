@@ -1,0 +1,84 @@
+{
+  "drift_detected": true,
+  "mechanism": "ensembl_release_coordinate_offset",
+  "magnitude": {
+    "offset": 1,
+    "direction": "downstream"
+  },
+  "affected_variants": [
+    "ENST00000000001:270",
+    "ENST00000000002:161",
+    "ENST00000000003:194",
+    "ENST00000000004:186",
+    "ENST00000000005:84",
+    "ENST00000000006:349",
+    "ENST00000000007:83",
+    "ENST00000000008:245",
+    "ENST00000000009:165",
+    "ENST00000000010:109",
+    "ENST00000000011:298",
+    "ENST00000000012:262"
+  ],
+  "corrected": [
+    {
+      "variant_id": "ENST00000000001:270",
+      "downstream_peptide": "EFRLKCN*",
+      "start_offset": 89
+    },
+    {
+      "variant_id": "ENST00000000002:161",
+      "downstream_peptide": "CG*",
+      "start_offset": 53
+    },
+    {
+      "variant_id": "ENST00000000003:194",
+      "downstream_peptide": "GLATSSSVTLAPSVVSYPRLY*",
+      "start_offset": 64
+    },
+    {
+      "variant_id": "ENST00000000004:186",
+      "downstream_peptide": "ESPE*",
+      "start_offset": 61
+    },
+    {
+      "variant_id": "ENST00000000005:84",
+      "downstream_peptide": "FDGRWSKQRWPGW*",
+      "start_offset": 27
+    },
+    {
+      "variant_id": "ENST00000000006:349",
+      "downstream_peptide": "VLNSVNYCQHVGHVASVNQHLSYTTRNGGGPTDSTVHQIIGSGQYLGASIIRAFVAP*",
+      "start_offset": 116
+    },
+    {
+      "variant_id": "ENST00000000007:83",
+      "downstream_peptide": "SRAAAE*",
+      "start_offset": 27
+    },
+    {
+      "variant_id": "ENST00000000008:245",
+      "downstream_peptide": "SEQFARLWDQWATKIVAGYPGTYRRAEVPMATTLSSSCQLPIGRL*",
+      "start_offset": 81
+    },
+    {
+      "variant_id": "ENST00000000009:165",
+      "downstream_peptide": "STAGG*",
+      "start_offset": 54
+    },
+    {
+      "variant_id": "ENST00000000010:109",
+      "downstream_peptide": "NTG*",
+      "start_offset": 36
+    },
+    {
+      "variant_id": "ENST00000000011:298",
+      "downstream_peptide": "PKLFEHLEHV*",
+      "start_offset": 99
+    },
+    {
+      "variant_id": "ENST00000000012:262",
+      "downstream_peptide": "LILSDYHCRSVVPVDGHARHIAAQASTNVK*",
+      "start_offset": 87
+    }
+  ]
+}

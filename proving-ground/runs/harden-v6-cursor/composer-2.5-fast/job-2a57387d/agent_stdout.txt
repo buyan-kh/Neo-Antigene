@@ -1,0 +1,30 @@
+## Verdict
+
+The reported list **cannot be trusted**. Benjamini–Hochberg is implemented correctly in `analysis/stats.py`, but the screen never sees the full panel.
+
+## What goes wrong
+
+`bin/select_candidates.py` keeps only features with **uncorrected** two-sided p &lt; 0.05 before writing `data/features.csv`:
+
+```34:38:bin/select_candidates.py
+    kept = {
+        feature_id
+        for feature_id, groups in features.items()
+        if two_sided_p(groups["A"], groups["B"]) < ALPHA
+    }
+```
+
+`analysis/run.py` loads that subset only. FDR is then applied to ~41 pre-filtered features (28 screen + 13 spike-ins that passed the raw cut), so BH q-values are computed with the wrong **m** and many non-significant features are called significant. Spike-ins are not primary hypotheses but still inflate the false-positive rate in the reported output.
+
+## Corrected results
+
+On all **400** `role=screen` features from the raw export, using the project’s `two_sided_p` and `adjust_fdr` at FDR q = 0.05:
+
+| Feature   |
+|-----------|
+| feat_0103 |
+| feat_0123 |
+| feat_0129 |
+| feat_0398 |
+
+Submission written to [`output/submission.json`](output/submission.json) with `bug_class`: `correction_applied_after_prefiltering`.

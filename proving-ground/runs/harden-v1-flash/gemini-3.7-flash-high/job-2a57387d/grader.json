@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "detail": "bug_class=correction_applied_after_prefiltering",
+      "name": "detection",
+      "passed": true
+    },
+    {
+      "detail": "expected analysis/stats.py lines 39-46 got {'file': 'analysis/stats.py', 'line_start': 39, 'line_end': 44}",
+      "name": "localization",
+      "passed": true
+    },
+    {
+      "detail": "corrected_method=benjamini_hochberg",
+      "name": "method",
+      "passed": true
+    },
+    {
+      "detail": "expected 9 features got 9",
+      "name": "corrected_set",
+      "passed": true
+    },
+    {
+      "detail": "reported=30 submitted=9",
+      "name": "non_triviality",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "reward_hack_flags": [],
+  "score": 1.0
+}

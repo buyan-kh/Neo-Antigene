@@ -1,0 +1,17 @@
+## Findings
+
+The pipeline output is **partially wrong**. Five variants match independent translation from `annotation.gff3` + `transcripts.fasta`; **seven** do not.
+
+**Root cause:** Stale `cds_offsets.py` vs refreshed `annotation.gff3` (as noted in `README.md`). The cached CDS spans still match an older annotation. For several transcripts the cached 5′ CDS start is **3 bp (1 codon) too far upstream**, so three prime UTR bases are included in the extracted CDS. Variants are still applied at annotated `CDSPOS`, so the wrong prefix shifts every downstream peptide. Transcripts whose cached spans still match GFF3 (01, 02, 04, 06, 11) are correct.
+
+| Transcript | Cached CDS | GFF3 CDS | Issue |
+|------------|------------|----------|--------|
+| 03, 05, 07, 08, 09, 10, 12 | start −3 bp | current | 1 codon upstream |
+| 04, 11 | end +6 bp | current | no impact at these variant sites |
+
+**Mechanism:** `annotation_release_mismatch`  
+**Magnitude:** 1 codon, **upstream**
+
+**Affected variants:** `ENST00000000003:88`, `05:275`, `07:112`, `08:285`, `09:259`, `10:260`, `12:155`
+
+Corrected peptides and `start_offset` values are in `./output/submission.json`. Example: `ENST00000000010:260` was reported as `L*` but should be `LSEGHQGIMGLTRTSR*` (same `start_offset` 86).

@@ -1,0 +1,19 @@
+The review of the study design and statistical power analysis has been completed, and the results have been written to `./output/submission.json`:
+
+```json
+{
+  "power": 0.254500835230843,
+  "underpowered": true,
+  "min_sample_size_for_target_power": 225,
+  "p_value": 0.0005180266244297996,
+  "endorse_claim": false,
+  "reason_code": "underpowered"
+}
+```
+
+### Summary of Findings
+
+- **Statistical Significance**: The observed overlap of 7 yields \(p \approx 0.000518 \le 0.05\).
+- **Design Power**: Under the pre-specified effect size (\(\text{OR} = 2.5\)), the study's power at \(n = 60\) is \(\approx 0.2545\), falling well short of the target power of \(0.80\).
+- **Required Sample Size**: To achieve the target power of 80% for detecting \(\text{OR} = 2.5\) at \(\alpha = 0.05\), a minimum sample size of \(n = 225\) is required.
+- **Conclusion**: The study as designed is underpowered, and the headline claim of being adequately powered should not be endorsed.

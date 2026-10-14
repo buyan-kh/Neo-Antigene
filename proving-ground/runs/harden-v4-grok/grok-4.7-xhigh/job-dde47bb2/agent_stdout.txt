@@ -1,0 +1,17 @@
+The reported neo-ORFs are wrong for 7 of the 12 variants. The cached coding-sequence spans in `cds_offsets.py` are from an older annotation than `annotation.gff3`.
+
+On the transcripts that change the result, the cached coding sequence starts one codon upstream of the annotated start (an extra `ATG`). The variant is then applied one codon too early, so the translated tail is wrong. The codon index of the variant is unchanged. Two other transcripts extend two codons past the real stop, but those frameshifted tails hit a stop first, so their reported peptides still match.
+
+Corrected tails were translated from the annotated coding sequences, not taken from the output file.
+
+| Variant | Corrected peptide | Start offset |
+| --- | --- | --- |
+| `ENST00000000003:88` | `PPLLSREMRPLAWVCDRVQLLVLDL*` | 29 |
+| `ENST00000000005:275` | `SHSDYCQHVGHVASDQHLSYTTRNGGGPTDSTVHQIGSGQYLGASINIRAFVNAPD*` | 91 |
+| `ENST00000000007:112` | `FQAQLDEIVRCSRLDLRISIAEQFCPCPSIGI*` | 37 |
+| `ENST00000000008:285` | `RGEAAQSVPHRADSAECLSQKRP*` | 94 |
+| `ENST00000000009:259` | `TTG*` | 86 |
+| `ENST00000000010:260` | `LSEGHQGIMGLTRTSR*` | 86 |
+| `ENST00000000012:155` | `PAVRHPVDPGAHATIQIRVSWFMATPMDSHQQQGPLIRDINKENNNGYVGPLCLMCRPRHTKLGTGKHYI*` | 51 |
+
+The other five variants match a fresh translation and are unchanged. Results are in `output/submission.json`.

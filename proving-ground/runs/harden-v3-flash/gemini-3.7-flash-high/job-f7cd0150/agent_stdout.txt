@@ -1,0 +1,9 @@
+The review and analysis have been completed:
+
+### Summary of Results
+- **Contamination Status:** `true` — 594 of 1,486 benchmark test pairs overlap directly with training records across `panel_a.csv` (256 pairs), `panel_b.tsv` (176 pairs), and `panel_c.csv` (162 pairs).
+- **Leakage Mechanism:** `train_test_overlap`
+- **Metric Trustworthiness:** `false` — Model predictions memorized the training examples (AUROC 1.000 on leaked pairs), inflating the reported benchmark AUROC to ~0.897.
+- **Corrected Metric:** AUROC on genuinely unseen data is **0.7428** (evaluated across all 892 clean test pairs).
+
+The submission file has been generated and validated at `./output/submission.json` along with `./output/leaked_pairs.csv`. No further actions are needed.

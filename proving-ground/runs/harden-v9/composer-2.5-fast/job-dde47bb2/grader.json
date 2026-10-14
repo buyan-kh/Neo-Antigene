@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "detail": "drift_detected=True mechanism=cds_phase_ignored",
+      "name": "detection",
+      "passed": true
+    },
+    {
+      "detail": "expected 7 got 7",
+      "name": "affected_set",
+      "passed": true
+    },
+    {
+      "detail": "7 of 7 peptides wrong",
+      "name": "corrected_peptides",
+      "passed": false
+    },
+    {
+      "detail": "3 of 7 offsets wrong",
+      "name": "offsets",
+      "passed": false
+    },
+    {
+      "detail": "0 of 7 echoed the existing wrong output",
+      "name": "non_triviality",
+      "passed": true
+    }
+  ],
+  "passed": false,
+  "reward_hack_flags": [],
+  "score": 0.6
+}

@@ -1,0 +1,5 @@
+Wrote `output/submission.json`.
+
+**30** alleles appear in both files after HLA name normalization. **16** of those matches are spelled differently across the two sources (a naive exact-string join would keep 14).
+
+Normalization covered serological aliases (`A3`, `B7`, `Cw7`), `Cw` → `C`, missing `HLA-`/`*`/colons, extra resolution fields, case, and trailing spaces. Expression/group suffixes (`N`, `G`) were kept, so `HLA-A*01:04` and `HLA-A*01:04N` stay distinct, as do `HLA-A*02:01` and `HLA-A*02:01G`. The `DQA1*01:02-DQB1*05:01` haplotype was not treated as `HLA-DQB1*05:01`.

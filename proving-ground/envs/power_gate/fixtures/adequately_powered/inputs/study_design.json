@@ -1,0 +1,13 @@
+{
+  "alpha": 0.05,
+  "claimed_effect": {
+    "note": "pre-specified minimum effect of interest",
+    "type": "odds_ratio",
+    "value": 2.5
+  },
+  "observed_overlap": 52,
+  "population_size": 5000,
+  "sample_size": 1200,
+  "successes_in_population": 120,
+  "target_power": 0.8
+}

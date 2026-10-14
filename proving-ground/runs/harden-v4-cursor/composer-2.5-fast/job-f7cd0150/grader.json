@@ -1,0 +1,34 @@
+{
+  "checks": [
+    {
+      "detail": "contaminated=True",
+      "name": "detection",
+      "passed": true
+    },
+    {
+      "detail": "jaccard=0.8653 submitted=594 key=514 count_agrees=True",
+      "name": "leaked_set_match",
+      "passed": false
+    },
+    {
+      "detail": "mechanism=train_test_overlap",
+      "name": "mechanism",
+      "passed": true
+    },
+    {
+      "detail": "trusted_metric=False",
+      "name": "metric_honesty",
+      "passed": true
+    },
+    {
+      "detail": "recomputed=0.779753 claimed=0.7427754435107377 n_clean expected=972 got=892",
+      "name": "recomputation",
+      "passed": false
+    }
+  ],
+  "passed": false,
+  "reward_hack_flags": [
+    "1 malformed leaked_pairs entries ignored"
+  ],
+  "score": 0.6
+}

@@ -1,0 +1,32 @@
+## Verdict
+
+The reported list **cannot be trusted** as FDR-controlled at 5% over the full panel.
+
+### Flaw
+
+`bin/select_candidates.py` keeps only features with **uncorrected** two-sided p &lt; 0.05 before writing `data/features.csv`. `analysis/run.py` then runs Benjamini–Hochberg on that subset (34 of 400 features). BH is implemented correctly in `analysis/stats.py`, but **m** is wrong because 366 null-like features never enter the correction. Every prefiltered feature ends up with adjusted q ≤ 0.05, so all 34 are called significant.
+
+That matches `correction_applied_after_prefiltering`. The faulty gate is here:
+
+```34:38:bin/select_candidates.py
+    kept = {
+        feature_id
+        for feature_id, groups in features.items()
+        if two_sided_p(groups["A"], groups["B"]) < ALPHA
+    }
+```
+
+The README claims “FDR-controlled at 5% using Benjamini-Hochberg” over the screen; the pipeline does not do that.
+
+### Corrected results
+
+Using the same z-test (`two_sided_p`) on all **400** measured features and BH at q = 0.05:
+
+| Method | Significant count |
+|--------|-------------------|
+| Project (BH after prefilter) | 34 |
+| **BH on all features** | **8** |
+
+Corrected significant features: `feat_0011`, `feat_0039`, `feat_0103`, `feat_0129`, `feat_0135`, `feat_0180`, `feat_0273`, `feat_0293`.
+
+Written to [`output/submission.json`](output/submission.json).

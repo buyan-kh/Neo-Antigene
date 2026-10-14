@@ -1,0 +1,6 @@
+The merged dataset and allele mapping have been generated and written to `./output/submission.json`.
+
+### Summary
+- **Joined count (`joined_count`)**: 30 alleles matched across both sources.
+- **Naive dropped count (`naive_dropped_count`)**: 16 matching alleles were written differently between the two files.
+- **Mapping coverage (`mapping`)**: All 56 unique raw allele notations appearing across both files are mapped to their standard two-field canonical names (`HLA-<gene>*<dd>:<dd>`), preserving expression suffixes.

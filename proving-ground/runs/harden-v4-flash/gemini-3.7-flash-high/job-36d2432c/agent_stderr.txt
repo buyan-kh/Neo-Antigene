@@ -1,0 +1,1 @@
+ActionRequiredError: You've hit your usage limit You've saved $413 on API model usage this month with Ultra. Switch to a different model or set a Spend Limit to continue with Gemini. Your usage limits will reset when your monthly cycle ends on 11/9/2026.

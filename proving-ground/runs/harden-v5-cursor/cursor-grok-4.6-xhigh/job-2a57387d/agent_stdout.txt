@@ -1,0 +1,7 @@
+The reported list cannot be trusted. BH is applied only after an uncorrected p < 0.05 filter in `bin/select_candidates.py`, so FDR is computed on 34 features instead of all 400.
+
+Corrected BH at 5% on every measured feature:
+
+`feat_0011`, `feat_0039`, `feat_0103`, `feat_0129`, `feat_0135`, `feat_0180`, `feat_0273`, `feat_0293`
+
+Written to `output/submission.json`.

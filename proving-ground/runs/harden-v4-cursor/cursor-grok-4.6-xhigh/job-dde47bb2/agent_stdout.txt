@@ -1,0 +1,11 @@
+The pipeline output is **not correct**.
+
+`enumerate_downstream.py` reads CDS coordinates from the stale cache in `cds_offsets.py` instead of `annotation.gff3`. After the annotation refresh, seven transcripts have a CDS start **1 codon too far upstream** (3 bp into the 5' UTR). The VCF `CDSPOS` values match the current annotation, so those variants are applied one codon early. Two other transcripts extend 2 codons into the 3' UTR in the cache, but translation hits a stop first, so their reported peptides happen to match.
+
+Written to `output/submission.json`:
+
+- **mechanism:** `annotation_release_mismatch`
+- **magnitude:** 1 codon upstream
+- **affected:** `ENST00000000003:88`, `ENST00000000005:275`, `ENST00000000007:112`, `ENST00000000008:285`, `ENST00000000009:259`, `ENST00000000010:260`, `ENST00000000012:155`
+
+The other five variants (`01`, `02`, `04`, `06`, `11`) match an independent translation from the current CDS coordinates.

@@ -1,0 +1,5 @@
+The reported neoORF peptides are correct. Nothing in them needs to be changed.
+
+I recomputed each frameshifted tail from the transcript sequences, the GFF coding-sequence intervals, and the variant alleles. The cached spans match those intervals. Every coding sequence is an open reading frame that starts on ATG and ends on a single terminal stop, and the variant reference alleles sit at the stated coding-sequence positions. Translating from the codon that contains each variant, and stopping at the first stop, reproduces the reported peptide and start offset for every variant.
+
+`output/submission.json` records no drift.

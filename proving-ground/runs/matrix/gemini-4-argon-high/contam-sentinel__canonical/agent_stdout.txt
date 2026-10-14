@@ -1,0 +1,17 @@
+### Findings
+
+1. **Test Set Contamination (`contaminated: true`)**
+   - Every single example in `benchmark.csv` (**1,486 of 1,486 pairs**, 100%) also appears in `predictor_training_set.csv` (which has 21,486 rows = 20,000 clean training rows + all 1,486 benchmark rows).
+   - **How they got there / why naive deduplication missed them (`mechanism: "train_test_overlap"`)**:
+     Exact string matching between `benchmark.csv` and `predictor_training_set.csv` finds `0` overlaps because all 1,486 leaked pairs appear in `predictor_training_set.csv` under non-canonical formatting variations:
+     - **Peptide variations**: lowercase (`lmprdtesd`, 372 rows), leading/trailing spaces (`" ACFDCPIRQ "`, 372 rows), trailing tabs (`"VFTWTGHED\t"`, 371 rows), and titlecase (`Gkkgvmpre`, 371 rows).
+     - **MHC allele variations**: missing asterisk (`HLA-B44:02`, 297 rows), lowercase (`hla-a*01:01`, 297 rows), compact without prefix/separators (`A2402`, 297 rows), without `HLA-` prefix or colon (`A*2402`, 297 rows), alongside canonical (`HLA-B*44:02`, 298 rows).
+     - Once peptides are stripped and uppercased and MHC alleles are canonicalized to `HLA-X*XX:XX`, all 1,486 benchmark pairs match training records.
+
+2. **Validity of Reported Score (`trusted_metric: false`)**
+   - The raw predictions in `predictions.csv` achieve an apparent AUROC of `1.0000` (all binders scored $\ge 0.8201$, all non-binders scored $\le 0.1799$), which cannot be trusted because 100% of the evaluation pairs were present in the training data.
+
+3. **Corrected Score on Unseen Examples**
+   - Because `0` clean pairs remain after removing the 1,486 leaked pairs (`n_clean_pairs: 0`), an honest test metric cannot be computed from this benchmark (`value: null`, `uncomputable: true`).
+
+The results have been written to `./output/submission.json`.

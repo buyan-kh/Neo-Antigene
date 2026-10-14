@@ -1,0 +1,11 @@
+The reported list cannot be trusted. Written to `output/submission.json`.
+
+**Bug:** `correction_applied_after_prefiltering` in `bin/select_candidates.py` (lines 34–38). Features with uncorrected p ≥ 0.05 are dropped before FDR, so Benjamini–Hochberg in `analysis/stats.py` only sees that already-filtered subset (41 features, including spike-ins). That makes the correction far too lenient; the project then calls all 41 “significant.”
+
+**Recomputation:** two-sided z-test as in the project (known σ = 1.0), BH at 5% on all **400 screen analytes**. Spike-ins are not hypotheses.
+
+**Features that should be called significant:**
+- `feat_0103`
+- `feat_0123`
+- `feat_0129`
+- `feat_0398`

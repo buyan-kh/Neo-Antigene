@@ -1,0 +1,8 @@
+The power analysis is complete and the results have been written to `./output/submission.json`:
+
+- **`p_value`**: `0.013975` (upper-tail probability for observed overlap $k \ge 5$ under the central hypergeometric distribution with $N = 5000, K = 120, n = 60$)
+- **Critical overlap (`cutoff`)**: $5$ (smallest count with central hypergeometric upper-tail probability $\le \alpha = 0.05$)
+- **`power`**: `0.2545` (probability of observing $X \ge 5$ under Fisher's noncentral hypergeometric distribution with odds ratio $\omega = 2.5$)
+- **`underpowered`**: `true` ($0.2545 < 0.8$ `target_power`)
+- **`min_sample_size_for_target_power`**: `247` (found via binary search over sample size, achieving power $\approx 0.8037$ at cutoff $11$)
+- **`endorse_claim`**: `false` (`reason_code`: `"underpowered"`)The earlier background check process has been cleaned up, and `./output/submission.json` is verified and ready with no further actions needed.

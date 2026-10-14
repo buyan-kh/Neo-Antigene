@@ -1,0 +1,5 @@
+Wrote `./output/submission.json`.
+
+**30** alleles appear in both files. **16** of those matches are written with different strings in the two sources.
+
+Inner join is on the standard two-field name (`HLA-<gene>*<dd>:<dd>`), using the alias table for serological names (for example `B7` → `HLA-B*07:02`, `Cw7` → `HLA-C*07:01`). Suffix letters are kept, so `HLA-A*01:04N` and `HLA-A*02:01:01:01G` stay distinct from `HLA-A*01:04` and `HLA-A*02:01`. The haplotype `DQA1*01:02-DQB1*05:01` is not treated as `HLA-DQB1*05:01`.

@@ -1,0 +1,1 @@
+Created `output/submission.json` with the computed results.Result: power is 0.2545, below the 0.8 target. Minimum sample size is 247; claim not endorsed. `output/submission.json` is complete.

@@ -1,0 +1,10 @@
+I have completed the code review and generated the corrected significance analysis.
+
+### Findings
+
+- **Bug Class**: `correction_applied_after_prefiltering`
+- **Location**: `analysis/run.py`, lines 22–28 (`drop_flat_features`)
+- **Root Cause**: Features were pre-filtered using an unadjusted significance threshold (`p < ALPHA`) before applying the Benjamini-Hochberg FDR correction. This distorted multiple testing correction by shrinking the total test count \(m\) from 400 to 34, causing all 34 pre-filtered features to be reported as significant.
+- **Correction**: Re-evaluating all 400 candidate features with Benjamini-Hochberg FDR control at 5% yields 8 significant features.
+
+The submission has been written to `./output/submission.json`.

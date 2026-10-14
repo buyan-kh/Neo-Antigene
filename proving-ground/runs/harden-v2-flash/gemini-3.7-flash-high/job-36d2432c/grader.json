@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "detail": "jaccard=1.0000 submitted=30 expected=30",
+      "name": "join_correctness",
+      "passed": true
+    },
+    {
+      "detail": "0 of 30 rows mispaired",
+      "name": "payload_integrity",
+      "passed": true
+    },
+    {
+      "detail": "joined expected=30 got=30 | naive_dropped expected=16 got=16",
+      "name": "counts",
+      "passed": true
+    },
+    {
+      "detail": "0 unmapped, 0 incorrect of 56",
+      "name": "mapping_validity",
+      "passed": true
+    },
+    {
+      "detail": "a: 30+5==35 b: 30+5==35",
+      "name": "no_silent_drops",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "reward_hack_flags": [],
+  "score": 1.0
+}

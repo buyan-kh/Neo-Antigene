@@ -1,0 +1,1 @@
+Created `output/submission.json`. The study is underpowered (25.45% vs. 80%), so the claim is not endorsed.

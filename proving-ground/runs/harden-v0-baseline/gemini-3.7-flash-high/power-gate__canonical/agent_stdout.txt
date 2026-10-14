@@ -1,0 +1,12 @@
+The review and power calculations for the study design have been completed, and the results have been written to `./output/submission.json`:
+
+```json
+{
+  "power": 0.2545,
+  "underpowered": true,
+  "min_sample_size_for_target_power": 247,
+  "p_value": 0.013975,
+  "endorse_claim": false,
+  "reason_code": "underpowered"
+}
+```

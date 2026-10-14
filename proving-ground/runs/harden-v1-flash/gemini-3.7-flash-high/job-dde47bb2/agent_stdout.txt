@@ -1,0 +1,9 @@
+The pipeline results contain errors due to an annotation release mismatch.
+
+### Summary of Findings
+- **Drift Detected**: `true`
+- **Mechanism**: `annotation_release_mismatch` (`cds_offsets.py` contains cached CDS spans from Ensembl release 113, whereas the transcripts and VCF are based on release 114).
+- **Magnitude**: 1 codon `upstream` (affected transcripts in release 113 had their CDS start annotated 3 bp / 1 codon upstream of their release 114 coordinates).
+- **Affected Variants**: 7 of the 12 variants were affected (`ENST00000000003:104`, `ENST00000000005:76`, `ENST00000000007:195`, `ENST00000000008:174`, `ENST00000000009:63`, `ENST00000000010:342`, `ENST00000000012:362`).
+
+The corrected results have been calculated from `transcripts.fasta`, `annotation.gff3`, and `variants.vcf`, and written to `./output/submission.json`.

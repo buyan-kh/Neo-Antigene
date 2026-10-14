@@ -1,0 +1,35 @@
+## Verdict
+
+The reported significant list **should not be trusted**. Benjamini–Hochberg is implemented correctly in `analysis/stats.py`, but the pipeline only runs it on features that already passed an **uncorrected** raw p-value gate, so the effective multiple-testing universe is wrong.
+
+## What goes wrong
+
+1. **`bin/select_candidates.py`** keeps only features with raw two-sided p **&lt; 0.05** before writing `data/features.csv` (see comment: prefilter so FDR is not “dominated by noise”).
+2. **`analysis/run.py`** loads only that table and **`analysis/stats.py`** applies BH to **m = 41** (every row in the table passes BH at q = 0.05, including spike-ins that were never screen hypotheses).
+
+The README claims FDR at 5% over the screen panel, but correction is applied **after** uncorrected prefiltering — class **`correction_applied_after_prefiltering`**.
+
+Faulty gate:
+
+```34:38:bin/select_candidates.py
+    kept = {
+        feature_id
+        for feature_id, groups in features.items()
+        if two_sided_p(groups["A"], groups["B"]) < ALPHA
+    }
+```
+
+## Correct list (your statistic, all 400 screen analytes, BH @ 5%)
+
+Recomputed from `raw/run_2024-11-02_plate_reader.csv` with the project’s `two_sided_p`, roles from `raw/sample_sheet.csv` (spike-ins excluded from **m**):
+
+| feature_id |
+|------------|
+| feat_0103 |
+| feat_0123 |
+| feat_0129 |
+| feat_0398 |
+
+Only **4** screen analytes survive; the project’s **41** includes **37** false positives relative to this correction and **13** spike-in IDs.
+
+Written to [`output/submission.json`](output/submission.json).

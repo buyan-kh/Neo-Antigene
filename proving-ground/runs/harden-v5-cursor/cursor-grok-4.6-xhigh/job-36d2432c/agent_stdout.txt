@@ -1,0 +1,5 @@
+Wrote `output/submission.json`.
+
+**30** alleles appear in both files after normalizing to two-field `HLA-<gene>*<dd>:<dd>` (aliases, `Cw`→`C`, compact codes, extra fields, case, and suffix letters). **16** of those 30 are spelled differently in the two sources, so a naive string join would miss them.
+
+Expression/group suffixes were kept distinct: `HLA-A*01:04N` and `HLA-A*02:01G` did not merge with the unsuffixed alleles. Payloads stay on their original source.

@@ -1,0 +1,19 @@
+## Findings
+
+The benchmark was **not** fully held out. **594 of 1,486** test peptide–allele pairs also appear in the build data (`panel_a.csv`, `panel_b.tsv`, and/or `panel_c.csv` after normalizing alleles and peptides). That includes all **80** pairs listed in `held_out_from_fit.csv` (withheld from the fit but still present in the panel files).
+
+There are **no duplicate benchmark rows**. Overlap is direct **train/test pair reuse**, not label-only leakage.
+
+| Metric | Value |
+|--------|--------|
+| Reported benchmark AUROC (all 1,486 pairs) | **0.897** |
+| Corrected AUROC (892 clean pairs only) | **0.743** |
+
+The headline score is **not trustworthy** (`trusted_metric: false`).
+
+Deliverables are in `./output/`:
+
+- **`submission.json`** — graded fields
+- **`leaked_pairs.csv`** — all 594 leaked `[peptide, allele]` rows (omitted from JSON because the list is long)
+
+`mechanism` is **`train_test_overlap`**: benchmark examples were drawn from the same internal binding panels used to construct the predictor, including pairs that were only “held out” of the fit but never removed from the source records.

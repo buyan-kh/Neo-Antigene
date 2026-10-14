@@ -1,0 +1,16 @@
+The reported list cannot be trusted.
+
+The pipeline first drops every feature with an uncorrected two-sided p-value ≥ 0.05 in `bin/select_candidates.py` (lines 34–38), then runs Benjamini–Hochberg only on the 41 remaining tests. That is `correction_applied_after_prefiltering`. After that filter, BH has almost no work left: all 41 pass, which is why they match the reported list.
+
+The z-test itself is the right statistic (known σ = 1.0). Recomputing it on all 480 features and applying BH at 5% FDR gives these eight:
+
+- `feat_0103`
+- `feat_0123`
+- `feat_0129`
+- `feat_0398`
+- `feat_0405`
+- `feat_0433`
+- `feat_0451`
+- `feat_0472`
+
+That list is in `output/submission.json`.

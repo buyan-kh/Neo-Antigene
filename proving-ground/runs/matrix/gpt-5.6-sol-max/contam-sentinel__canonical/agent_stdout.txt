@@ -1,0 +1,3 @@
+Wrote `output/submission.json` and `output/leaked_pairs.csv`.
+
+All 1,486 benchmark pairs were leaked via case, whitespace, and HLA-format variations. No clean pairs remain, so corrected AUROC is uncomputable.

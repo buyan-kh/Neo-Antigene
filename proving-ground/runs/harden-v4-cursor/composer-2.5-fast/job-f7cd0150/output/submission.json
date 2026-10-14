@@ -1,0 +1,12 @@
+{
+  "contaminated": true,
+  "leaked_pair_count": 594,
+  "mechanism": "train_test_overlap",
+  "trusted_metric": false,
+  "corrected_metric": {
+    "name": "auroc",
+    "value": 0.7427754435107377,
+    "n_clean_pairs": 892,
+    "uncomputable": false
+  }
+}

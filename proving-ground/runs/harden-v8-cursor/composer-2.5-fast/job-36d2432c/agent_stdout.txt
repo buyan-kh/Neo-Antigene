@@ -1,0 +1,17 @@
+Merged the two HLA allele tables and wrote **`output/submission.json`**.
+
+### Results
+| Metric | Value |
+|--------|-------|
+| **joined_count** | **30** alleles present in both sources (after normalization) |
+| **naive_dropped_count** | **16** matches where the raw strings differ between files |
+
+### Approach
+1. **`gene_aliases.tsv`** — Map legacy symbols (e.g. `A3`, `B27`, `DQ8`, `A0206`) to canonical two-field names.
+2. **Structural normalization** — Handle missing `HLA-`/`*`, casing, compact IDs (`B1801`, `DQB10301`), serologic forms (`HLA-A02:01`, `HLA-DRB115:01`), and extended typings truncated to `HLA-<gene>*<dd>:<dd>` (keeping suffix letters like `N` / `G` when present).
+3. **Join** — Pair rows on canonical allele; prefer exact raw-string matches first (e.g. `A0206`↔`A0206`, `HLA-A02:01`↔`HLA-A02:01`), then normalized matches for the rest.
+4. **`mapping`** — All **58** distinct raw allele strings from both CSVs map to their canonical form.
+
+Notable pairs include `DQB10301` ↔ `HLA-DQB1*03:01`, `DRB1*1101` ↔ `HLA-DRB1*11:01:01:01`, and `B7` ↔ `B*0702` (both `HLA-B*07:02`). There are two merged rows for `HLA-A*02:01` because each file lists that locus under two raw names (`HLA-A02:01` and `A0206`).
+
+The merge script is at `merge_hla.py` if you want to re-run or adjust rules.

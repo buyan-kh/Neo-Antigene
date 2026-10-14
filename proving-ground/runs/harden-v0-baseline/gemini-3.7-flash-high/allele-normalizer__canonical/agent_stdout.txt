@@ -1,0 +1,6 @@
+The tables from `source_a.csv` and `source_b.csv` have been normalized and reconciled using standard HLA nomenclature and `gene_aliases.tsv`. The output file has been written to `./output/submission.json`.
+
+### Summary
+- **Joined matches (`joined_count`)**: `30`
+- **Matches missed by exact raw text comparison (`naive_dropped_count`)**: `30`
+- **Total raw names mapped (`mapping`)**: `69`

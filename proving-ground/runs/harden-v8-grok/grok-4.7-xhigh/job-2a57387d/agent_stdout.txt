@@ -1,0 +1,14 @@
+The reported list cannot be trusted. Benjamini–Hochberg is implemented correctly in `analysis/stats.py`, but it only ever sees features that already passed an uncorrected p < 0.05 screen.
+
+That gate is in `bin/select_candidates.py` (lines 34–38). It forwards 41 of 480 features, and with the family size reduced to 41 the 5% false-discovery threshold is loose enough that every one of those 41 is called significant. The same two-sided z-test, with Benjamini–Hochberg applied to all 480 features at 5%, calls 8:
+
+- `feat_0103`
+- `feat_0123`
+- `feat_0129`
+- `feat_0398`
+- `feat_0405`
+- `feat_0433`
+- `feat_0451`
+- `feat_0472`
+
+The result is in `output/submission.json`.

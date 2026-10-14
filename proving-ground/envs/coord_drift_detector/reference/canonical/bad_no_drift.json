@@ -1,0 +1,10 @@
+{
+  "affected_variants": [],
+  "corrected": [],
+  "drift_detected": false,
+  "magnitude": {
+    "direction": "none",
+    "offset": 0
+  },
+  "mechanism": "none"
+}

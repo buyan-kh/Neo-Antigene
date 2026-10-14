@@ -1,0 +1,14 @@
+##gff-version 3
+##ensembl-release 114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000001;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000002;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000003;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000004;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000005;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000006;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000007;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000008;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000009;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000010;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000011;release=114
+chr1	ensembl	CDS	1	540	.	+	0	ID=CDS:ENST00000000012;release=114

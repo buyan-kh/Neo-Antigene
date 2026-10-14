@@ -1,0 +1,21 @@
+{
+  "actual": {
+    "observed_overlap": 7,
+    "population_size": 5000,
+    "sample_size": 60,
+    "successes_in_population": 115
+  },
+  "bisected_min_sample_size": 258,
+  "fixture": "canonical",
+  "min_sample_size_for_target_power": 235,
+  "p_value": 0.0003997801987805606,
+  "power": 0.41809094801331415,
+  "power_definition": "fishers_noncentral_hypergeometric",
+  "reason_codes": [
+    "underpowered",
+    "adequately_powered"
+  ],
+  "stale_design_min_sample_size": 225,
+  "stale_design_power": 0.254500835230843,
+  "underpowered": true
+}

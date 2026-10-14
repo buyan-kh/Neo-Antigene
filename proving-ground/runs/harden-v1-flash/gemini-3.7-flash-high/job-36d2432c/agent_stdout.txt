@@ -1,0 +1,6 @@
+The merged HLA allele table has been generated and written to `./output/submission.json`.
+
+### Summary of Results
+- **Joined count**: 30 alleles matched across both sources.
+- **Naive dropped count**: 16 matched alleles were written differently between the two files.
+- **Mapping coverage**: 56 unique raw allele strings from both sources mapped to standard two-field canonical nomenclature (`HLA-<gene>*<dd>:<dd>`).

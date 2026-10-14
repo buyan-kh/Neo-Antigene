@@ -1,0 +1,5 @@
+The merged table is in `output/submission.json`.
+
+**30** alleles appear in both files after canonicalization to two-field `HLA-<gene>*<dd>:<dd>` form (suffix letters kept). **16** of those matches are written differently across the two sources, so a naive string join would miss them.
+
+Normalization covered serological aliases (`A3` → `HLA-A*03:01`, `Cw7` → `HLA-C*07:01`), compact codes (`A*0104`, `B0801`), missing `HLA-` / `*`, extra fields, case, and trailing spaces. `HLA-A*01:04N` and `HLA-A*02:01G` stayed distinct from the unsuffixed alleles. Payloads are attached to the original source.

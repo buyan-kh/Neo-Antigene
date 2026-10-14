@@ -1,0 +1,12 @@
+The reported list cannot be trusted.
+
+`bin/select_candidates.py` drops any feature whose **uncorrected** two-sided z-test p-value is not `< 0.05`, then `analysis/stats.py` runs Benjamini–Hochberg only on that leftover set. That is FDR after prefiltering: the correction never sees the full panel, `m` is far too small, and every prefiltered feature (including spike-ins) is called significant.
+
+I recomputed the same two-sided z-test (known σ = 1.0) on all **400 screen analytes**, excluding spike-ins, and applied BH at 5%:
+
+- `feat_0103`
+- `feat_0123`
+- `feat_0129`
+- `feat_0398`
+
+Written to `output/submission.json`.

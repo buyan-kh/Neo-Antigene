@@ -1,0 +1,16 @@
+The reported list should not be trusted. Benjamini–Hochberg is implemented correctly, but it is run only on features that already passed an uncorrected p < 0.05 screen.
+
+That filter is in `analysis/prepare.py` (lines 33–37). It keeps a feature only when the two-sided z-test p-value is below 0.05, and writes just those rows to `data/features.csv`. The screen then adjusts only that subset. All 400 measured features were tested; 34 had p < 0.05, and with the correction limited to those 34 every one of them is called significant. That is the list in `results/reported_significant.csv`.
+
+Applying the same z-test and Benjamini–Hochberg at 5% to all 400 features leaves 8:
+
+- feat_0011
+- feat_0039
+- feat_0103
+- feat_0129
+- feat_0135
+- feat_0180
+- feat_0273
+- feat_0293
+
+The result is in `output/submission.json`.

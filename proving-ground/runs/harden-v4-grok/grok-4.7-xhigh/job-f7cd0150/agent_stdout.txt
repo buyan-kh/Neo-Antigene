@@ -1,0 +1,11 @@
+The held-out test was not separate from the data used to build the predictor. The result is in `output/submission.json`.
+
+**514** benchmark pairs also appear in the fit data (`train_test_overlap`). Another 80 benchmark pairs show up in the panels but are listed in `held_out_from_fit.csv`, so they were not counted as part of the fit. The published score mixes those 514 memorized pairs with the real test and should not be trusted.
+
+They entered the build data through all three panels, after the allele names and peptide strings are normalized:
+
+- **215** are in `panel_a.csv` (peptide and allele on the same row; spellings vary in case, spaces, and `HLA-` punctuation).
+- **153** are in `panel_b.tsv`. The peptide is the uppercase core, with three lowercase flanking residues on each side.
+- **146** are in `panel_c.csv`, where the allele is an `MHC-###` id resolved through `allele_ids.tsv`.
+
+On the **972** test pairs that are not in the fit data, the AUROC is **0.780**.

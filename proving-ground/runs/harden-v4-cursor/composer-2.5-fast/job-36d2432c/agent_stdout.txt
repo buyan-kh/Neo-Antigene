@@ -1,0 +1,11 @@
+Wrote **`output/submission.json`** after normalizing allele names to two-field `HLA-<gene>*<dd>:<dd>` (plus suffix letters like `G`/`N` where present), using `gene_aliases.tsv` for legacy symbols (e.g. `A3`, `Cw7`) and handling the teams’ variant spellings (compact codes, missing `*`, merged locus names like `HLA-DRB115:01`, extra resolution fields, case, spacing).
+
+| Metric | Value |
+|--------|-------|
+| **joined_count** | 30 alleles in both sources |
+| **naive_dropped_count** | 16 of those pairs use different raw strings in A vs B |
+| **mapping** | 57 entries (every distinct raw name from either CSV) |
+
+Alleles that did not join (different loci or only one file): e.g. `C0501` / `HLA-C*05:01`, `Cw7` / `HLA-C*07:01` vs `C*0702` / `HLA-C*07:02`, `HLA-A*31:01`, `HLA-B*14:02`, `B*1302`, `B3801`, `HLA-A*01:04N`, `HLA-A*02:01G`, `HLA-DRB104:01`, `HLA-C*04:01`.
+
+The merge script is at `merge_hla.py` if you want to re-run it.

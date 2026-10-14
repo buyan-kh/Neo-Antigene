@@ -1,0 +1,7 @@
+The reported neoORFs are wrong. `enumerate_downstream.py` starts the new stretch at the codon **after** the variant (`zero_based // 3 + 1`) instead of the codon that contains it.
+
+That is a one-codon **downstream** shift. CDS spans, strand, codon table, and stop handling are fine; every variant is affected.
+
+Corrected stretches were translated from the annotated CDS (variant codon included, through the first stop). The largest change is `ENST00000000003:131`: the variant codon is already `TGA`, so the true peptide is `*`, not the 33-aa tail reported after skipping that stop.
+
+Results are in `output/submission.json`.

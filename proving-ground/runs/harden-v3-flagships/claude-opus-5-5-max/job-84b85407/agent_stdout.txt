@@ -1,0 +1,20 @@
+**Verdict: don't back the headline.** With a 60-item sample, the study detects the effect it set out to find (odds ratio 2.5) only about 42% of the time. The design required 80%, so the study is underpowered. I've written the answer to `output/submission.json`.
+
+| Field | Value |
+| --- | --- |
+| `power` | 0.4181 |
+| `underpowered` | true |
+| `min_sample_size_for_target_power` | 235 |
+| `p_value` | 0.00040 |
+| `endorse_claim` | false |
+| `reason_code` | `underpowered` |
+
+**Why the group's "adequately powered" claim is wrong:** `analysis.py` doesn't use the pre-specified odds ratio of 2.5. It uses the odds ratio observed in their own sample (5.64) and gets power 0.851. That's circular: when the effect comes from the data, a significant result will nearly always look well powered. With the design's 2.5, power is 0.418.
+
+**The design file is out of date:** `study_design.json` lists 120 in-group items. The README says that file was entered at pre-registration, and the final `population.tsv` has 115. Population size (5000), sample size (60, all distinct and all in the population) and observed overlap (7) all match the data. I used 115 for every number because that's the population the sample was actually drawn from. With the stale 120, power would be 0.255, the required sample 225, and the p-value 0.00052. The verdict is the same either way.
+
+**The p-value is genuinely small:** an overlap of 7 or more happens by chance about 0.04% of the time, so the overlap itself is real. But the design set its own reliability bar, and the study doesn't meet it. At this low power, a significant result also tends to overstate the true effect, which fits the observed 5.6 being well above the 2.5 they planned for.
+
+**Sample size has a catch:** n=235 is the smallest sample that reaches 80% power (n=234 gets 0.798). But because overlap counts are whole numbers, power drops back below 80% for n=242–257 and n=275–279. A redesign should check whatever sample size it picks, not assume anything above 235 works.
+
+All values come from exact fraction arithmetic. They match a separate floating-point calculation to about 12 digits, and the null tail at the cut-off of 4 (0.0483) is clearly below the 0.05 alpha, so rounding isn't an issue. I left the script as `review_power.py` in the working directory so the numbers can be reproduced; it's fine to delete.

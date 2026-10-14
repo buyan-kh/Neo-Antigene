@@ -1,0 +1,22 @@
+Wrote **`output/submission.json`** after normalizing HLA names from both sources and joining on canonical two-field alleles.
+
+### Results
+| Metric | Value |
+|--------|------|
+| **joined_count** | **30** alleles in both `source_a.csv` and `source_b.csv` |
+| **naive_dropped_count** | **16** of those 30 use different raw strings in A vs B |
+| **mapping** | **58** unique raw names → standard `HLA-<gene>*<dd>:<dd>` (plus suffix letters where present, e.g. `HLA-A*02:01G`) |
+
+### Normalization (summary)
+- **`gene_aliases.tsv`**: shorthand gene symbols (`A3`, `B7`, `Cw7`, …) → full canonical alleles from the TSV.
+- **Legacy / compact forms**: `B1501`, `A3303`, `DRB10401`, `C*0702`, `A*2601`, etc. → two-field names.
+- **Missing `*` / `HLA-`**: `HLA-A02:01`, `HLA-DRB115:01`, `HLA-B14:02`, …
+- **`Cw` → `C`**: e.g. `HLA-Cw*02:02` → `HLA-C*02:02`
+- **Long typings**: first two fields only (e.g. `HLA-DRB1*11:01:01:01` → `HLA-DRB1*11:01`)
+- **Suffixes kept**: `HLA-A*01:04N`, `HLA-A*02:01G` (B-only; no A match)
+
+### Unmatched (by design)
+- **A only (5)**: `HLA-A*31:01`, `HLA-B*13:02`, `HLA-B*14:02`, `HLA-C*05:01`, `HLA-C*07:01` (`Cw7`)
+- **B only (7)**: `HLA-A*01:04N`, `HLA-A*02:01G`, `HLA-B*38:01`, `HLA-C*04:01`, `HLA-C*07:02`, `HLA-DRB1*04:01`, `HLA-DQA1*01:02-DQB1*05:01`
+
+Helper script: `merge_hla.py` (regenerates the JSON). Say if you want it removed.

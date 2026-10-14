@@ -1,0 +1,17 @@
+The reported neo-ORFs are wrong for 7 of the 12 variants. The cached coding-sequence spans in `cds_offsets.py` are from an older annotation than `annotation.gff3`.
+
+On the affected transcripts the cache starts the coding sequence 3 nucleotides (1 codon) upstream of the current annotation, so each indel is applied one codon too early. Two other transcripts have a stale end coordinate 2 codons too far downstream, but the frameshifted peptide hits a stop before that extra sequence, so those results match the annotation.
+
+Corrected stretches, translated from the transcript and the GFF coding sequence:
+
+| Variant | Start codon | Peptide |
+| --- | --- | --- |
+| ENST00000000003:88 | 29 | `PPLLSREMRPLAWVCDRVQLLVLDL*` |
+| ENST00000000005:275 | 91 | `SHSDYCQHVGHVASDQHLSYTTRNGGGPTDSTVHQIGSGQYLGASINIRAFVNAPD*` |
+| ENST00000000007:112 | 37 | `FQAQLDEIVRCSRLDLRISIAEQFCPCPSIGI*` |
+| ENST00000000008:285 | 94 | `RGEAAQSVPHRADSAECLSQKRP*` |
+| ENST00000000009:259 | 86 | `TTG*` |
+| ENST00000000010:260 | 86 | `LSEGHQGIMGLTRTSR*` |
+| ENST00000000012:155 | 51 | `PAVRHPVDPGAHATIQIRVSWFMATPMDSHQQQGPLIRDINKENNNGYVGPLCLMCRPRHTKLGTGKHYI*` |
+
+The other five variants match an independent translation and are unchanged. The verdict is in `output/submission.json`.

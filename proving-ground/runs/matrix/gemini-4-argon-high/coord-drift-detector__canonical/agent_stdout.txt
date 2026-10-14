@@ -1,0 +1,21 @@
+Coordinate drift was detected across all 12 variants and the corrected results have been written to `./output/submission.json`.
+
+### Cause of Mismatch
+- **Annotation & sequence release:** `variants.vcf`, `transcripts.fasta`, and `annotation.gff3` all use **Ensembl release 114**.
+- **Enumeration code target:** `enumerate_downstream.py` targets **Ensembl release 113** (`ENSEMBL_RELEASE_TARGET = 113`), where `downstream_peptide` drops the codon containing the variant (`first_codon = variant_cds_pos // 3 + 1`), shifting `start_offset` **1 codon downstream** and omitting the first residue of each downstream stretch in `reported_neoorfs.csv`.
+
+### Summary of Corrected Results
+| Variant ID | Reported `start_offset` | Corrected `start_offset` | Corrected `downstream_peptide` |
+| --- | --- | --- | --- |
+| `ENST00000000001:270` | 90 | 89 | `EFRLKCN*` |
+| `ENST00000000002:161` | 54 | 53 | `CG*` |
+| `ENST00000000003:194` | 65 | 64 | `GLATSSSVTLAPSVVSYPRLY*` |
+| `ENST00000000004:186` | 62 | 61 | `ESPE*` |
+| `ENST00000000005:84` | 28 | 27 | `FDGRWSKQRWPGW*` |
+| `ENST00000000006:349` | 117 | 116 | `VLNSVNYCQHVGHVASVNQHLSYTTRNGGGPTDSTVHQIIGSGQYLGASIIRAFVAP*` |
+| `ENST00000000007:83` | 28 | 27 | `SRAAAE*` |
+| `ENST00000000008:245` | 82 | 81 | `SEQFARLWDQWATKIVAGYPGTYRRAEVPMATTLSSSCQLPIGRL*` |
+| `ENST00000000009:165` | 55 | 54 | `STAGG*` |
+| `ENST00000000010:109` | 37 | 36 | `NTG*` |
+| `ENST00000000011:298` | 100 | 99 | `PKLFEHLEHV*` |
+| `ENST00000000012:262` | 88 | 87 | `LILSDYHCRSVVPVDGHARHIAAQASTNVK*` |

@@ -1,0 +1,3 @@
+30 alleles appear in both files. 16 of those are not written with the same string in the two sources.
+
+The merged table is in `output/submission.json`. Each row uses the two-field name `HLA-<gene>*<dd>:<dd>`, with an expression or group suffix kept when the original name has one. `payload_b` is divided by 100. Serological names are resolved from the alias table (`A3`, `B7`, `B27`, `Cw7`, `DQ8`). The alias that maps `A*02:06` to `HLA-A*02:01` is ignored, because `A0206` is already a distinct allele and both files record it separately from `A*02:01`.

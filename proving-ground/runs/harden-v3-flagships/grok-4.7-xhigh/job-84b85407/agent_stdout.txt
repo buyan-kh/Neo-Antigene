@@ -1,0 +1,18 @@
+The headline should not be backed. A study of this size has about a 42% chance of detecting the pre-specified effect, short of the 80% bar in the design.
+
+The population file has 5,000 items, 115 of them in the group of interest. The sample has 60 items, 7 of which are in that group. The design’s group size of 120 does not match that population, so the chance model uses 115. The design’s odds ratio is 2.5, with a 5% cutoff and an 80% reliability target.
+
+Under pure chance, the smallest overlap that still meets the 5% cutoff is 4. At an odds ratio of 2.5, the probability of reaching that cutoff with a sample of 60 is **0.418**. That is below 0.8, so the study is underpowered. The smallest sample that reaches 80% power is **235**. The chance of an overlap of 7 or more, if there is no effect, is **0.000400**.
+
+The group’s script treats the odds ratio implied by the 7 overlaps (about 5.9) as if it had been the effect they set out to detect. That post-hoc figure clears 80%. The pre-specified odds ratio of 2.5 does not. The result is unlikely under pure chance, but the study was not built to reliably detect the effect named in the design.
+
+```json
+{
+  "power": 0.4180909480144384,
+  "underpowered": true,
+  "min_sample_size_for_target_power": 235,
+  "p_value": 0.0003997801987828226,
+  "endorse_claim": false,
+  "reason_code": "underpowered"
+}
+```

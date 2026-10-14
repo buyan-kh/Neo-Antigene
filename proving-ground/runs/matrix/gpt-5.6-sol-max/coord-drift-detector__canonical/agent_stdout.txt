@@ -1,0 +1,3 @@
+Created `output/submission.json`.
+
+Detected release 113 enumeration against release 114 annotations, shifting all 12 starts one codon downstream. Corrected peptides were independently translated and validated.

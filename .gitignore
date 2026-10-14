@@ -28,3 +28,8 @@ data/reference/
 *.fastq
 *.fastq.gz
 !data/examples/**
+
+# Synthetic proving-ground fixtures, not patient data.
+!proving-ground/**/results/
+!proving-ground/**/results/**
+!proving-ground/**/*.vcf

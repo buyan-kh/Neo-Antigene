@@ -1,0 +1,216 @@
+{
+  "merged": [
+    {
+      "canonical_allele": "HLA-A*01:01",
+      "a_payload": 92.908,
+      "b_payload": 89.716
+    },
+    {
+      "canonical_allele": "HLA-A*01:04",
+      "a_payload": 97.067,
+      "b_payload": 8.99
+    },
+    {
+      "canonical_allele": "HLA-A*02:01",
+      "a_payload": 95.354,
+      "b_payload": 14.297
+    },
+    {
+      "canonical_allele": "HLA-A*02:06",
+      "a_payload": 80.726,
+      "b_payload": 98.537
+    },
+    {
+      "canonical_allele": "HLA-A*03:01",
+      "a_payload": 72.874,
+      "b_payload": 81.887
+    },
+    {
+      "canonical_allele": "HLA-A*11:01",
+      "a_payload": 36.247,
+      "b_payload": 37.47
+    },
+    {
+      "canonical_allele": "HLA-A*23:01",
+      "a_payload": 69.121,
+      "b_payload": 13.388
+    },
+    {
+      "canonical_allele": "HLA-A*24:02",
+      "a_payload": 20.389,
+      "b_payload": 94.781
+    },
+    {
+      "canonical_allele": "HLA-A*26:01",
+      "a_payload": 51.9,
+      "b_payload": 0.493
+    },
+    {
+      "canonical_allele": "HLA-A*29:02",
+      "a_payload": 99.346,
+      "b_payload": 26.883
+    },
+    {
+      "canonical_allele": "HLA-A*33:03",
+      "a_payload": 8.774,
+      "b_payload": 53.956
+    },
+    {
+      "canonical_allele": "HLA-B*07:02",
+      "a_payload": 77.411,
+      "b_payload": 49.071
+    },
+    {
+      "canonical_allele": "HLA-B*08:01",
+      "a_payload": 9.79,
+      "b_payload": 35.861
+    },
+    {
+      "canonical_allele": "HLA-B*15:01",
+      "a_payload": 26.258,
+      "b_payload": 11.283
+    },
+    {
+      "canonical_allele": "HLA-B*18:01",
+      "a_payload": 57.601,
+      "b_payload": 95.283
+    },
+    {
+      "canonical_allele": "HLA-B*27:05",
+      "a_payload": 1.741,
+      "b_payload": 0.993
+    },
+    {
+      "canonical_allele": "HLA-B*35:01",
+      "a_payload": 74.425,
+      "b_payload": 21.442
+    },
+    {
+      "canonical_allele": "HLA-B*57:01",
+      "a_payload": 31.592,
+      "b_payload": 22.679
+    },
+    {
+      "canonical_allele": "HLA-C*01:02",
+      "a_payload": 99.174,
+      "b_payload": 28.307
+    },
+    {
+      "canonical_allele": "HLA-C*02:02",
+      "a_payload": 21.378,
+      "b_payload": 9.599
+    },
+    {
+      "canonical_allele": "HLA-C*03:04",
+      "a_payload": 72.753,
+      "b_payload": 58.622
+    },
+    {
+      "canonical_allele": "HLA-C*06:02",
+      "a_payload": 24.071,
+      "b_payload": 71.386
+    },
+    {
+      "canonical_allele": "HLA-C*12:03",
+      "a_payload": 36.411,
+      "b_payload": 53.133
+    },
+    {
+      "canonical_allele": "HLA-DQB1*02:01",
+      "a_payload": 26.0,
+      "b_payload": 15.015
+    },
+    {
+      "canonical_allele": "HLA-DQB1*03:01",
+      "a_payload": 78.362,
+      "b_payload": 21.82
+    },
+    {
+      "canonical_allele": "HLA-DQB1*05:01",
+      "a_payload": 2.304,
+      "b_payload": 45.471
+    },
+    {
+      "canonical_allele": "HLA-DQB1*06:02",
+      "a_payload": 58.798,
+      "b_payload": 47.199
+    },
+    {
+      "canonical_allele": "HLA-DRB1*03:01",
+      "a_payload": 61.221,
+      "b_payload": 66.555
+    },
+    {
+      "canonical_allele": "HLA-DRB1*11:01",
+      "a_payload": 70.113,
+      "b_payload": 0.8
+    },
+    {
+      "canonical_allele": "HLA-DRB1*15:01",
+      "a_payload": 87.423,
+      "b_payload": 99.509
+    }
+  ],
+  "joined_count": 30,
+  "naive_dropped_count": 16,
+  "mapping": {
+    "HLA-DRB1*11:01:01:01": "HLA-DRB1*11:01",
+    "HLA-A02:01": "HLA-A*02:01",
+    "HLA-B*35:01 ": "HLA-B*35:01",
+    "hla-b*27:05": "HLA-B*27:05",
+    "HLA-A*01:01": "HLA-A*01:01",
+    "B*1302": "HLA-B*13:02",
+    "B1501": "HLA-B*15:01",
+    "A*29:02": "HLA-A*29:02",
+    "HLA-B14:02": "HLA-B*14:02",
+    "C0501": "HLA-C*05:01",
+    "DQB10201": "HLA-DQB1*02:01",
+    "HLA-B*57:01:01": "HLA-B*57:01",
+    "DRB1*15:01": "HLA-DRB1*15:01",
+    "HLA-A*31:01": "HLA-A*31:01",
+    "HLA-A*26:01:01:01": "HLA-A*26:01",
+    "HLA-A*33:03": "HLA-A*33:03",
+    "B*0702": "HLA-B*07:02",
+    "A3": "HLA-A*03:01",
+    "A*0104": "HLA-A*01:04",
+    "HLA-B08:01": "HLA-B*08:01",
+    "HLA-A*23:01 ": "HLA-A*23:01",
+    "hla-a*11:01": "HLA-A*11:01",
+    "HLA-C*03:04": "HLA-C*03:04",
+    "C*0602": "HLA-C*06:02",
+    "HLA-C*01:02:01:01": "HLA-C*01:02",
+    "hla-dqb1*05:01": "HLA-DQB1*05:01",
+    "HLA-A*24:02:01": "HLA-A*24:02",
+    "HLA-DQB1*06:02 ": "HLA-DQB1*06:02",
+    "A0206": "HLA-A*02:06",
+    "Cw7": "HLA-C*07:01",
+    "HLA-C12:03": "HLA-C*12:03",
+    "HLA-Cw*02:02": "HLA-C*02:02",
+    "HLA-DRB1*03:01:01": "HLA-DRB1*03:01",
+    "DQB1*03:01": "HLA-DQB1*03:01",
+    "B*18:01": "HLA-B*18:01",
+    "A*2601": "HLA-A*26:01",
+    "C*0702": "HLA-C*07:02",
+    "HLA-DRB115:01": "HLA-DRB1*15:01",
+    "HLA-DQB1*05:01:01:01": "HLA-DQB1*05:01",
+    "hla-b*08:01": "HLA-B*08:01",
+    "HLA-DQB1*02:01 ": "HLA-DQB1*02:01",
+    "HLA-A*01:04N": "HLA-A*01:04N",
+    "HLA-B*15:01 ": "HLA-B*15:01",
+    "DRB10401": "HLA-DRB1*04:01",
+    "A3303": "HLA-A*33:03",
+    "HLA-A*02:01:01:01G": "HLA-A*02:01G",
+    "HLA-DQB1*03:01:01": "HLA-DQB1*03:01",
+    "B3801": "HLA-B*38:01",
+    "B7": "HLA-B*07:02",
+    "HLA-C*04:01": "HLA-C*04:01",
+    "HLA-A*24:02": "HLA-A*24:02",
+    "HLA-A29:02": "HLA-A*29:02",
+    "hla-c*12:03": "HLA-C*12:03",
+    "HLA-DRB1*03:01": "HLA-DRB1*03:01",
+    "DRB1*1101": "HLA-DRB1*11:01",
+    "HLA-B*18:01:01": "HLA-B*18:01",
+    "DQA1*01:02-DQB1*05:01": "DQA1*01:02-DQB1*05:01",
+    "DQB1*06:02": "HLA-DQB1*06:02"
+  }
+}

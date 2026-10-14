@@ -1,0 +1,12 @@
+The reported neoORFs are **wrong for every variant**. The stretch is taken **one codon downstream** of the codon that contains the variant.
+
+In `enumerate_downstream.py` the frameshifted CDS is built correctly, but the tail starts at the next codon:
+
+```python
+first_codon = zero_based // 3 + 1
+tail = mutant[first_codon * 3:]
+```
+
+It should start at `zero_based // 3` (the codon that contains the variant). Cached CDS spans match `annotation.gff3`; that was not the bug.
+
+All 12 variants are affected. `start_offset` is 1 too high, and each peptide is missing its first residue (or, for `ENST00000000003:131`, missing a stop that occurs in the variant codon itself). Corrected peptides are in `output/submission.json`.

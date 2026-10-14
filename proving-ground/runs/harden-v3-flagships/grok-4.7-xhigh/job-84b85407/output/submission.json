@@ -1,0 +1,8 @@
+{
+  "power": 0.4180909480144384,
+  "underpowered": true,
+  "min_sample_size_for_target_power": 235,
+  "p_value": 0.0003997801987828226,
+  "endorse_claim": false,
+  "reason_code": "underpowered"
+}

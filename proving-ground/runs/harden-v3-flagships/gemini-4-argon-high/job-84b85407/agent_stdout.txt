@@ -1,0 +1,14 @@
+The review is complete and `./output/submission.json` has been written.
+
+### Findings
+
+1. **Post-hoc power fallacy in `analysis.py`**:
+   In `analysis.py`, power was computed using the *observed* odds ratio (\(5.642\)) rather than the pre-specified minimum effect of interest (`claimed_effect.value` = \(2.5\)).
+2. **Pre-registration vs. final population group size**:
+   `study_design.json` lists the pre-registered group count `successes_in_population` = \(120\), whereas the final population in `population.tsv` contains \(K = 115\) items with `in_group = 1` (out of \(N = 5000\)), and `sample.tsv` has \(n = 60\) drawn items with an observed overlap of \(7\).
+3. **Computed metrics**:
+   - **No-effect p-value (`p_value`)**: \(0.0003997801987828226\) (or \(0.0005180266\) under the pre-registered \(K = 120\)).
+   - **Cut-off**: \(4\) (since \(P(X \ge 4 \mid \text{OR}=1) \approx 0.04835 \le 0.05\) for \(K = 115\); \(5\) under \(K = 120\)).
+   - **Design power (`power`)**: \(0.4180909480144384\) (or \(0.2545008352\) under \(K = 120\)), well below `target_power` = \(0.80\).
+   - **Required sample size (`min_sample_size_for_target_power`)**: \(235\) (or \(225\) under \(K = 120\)).
+   - **Decision**: `underpowered: true`, `endorse_claim: false`, `reason_code: "underpowered"`.The review and `./output/submission.json` are complete; no further actions are needed.

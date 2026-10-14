@@ -1,0 +1,12 @@
+Wrote **`output/submission.json`** after normalizing allele strings (gene aliases, legacy formats, case, missing `HLA-`/`*`, compressed digits, extra fields) to the two-field canonical form `HLA-<gene>*<dd>:<dd>` with suffix letters kept where present.
+
+| Metric | Value |
+|--------|------:|
+| **joined_count** | 30 alleles in both sources |
+| **naive_dropped_count** | 16 of those 30 use different raw strings in A vs B |
+| **mapping** | 57 entries (every distinct raw name from either file) |
+
+**Not in both (5 only in A):** `HLA-A*31:01`, `B*1302`, `HLA-B14:02`, `C0501`, `Cw7`  
+**Not in both (6 only in B):** `C*0702`, `B3801`, `HLA-A*01:04N`, `HLA-A*02:01G`, `HLA-DRB104:01`, `HLA-C*04:01`
+
+The merge script is at `merge_alleles.py` if you want to re-run or adjust normalization.

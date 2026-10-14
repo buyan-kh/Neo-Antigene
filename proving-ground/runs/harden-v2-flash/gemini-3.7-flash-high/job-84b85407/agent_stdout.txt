@@ -1,0 +1,8 @@
+The study design analysis has been completed and saved to `output/submission.json`.
+
+### Summary of Results
+- **p-value**: \(5.18 \times 10^{-4}\) (significant enrichment under the null hypothesis)
+- **Power**: \(0.2545\) (falls short of the target power of \(0.80\))
+- **Status**: Underpowered
+- **Minimum Sample Size for Target Power**: 225
+- **Endorsement**: Do not endorse claim (`endorse_claim: false`, `reason_code: "underpowered"`)

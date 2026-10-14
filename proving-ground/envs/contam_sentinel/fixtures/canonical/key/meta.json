@@ -1,0 +1,21 @@
+{
+  "benchmark_rows": 1486,
+  "clean_metric_name": "auroc",
+  "clean_metric_value": 0.7797529940119761,
+  "fixture": "canonical",
+  "held_out_from_fit": 80,
+  "leaked_pair_count": 514,
+  "mechanism": "train_test_overlap",
+  "mechanism_options": [
+    "none",
+    "train_test_overlap",
+    "label_leakage",
+    "duplicate_benchmark_rows",
+    "benchmark_distribution_shift"
+  ],
+  "n_clean_pairs": 972,
+  "naive_overlap_count": 594,
+  "near_miss_peptide_decoys": 200,
+  "same_peptide_other_allele_decoys": 300,
+  "seed": 20261608
+}

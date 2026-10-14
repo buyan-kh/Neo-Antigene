@@ -1,0 +1,20 @@
+## Result
+
+**Drift detected:** yes — all 12 variants in `reported_neoorfs.csv` are wrong.
+
+**Mechanism:** `downstream_start_skips_variant_codon`
+
+In `enumerate_downstream.py`, the tail is taken from the **next** codon after the variant instead of the codon that **contains** it:
+
+```93:94:enumerate_downstream.py
+    first_codon = zero_based // 3 + 1
+    tail = mutant[first_codon * 3:]
+```
+
+That shifts translation by one codon: `start_offset` is 1 too high and the peptide drops the first residue of the true neo-ORF. For `ENST00000000003:131`, the correct stretch is `*` (stop in the variant codon); starting one codon later skips that stop and yields a long false peptide.
+
+**Magnitude:** 1 codon, **downstream**
+
+CDS spans in `cds_offsets.py` match `annotation.gff3` when mapping with `transcript-origin` (genomic position minus origin). The README note about stale cache is misleading here; the issue is the start-codon index, not annotation mismatch.
+
+**Output:** `./output/submission.json` lists all 12 affected variants and corrected `downstream_peptide` / `start_offset` values computed from `transcripts.fasta`, GFF-derived CDS spans, and standard translation (stop at first `*`).

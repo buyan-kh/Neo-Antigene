@@ -1,0 +1,17 @@
+Wrote **`output/submission.json`** after normalizing allele names (HLA two-field form, alias table, compact/legacy spellings) and joining on canonical identity.
+
+### Results
+| Metric | Value |
+|--------|--------|
+| **joined_count** | **29** alleles in both sources |
+| **naive_dropped_count** | **16** matches with no identical raw string in both files |
+
+### Normalization (high level)
+- **`gene_aliases.tsv`**: short names (e.g. `A3`, `B7`, `Cw7`, `DQ8`, `A0206`) → canonical symbols  
+- **Parsing**: missing `HLA-`/`*`, compact forms (`B1801`, `DRB1*1101`, `HLA-DRB115:01`), extra fields trimmed to two-field form  
+- **Suffixes**: expression letters kept (e.g. `HLA-A*01:04N`); group `G` on long typings folded to `HLA-A*02:01` for matching  
+- **`mapping`**: all **58** distinct raw strings from both CSVs (including trailing spaces on some rows)
+
+When one file had several rows mapping to the same canonical allele, payloads were taken from the preferred **exact same raw string** in both files (favoring `HLA`-prefixed names), e.g. `HLA-A*02:01` uses `HLA-A02:01` (95.354) and `HLA-A02:01` (14.297), not the separate `A0206` rows.
+
+`merge_alleles.py` in the project directory can regenerate the submission.

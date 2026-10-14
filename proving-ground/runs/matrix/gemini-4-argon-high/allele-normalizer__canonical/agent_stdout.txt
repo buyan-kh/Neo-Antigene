@@ -1,0 +1,5 @@
+Wrote the reconciled merge output to `./output/submission.json`:
+
+- **`joined_count`**: `30` alleles appear in both `source_a.csv` (35 rows) and `source_b.csv` (34 rows) after normalizing formatting variants and resolving serotype aliases via `gene_aliases.tsv`.
+- **`naive_dropped_count`**: `30` (none of the 30 matching alleles share identical raw strings across the two files).
+- **`mapping`**: Maps all 69 distinct raw allele names across both files to their canonical `HLA-<gene>*<field1>:<field2>` form.

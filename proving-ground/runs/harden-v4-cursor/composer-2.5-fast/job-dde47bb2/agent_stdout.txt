@@ -1,0 +1,13 @@
+## Summary
+
+**Drift detected:** yes — stale `cds_offsets.py` spans do not match current `annotation.gff3` (README: annotation refreshed, cache not regenerated).
+
+**Mechanism:** `annotation_release_mismatch` — on 7 transcripts the cached CDS start is **3 bp (1 codon) upstream** of the GFF3 CDS start, so the pipeline prepends three 5′ UTR bases to the CDS. Variants are still placed by **annotated** CDSPOS, so indels land on the wrong nucleotides and downstream peptides are wrong (mostly a one-residue N-terminal shift; **ENST00000000010:260** is worse: reported `L*` vs correct `LSEGHQGIMGLTRTSR*`).
+
+**Magnitude:** 1 codon, **upstream**
+
+**Correct:** ENST00000000001:292, ENST00000000002:81, ENST00000000004:311, ENST00000000006:83, ENST00000000011:136 (start matches GFF3; extra 3′ sequence in cache does not change these peptides)
+
+**Affected (7):** ENST00000000003:88, ENST00000000005:275, ENST00000000007:112, ENST00000000008:285, ENST00000000009:259, ENST00000000010:260, ENST00000000012:155
+
+Corrected peptides and offsets are in [`output/submission.json`](output/submission.json), computed from `transcripts.fasta`, `annotation.gff3`, and `variants.vcf` with the same translation/stop logic as the pipeline but GFF3 CDS bounds.

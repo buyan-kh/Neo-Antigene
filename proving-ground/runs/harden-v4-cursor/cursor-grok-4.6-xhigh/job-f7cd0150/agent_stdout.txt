@@ -1,0 +1,13 @@
+The test set was **not** held out. **594** of **1486** benchmark pairs also appear in the training panels, so the published score should not be trusted.
+
+They are hidden by formatting, not by being different examples:
+
+- **panel_a**: same 9-mers with mixed case, padding, tabs, and allele names like `A2402`, `hla-a*01:01`, `HLA-A11:01`, `HLA-A*02:01:01:01`
+- **panel_b**: the 9-mer is the uppercase core of a 15-mer, with 3 lowercase flanking residues on each side
+- **panel_c**: alleles stored as IDs (`MHC-011` → `A*02:01`, and so on)
+
+`held_out_from_fit.csv` lists 80 of these pairs and claims they were left out of fitting. They still sit in the panels, and the tool ranks them perfectly (AUROC 1.0), same as the other 514 overlaps. I treated all 594 as leaked.
+
+On the **892** pairs that never appear in the build data, AUROC is **0.743** (280 binders, 612 non-binders). Overall AUROC on the full benchmark is ~0.897 only because leaked pairs are ranked perfectly.
+
+Result written to `output/submission.json`.

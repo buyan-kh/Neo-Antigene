@@ -1,0 +1,6 @@
+The merged HLA allele table and reconciliation data have been generated and written to `./output/submission.json`.
+
+### Summary
+- **Joined count**: 30 alleles present in both datasets
+- **Naive dropped count**: 16 matched alleles whose raw string representations differed between sources
+- **Mapping coverage**: 56 raw allele strings mapped to their canonical two-field forms (preserving expression suffix letters)

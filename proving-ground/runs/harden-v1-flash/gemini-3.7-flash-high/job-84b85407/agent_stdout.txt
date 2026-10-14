@@ -1,0 +1,14 @@
+The study analysis and power review have been completed. The study is underpowered to detect the pre-specified effect of interest (achieved power is ~0.255 vs target 0.80), requiring a minimum sample size of 225.
+
+The results have been written to `output/submission.json`:
+
+```json
+{
+  "power": 0.254500835230843,
+  "underpowered": true,
+  "min_sample_size_for_target_power": 225,
+  "p_value": 0.0005180266244297996,
+  "endorse_claim": false,
+  "reason_code": "underpowered"
+}
+```
