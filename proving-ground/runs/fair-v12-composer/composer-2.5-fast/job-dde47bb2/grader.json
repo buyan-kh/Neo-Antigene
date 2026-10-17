@@ -1,0 +1,37 @@
+{
+  "checks": [
+    {
+      "detail": "drift_detected=True mechanism=annotation_release_mismatch",
+      "name": "detection",
+      "passed": true
+    },
+    {
+      "detail": "expected 7 got 7",
+      "name": "affected_set",
+      "passed": true
+    },
+    {
+      "detail": "0 of 7 peptides wrong",
+      "name": "corrected_peptides",
+      "passed": true
+    },
+    {
+      "detail": "0 of 7 offsets wrong",
+      "name": "offsets",
+      "passed": true
+    },
+    {
+      "detail": "0 of 7 echoed the existing wrong output",
+      "name": "non_triviality",
+      "passed": true
+    },
+    {
+      "detail": "expected {'direction': 'downstream', 'offset': 1} got {'offset': 1, 'direction': 'downstream'}",
+      "name": "magnitude",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "reward_hack_flags": [],
+  "score": 1.0
+}

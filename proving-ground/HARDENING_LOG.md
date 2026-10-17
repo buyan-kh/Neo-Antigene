@@ -364,3 +364,38 @@ Determinism after v9: 42 submissions x 100 runs, all identical, verdicts OK.
 **coord-drift-detector: flagship broken at v9 (grok-4.7-xhigh). What broke it: the enumeration code matches its reported output, so the model reported no drift. Seven CDS features have phase 1. Hardening stops here.**
 
 **allele-normalizer: flagship broken at v9 (grok-4.7-xhigh). What broke it: the DQA1-DQB1 heterodimer was canonicalized without repeating HLA- on the second gene. Hardening stops here.**
+
+The v8 pvalue fail and the v9 coord and allele fails were not sellable. v9 coord stamped a random phase on in-frame ORFs. v9 allele failed an unstated heterodimer spelling. v8 pvalue told the model to correct all features and then graded screen-only. Those three, plus power-gate's silent recount of population.tsv, are withdrawn. contam-sentinel is unchanged.
+
+### v10 — state the rule, or accept the model's reading
+
+power-gate:
+- Task now says `study_design.json` is the pre-registered design and can disagree with `population.tsv` / `sample.tsv`, and that every count is taken from the tables.
+- Schema adds `design_vs_data_discrepancy` (pre-registered 120, actual 115).
+- Key stays power 0.418091, min sample 235.
+
+pvalue-police:
+- Task now says the screen tests screen-role analytes only, the role is in `sample_sheet.csv`, and spike-ins are excluded before correction.
+- Key stays at 4. `benjamini_hochberg_including_spike_ins` is gone from the key file.
+
+allele-normalizer:
+- Grader accepts both `HLA-DQA1*01:02-HLA-DQB1*05:01` and `HLA-DQA1*01:02-DQB1*05:01`.
+
+coord-drift-detector:
+- Phase column is 0 on every CDS. No `cds_phase_ignored`.
+- Seven transcripts have a real in-frame ATG one codon upstream of the annotated CDS start. The cache uses that upstream start. `annotation.gff3` uses the downstream ATG. The code reads the cache. Corrected peptides are the translation from the annotation. Mechanism is `annotation_release_mismatch`, magnitude 1 codon downstream.
+
+Determinism after v10: 42 submissions x 100 runs, all identical, good refs pass, bad refs fail.
+
+| power-gate | v10 | composer-2.5-fast | PASS | 1.0 | - | - | 16.4s |
+| pvalue-police | v10 | composer-2.5-fast | PASS | 1.0 | - | - | 20.2s |
+| allele-normalizer | v10 | composer-2.5-fast | PASS | 1.0 | - | - | 23.7s |
+| coord-drift-detector | v10 | composer-2.5-fast | PASS | 1.0 | - | - | 30.1s |
+| power-gate | v10 | grok-4.7-xhigh | PASS | 1.0 | - | - | 158.4s |
+| pvalue-police | v10 | grok-4.7-xhigh | PASS | 1.0 | - | - | 142.4s |
+| allele-normalizer | v10 | grok-4.7-xhigh | PASS | 1.0 | - | - | 228.1s |
+| coord-drift-detector | v10 | grok-4.7-xhigh | PASS | 1.0 | - | - | 203.7s |
+
+gpt-5.6-sol-max and gemini-4-argon-high were not re-run. Both were usage-capped, and this pass used grok and composer only.
+
+Once the required answer is written in the task, neither flagship misses it. No new unstated convention was added to manufacture a fail.

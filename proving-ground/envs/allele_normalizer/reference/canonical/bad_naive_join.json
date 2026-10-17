@@ -18,9 +18,19 @@
       "canonical_allele": "HLA-A*02:01"
     },
     {
+      "a_payload": 28.555,
+      "b_payload": 0.48895,
+      "canonical_allele": "HLA-A*02:01-HLA-B*07:02"
+    },
+    {
       "a_payload": 80.726,
       "b_payload": 0.98537,
       "canonical_allele": "HLA-A*02:06"
+    },
+    {
+      "a_payload": 39.69,
+      "b_payload": 0.23431,
+      "canonical_allele": "HLA-A*02:06-HLA-B*07:02"
     },
     {
       "a_payload": 72.874,
@@ -61,16 +71,6 @@
       "a_payload": 77.411,
       "b_payload": 0.49071,
       "canonical_allele": "HLA-B*07:02"
-    },
-    {
-      "a_payload": 9.79,
-      "b_payload": 0.35861,
-      "canonical_allele": "HLA-B*13:02"
-    },
-    {
-      "a_payload": 26.258,
-      "b_payload": 0.11283,
-      "canonical_allele": "HLA-B*18:01"
     }
   ],
   "naive_dropped_count": 0

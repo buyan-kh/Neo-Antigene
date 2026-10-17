@@ -1,0 +1,40 @@
+##gff-version 3
+##coordinates 1-based genomic, inclusive
+##sequence-region chr1 1000001 1200000
+##transcript-origin 1000000
+chr1	ensembl	five_prime_UTR	1000001	1000063	.	+	.	Parent=transcript:ENST00000000001
+chr1	ensembl	CDS	1000064	1000603	.	+	0	ID=CDS:ENST00000000001;Parent=transcript:ENST00000000001
+chr1	ensembl	three_prime_UTR	1000604	1000686	.	+	.	Parent=transcript:ENST00000000001
+chr1	ensembl	five_prime_UTR	1000001	1000089	.	+	.	Parent=transcript:ENST00000000002
+chr1	ensembl	CDS	1000090	1000629	.	+	0	ID=CDS:ENST00000000002;Parent=transcript:ENST00000000002
+chr1	ensembl	three_prime_UTR	1000630	1000708	.	+	.	Parent=transcript:ENST00000000002
+chr1	ensembl	five_prime_UTR	1000001	1000070	.	+	.	Parent=transcript:ENST00000000003
+chr1	ensembl	CDS	1000071	1000610	.	+	0	ID=CDS:ENST00000000003;Parent=transcript:ENST00000000003
+chr1	ensembl	three_prime_UTR	1000611	1000657	.	+	.	Parent=transcript:ENST00000000003
+chr1	ensembl	five_prime_UTR	1000001	1000089	.	+	.	Parent=transcript:ENST00000000004
+chr1	ensembl	CDS	1000090	1000629	.	+	0	ID=CDS:ENST00000000004;Parent=transcript:ENST00000000004
+chr1	ensembl	three_prime_UTR	1000630	1000734	.	+	.	Parent=transcript:ENST00000000004
+chr1	ensembl	five_prime_UTR	1000001	1000022	.	+	.	Parent=transcript:ENST00000000005
+chr1	ensembl	CDS	1000023	1000562	.	+	0	ID=CDS:ENST00000000005;Parent=transcript:ENST00000000005
+chr1	ensembl	three_prime_UTR	1000563	1000639	.	+	.	Parent=transcript:ENST00000000005
+chr1	ensembl	five_prime_UTR	1000001	1000086	.	+	.	Parent=transcript:ENST00000000006
+chr1	ensembl	CDS	1000087	1000626	.	+	0	ID=CDS:ENST00000000006;Parent=transcript:ENST00000000006
+chr1	ensembl	three_prime_UTR	1000627	1000737	.	+	.	Parent=transcript:ENST00000000006
+chr1	ensembl	five_prime_UTR	1000001	1000056	.	+	.	Parent=transcript:ENST00000000007
+chr1	ensembl	CDS	1000057	1000596	.	+	0	ID=CDS:ENST00000000007;Parent=transcript:ENST00000000007
+chr1	ensembl	three_prime_UTR	1000597	1000669	.	+	.	Parent=transcript:ENST00000000007
+chr1	ensembl	five_prime_UTR	1000001	1000031	.	+	.	Parent=transcript:ENST00000000008
+chr1	ensembl	CDS	1000032	1000571	.	+	0	ID=CDS:ENST00000000008;Parent=transcript:ENST00000000008
+chr1	ensembl	three_prime_UTR	1000572	1000634	.	+	.	Parent=transcript:ENST00000000008
+chr1	ensembl	five_prime_UTR	1000001	1000025	.	+	.	Parent=transcript:ENST00000000009
+chr1	ensembl	CDS	1000026	1000565	.	+	0	ID=CDS:ENST00000000009;Parent=transcript:ENST00000000009
+chr1	ensembl	three_prime_UTR	1000566	1000651	.	+	.	Parent=transcript:ENST00000000009
+chr1	ensembl	five_prime_UTR	1000001	1000084	.	+	.	Parent=transcript:ENST00000000010
+chr1	ensembl	CDS	1000085	1000624	.	+	0	ID=CDS:ENST00000000010;Parent=transcript:ENST00000000010
+chr1	ensembl	three_prime_UTR	1000625	1000715	.	+	.	Parent=transcript:ENST00000000010
+chr1	ensembl	five_prime_UTR	1000001	1000033	.	+	.	Parent=transcript:ENST00000000011
+chr1	ensembl	CDS	1000034	1000573	.	+	0	ID=CDS:ENST00000000011;Parent=transcript:ENST00000000011
+chr1	ensembl	three_prime_UTR	1000574	1000693	.	+	.	Parent=transcript:ENST00000000011
+chr1	ensembl	five_prime_UTR	1000001	1000087	.	+	.	Parent=transcript:ENST00000000012
+chr1	ensembl	CDS	1000088	1000627	.	+	0	ID=CDS:ENST00000000012;Parent=transcript:ENST00000000012
+chr1	ensembl	three_prime_UTR	1000628	1000716	.	+	.	Parent=transcript:ENST00000000012

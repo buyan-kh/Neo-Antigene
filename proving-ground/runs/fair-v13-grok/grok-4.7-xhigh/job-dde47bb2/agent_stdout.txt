@@ -1,0 +1,14 @@
+The pipeline output is wrong for 4 of the 30 variants. The corrected results are in `output/submission.json`.
+
+`cds_offsets.py` is one codon upstream of the coding-sequence start in `annotation.gff3` on those four transcripts. The cached span begins at an extra `ATG` that the current annotation places in the 5' UTR, so the indel is applied 3 bp too early. The annotation start sits **1 codon downstream** of the start the code used.
+
+The other 26 variants match an independent translation. Six of those transcripts have a cached coding-sequence end 6 bp too long, but the frameshift still reaches a stop before those extra bases, so the peptide is unchanged.
+
+Affected variants and corrected tails (translation continues through the 3' UTR until the first stop):
+
+| Variant | Correct peptide | Start codon |
+| --- | --- | --- |
+| `ENST00000000006:516` | `WNHSQFFLNQLPIGRL*` | 171 |
+| `ENST00000000018:499` | `MCPGRSHVDFVQHNIGSTKLDNSPIWSRNSLP*` | 166 |
+| `ENST00000000022:514` | `KPPPPTRLKCLLERGVRDWL*` | 171 |
+| `ENST00000000024:509` | `KPIFSRTRGANVPTRRARVELIANLF*` | 169 |

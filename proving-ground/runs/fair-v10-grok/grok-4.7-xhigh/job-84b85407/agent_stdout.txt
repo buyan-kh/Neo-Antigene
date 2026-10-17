@@ -1,0 +1,9 @@
+The headline should not be backed. The study is underpowered for the effect it pre-registered.
+
+Counts from `population.tsv` and `sample.tsv`: population 5000, group size 115, sample size 60, overlap 7. The design file lists a group size of 120; that is the only disagreement, and the calculations use 115. Alpha is 0.05, the claimed odds ratio is 2.5, and the target power is 0.8.
+
+Under the central hypergeometric (no effect), the critical overlap is 4. Power at the actual sample size, under Fisher's noncentral hypergeometric with odds ratio 2.5, is about 0.418, short of 0.8. The smallest sample that reaches 0.8 is 235. The upper-tail probability of an overlap of 7 or more by chance is about 0.00040.
+
+The group's script treats the observed odds ratio as the effect size, which pushes its power figure above 80%. Power has to be computed from the pre-registered odds ratio of 2.5.
+
+Wrote `output/submission.json` with `underpowered: true`, `endorse_claim: false`, and `reason_code: "underpowered"`.

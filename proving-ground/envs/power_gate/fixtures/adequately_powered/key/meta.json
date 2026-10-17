@@ -15,6 +15,7 @@
     "underpowered",
     "adequately_powered"
   ],
+  "stale_design_group_size": 120,
   "stale_design_min_sample_size": 225,
   "stale_design_power": 0.9973181408352602,
   "underpowered": false

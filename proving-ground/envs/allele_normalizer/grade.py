@@ -11,6 +11,7 @@ ROOT = ENV_DIR.parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from envs.allele_normalizer.normalize import canonicalize  # noqa: E402
 from contract import (  # noqa: E402
     Check,
     GraderResult,
@@ -34,6 +35,12 @@ JACCARD_THRESHOLD = 0.99
 PAYLOAD_TOLERANCE = 1e-6
 
 
+def allele_id(name) -> str | None:
+    if not isinstance(name, str):
+        return None
+    return canonicalize(name.strip(), {})
+
+
 def grade(submission_path: Path, fixture_dir: Path) -> GraderResult:
     submission = load_submission(submission_path)
     if submission is None:
@@ -50,9 +57,11 @@ def grade(submission_path: Path, fixture_dir: Path) -> GraderResult:
     merged_by_allele: Dict[str, dict] = {}
     for row in merged:
         if isinstance(row, dict) and isinstance(row.get("canonical_allele"), str):
-            merged_by_allele[row["canonical_allele"].strip().upper()] = row
+            identified = allele_id(row["canonical_allele"])
+            if identified:
+                merged_by_allele[identified] = row
 
-    expected = {item.upper() for item in key["expected_joined"]}
+    expected = {allele_id(item) for item in key["expected_joined"]}
     overlap = jaccard(set(merged_by_allele), expected)
     checks.append(
         Check(
@@ -64,8 +73,8 @@ def grade(submission_path: Path, fixture_dir: Path) -> GraderResult:
         )
     )
 
-    payload_a = {k.upper(): v for k, v in key["payload_a"].items()}
-    payload_b = {k.upper(): v for k, v in key["payload_b"].items()}
+    payload_a = {allele_id(k): v for k, v in key["payload_a"].items()}
+    payload_b = {allele_id(k): v for k, v in key["payload_b"].items()}
     mismatched = 0
     for allele in expected:
         row = merged_by_allele.get(allele)
@@ -111,8 +120,7 @@ def grade(submission_path: Path, fixture_dir: Path) -> GraderResult:
     wrong = [
         raw
         for raw, canonical in key_mapping.items()
-        if raw in mapping
-        and str(mapping[raw]).strip().upper() != canonical.upper()
+        if raw in mapping and allele_id(mapping[raw]) != allele_id(canonical)
     ]
     checks.append(
         Check(

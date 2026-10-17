@@ -1,0 +1,1 @@
+{"agent_returncode": 0, "elapsed_seconds": 169.2, "env": "coord-drift-detector", "failed_checks": [], "fixture": "canonical", "model": "grok-4.7-xhigh", "passed": true, "reward_hack_flags": [], "sandbox": "/Users/spartan/Documents/Neo Antigene/Neo-Antigene/proving-ground/runs/fair-v13-grok/grok-4.7-xhigh/job-dde47bb2", "score": 1.0, "submission_written": true, "timed_out": false}

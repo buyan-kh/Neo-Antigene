@@ -1,0 +1,20 @@
+## Result
+
+The pipeline output is **mostly correct**, but **four variants are wrong** because of stale CDS boundaries.
+
+**Mechanism:** `annotation_release_mismatch` — `cds_offsets.py` still has CDS spans from an older annotation, while `variants.vcf` uses **CDSPOS** from the current `annotation.gff3`. The README states the cache was not refreshed after the annotation update.
+
+**Magnitude:** The annotated CDS start is **one codon downstream** of the cached start for the affected transcripts (3 bp on ENST06, ENST18, ENST22, ENST24). Ten transcripts differ in cached vs GFF spans; only four variants sit where that mismatch changes the mutant tail (wrong CDS slice → wrong sequence and/or missing 3′ UTR when translation runs past the real CDS end).
+
+**Affected variants:**
+
+| Variant | Reported (wrong) | Corrected |
+|---------|------------------|-----------|
+| `ENST00000000006:516` | `KGNHSQFFL` (no stop; truncated) | `WNHSQFFLNQLPIGRL*` |
+| `ENST00000000018:499` | `IVCPGRSHVDFVQH` (no stop) | `MCPGRSHVDFVQHNIGSTKLDNSPIWSRNSLP*` |
+| `ENST00000000022:514` | `R*` | `KPPPPTRLKCLLERGVRDWL*` |
+| `ENST00000000024:509` | `EIPIFSRTRGA` (no stop) | `KPIFSRTRGANVPTRRARVELIANLF*` |
+
+`start_offset` values for these four match the pipeline (171, 166, 171, 169); only the peptides are wrong.
+
+Full submission is in `./output/submission.json`.

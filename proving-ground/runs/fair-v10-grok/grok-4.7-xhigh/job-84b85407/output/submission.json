@@ -1,0 +1,13 @@
+{
+  "power": 0.41809094801331415,
+  "underpowered": true,
+  "min_sample_size_for_target_power": 235,
+  "p_value": 0.0003997801987805606,
+  "endorse_claim": false,
+  "reason_code": "underpowered",
+  "design_vs_data_discrepancy": {
+    "field": "successes_in_population",
+    "pre_registered": 120,
+    "actual": 115
+  }
+}

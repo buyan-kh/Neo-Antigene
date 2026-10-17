@@ -1,0 +1,17 @@
+## Result
+
+**Drift detected.** The pipeline output is wrong for **7 of 12** variants.
+
+**Mechanism:** `annotation_release_mismatch` — `enumerate_downstream.py` slices CDS from stale `cds_offsets.py`, while `CDSPOS` in the VCF is defined on the CDS in `annotation.gff3`. On seven transcripts the cached CDS start is **3 bp (1 codon) upstream** of the current annotation, so those three bases are really 5′ UTR but are treated as the first codon of the CDS. Indels are still applied at annotation `CDSPOS`, which lands on the wrong nucleotides in that misaligned sequence.
+
+**Magnitude:** 1 codon; annotation CDS start is **downstream** of the start the code used.
+
+**Unaffected (spans match):** `ENST00000000001:292`, `ENST00000000002:81`, `ENST00000000004:311`, `ENST00000000006:83`, `ENST00000000011:136`.
+
+**Affected:** `ENST00000000003:88`, `ENST00000000005:275`, `ENST00000000007:112`, `ENST00000000008:285`, `ENST00000000009:259`, `ENST00000000010:260`, `ENST00000000012:155`.
+
+Errors are mostly a shifted first residue (e.g. `PSP…` vs `PP…`) because the neo-ORF start codon index still comes from `CDSPOS` alone. **`ENST00000000010:260`** is worse: reported `L*` vs correct `LSEGHQGIMGLTRTSR*` — the indel sits on the wrong bases and hits a premature stop.
+
+Corrected peptides were computed from `transcripts.fasta` and CDS coordinates parsed from `annotation.gff3` (genomic origin 1,000,000), with the same indel and translation logic as the pipeline.
+
+Written to [`output/submission.json`](output/submission.json).

@@ -32,6 +32,7 @@ CHECK_NAMES = [
     "corrected_peptides",
     "offsets",
     "non_triviality",
+    "magnitude",
 ]
 GATE = "detection"
 
@@ -76,8 +77,7 @@ def parse_cds_spans(path: Path) -> Dict[str, tuple]:
             )
             parent = info.get("Parent", "")
             transcript_id = parent.split(":")[-1] if parent else fields[0]
-            phase = int(fields[7]) if fields[7].isdigit() else 0
-            spans[transcript_id] = (int(fields[3]) - origin, int(fields[4]) - origin, phase)
+            spans[transcript_id] = (int(fields[3]) - origin, int(fields[4]) - origin)
     return spans
 
 
@@ -87,12 +87,10 @@ def recompute(fixture_dir: Path) -> Dict[str, dict]:
     spans = parse_cds_spans(inputs / "annotation.gff3")
     result = {}
     for variant in parse_vcf(inputs / "variants.vcf"):
-        start, end, phase = spans[variant["transcript"]]
-        annotated = transcripts[variant["transcript"]][start - 1 : end]
-        cds = annotated[phase:]
-        cds = cds[: len(cds) - (len(cds) % 3)]
+        start, _end = spans[variant["transcript"]]
+        tail = transcripts[variant["transcript"]][start - 1 :]
         peptide, offset = downstream_peptide(
-            cds, variant["cds_pos"] - phase, variant["ref"], variant["alt"]
+            tail, variant["cds_pos"], variant["ref"], variant["alt"]
         )
         result[variant["variant_id"]] = {
             "downstream_peptide": peptide,
@@ -211,10 +209,24 @@ def grade(submission_path: Path, fixture_dir: Path) -> GraderResult:
         )
     )
 
+    submitted_magnitude = submission.get("magnitude")
+    submitted_magnitude = submitted_magnitude if isinstance(submitted_magnitude, dict) else {}
+    magnitude_ok = (
+        as_int(submitted_magnitude.get("offset")) == key["magnitude"]["offset"]
+        and submitted_magnitude.get("direction") == key["magnitude"]["direction"]
+    )
+    checks.append(
+        Check(
+            "magnitude",
+            magnitude_ok,
+            "expected {} got {}".format(key["magnitude"], submission.get("magnitude")),
+        )
+    )
+
     return build_result(
         checks,
         gates=[GATE],
-        required_to_pass=["detection", "affected_set", "corrected_peptides"],
+        required_to_pass=["detection", "affected_set", "corrected_peptides", "magnitude"],
         flags=flags,
     )
 

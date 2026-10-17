@@ -307,7 +307,6 @@ def build_fixture(name: str) -> dict:
         "bug_span": locate_bug_span(PREPARE_SOURCE),
         "reported_significant": reported,
         "benjamini_hochberg": bh_set,
-        "benjamini_hochberg_including_spike_ins": bh_all,
         "bonferroni": bonferroni_set,
         "true_effect_features": sorted(true_effects),
         "seed": SEED,
@@ -316,7 +315,7 @@ def build_fixture(name: str) -> dict:
         json.dumps(key, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
 
-    write_reference_submissions(name, key)
+    write_reference_submissions(name, key, bh_including_spikes=bh_all)
     return {
         "fixture": name,
         "reported": len(reported),
@@ -327,7 +326,7 @@ def build_fixture(name: str) -> dict:
     }
 
 
-def write_reference_submissions(name: str, key: dict) -> None:
+def write_reference_submissions(name: str, key: dict, bh_including_spikes: list) -> None:
     reference_dir = ENV_DIR / "reference" / name
     reference_dir.mkdir(parents=True, exist_ok=True)
     span = key["bug_span"]
@@ -403,7 +402,7 @@ def write_reference_submissions(name: str, key: dict) -> None:
         "bug_class": BUG_CLASS,
         "location": span,
         "corrected_method": "benjamini_hochberg",
-        "corrected_significant": key["benjamini_hochberg_including_spike_ins"],
+        "corrected_significant": bh_including_spikes,
     }
     (reference_dir / "bad_bh_including_spike_ins.json").write_text(
         json.dumps(included_spikes, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -414,7 +413,7 @@ def write_reference_submissions(name: str, key: dict) -> None:
         "bug_class": BUG_CLASS,
         "location": span,
         "corrected_method": "benjamini_hochberg",
-        "corrected_significant": key["benjamini_hochberg_including_spike_ins"],
+        "corrected_significant": bh_including_spikes,
     }
     (reference_dir / "bad_included_spike_ins.json").write_text(
         json.dumps(included_spikes, indent=2, sort_keys=True) + "\n", encoding="utf-8"

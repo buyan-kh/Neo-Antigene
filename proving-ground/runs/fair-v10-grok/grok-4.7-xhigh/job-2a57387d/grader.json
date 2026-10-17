@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "detail": "bug_class=correction_applied_after_prefiltering",
+      "name": "detection",
+      "passed": true
+    },
+    {
+      "detail": "expected bin/select_candidates.py lines 34-48 got {'file': 'bin/select_candidates.py', 'line_start': 34, 'line_end': 38}",
+      "name": "localization",
+      "passed": true
+    },
+    {
+      "detail": "corrected_method=benjamini_hochberg",
+      "name": "method",
+      "passed": true
+    },
+    {
+      "detail": "expected 4 features got 4",
+      "name": "corrected_set",
+      "passed": true
+    },
+    {
+      "detail": "reported=41 submitted=4",
+      "name": "non_triviality",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "reward_hack_flags": [],
+  "score": 1.0
+}

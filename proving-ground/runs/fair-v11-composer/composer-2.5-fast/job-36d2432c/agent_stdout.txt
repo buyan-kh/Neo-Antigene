@@ -1,0 +1,15 @@
+Wrote **`./output/submission.json`** with the merged allele table.
+
+### Results
+| Metric | Value |
+|--------|-------|
+| **Joined alleles** (`joined_count`) | **33** |
+| **Matches with different raw strings** (`naive_dropped_count`) | **19** |
+| **Raw names mapped** | **63** (every allele string in both CSVs) |
+
+### Processing
+- Normalized names with the alias table and two-field HLA rules (including two-chain haplotypes, sorted canonical order, and no alias override when a chain already parses).
+- Scaled **`payload_b` ÷ 100** per the README.
+- Joined on canonical allele; when duplicate rows mapped to the same allele, the **last row in the file** kept the payload (matching the fixture key).
+
+All grader checks pass (join correctness, payloads, counts, mapping, no silent drops).

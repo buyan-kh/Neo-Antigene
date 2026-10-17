@@ -38,6 +38,12 @@ Notes on the fields:
 
 - `canonical_allele` uses the full standard two-field form, `HLA-<gene>*<dd>:<dd>`,
   keeping any trailing suffix letter the name carries (expression or group).
+- Resolve a two-chain name one chain at a time. A chain that already parses
+  as a two-field name keeps that name; the alias table must not rewrite it.
+  A chain that does not parse is resolved through the alias table. The
+  molecule is the same whichever chain is written first, and either chain may
+  be written with or without its own `HLA-` prefix. The hyphen inside `HLA-`
+  is part of the name, not a chain break.
 - `joined_count` is how many alleles appear in both files.
 - `naive_dropped_count` is how many of those matched alleles are not written
   with the identical string in the two files.

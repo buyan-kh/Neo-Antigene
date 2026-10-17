@@ -1,0 +1,36 @@
+{
+  "drift_detected": true,
+  "mechanism": "annotation_release_mismatch",
+  "magnitude": {
+    "offset": 1,
+    "direction": "downstream"
+  },
+  "affected_variants": [
+    "ENST00000000006:516",
+    "ENST00000000018:499",
+    "ENST00000000022:514",
+    "ENST00000000024:509"
+  ],
+  "corrected": [
+    {
+      "variant_id": "ENST00000000006:516",
+      "downstream_peptide": "WNHSQFFLNQLPIGRL*",
+      "start_offset": 171
+    },
+    {
+      "variant_id": "ENST00000000018:499",
+      "downstream_peptide": "MCPGRSHVDFVQHNIGSTKLDNSPIWSRNSLP*",
+      "start_offset": 166
+    },
+    {
+      "variant_id": "ENST00000000022:514",
+      "downstream_peptide": "KPPPPTRLKCLLERGVRDWL*",
+      "start_offset": 171
+    },
+    {
+      "variant_id": "ENST00000000024:509",
+      "downstream_peptide": "KPIFSRTRGANVPTRRARVELIANLF*",
+      "start_offset": 169
+    }
+  ]
+}

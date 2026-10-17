@@ -1,0 +1,3 @@
+Wrote `./output/submission.json`. **30** alleles appear in both files, and **16** of those matches are spelled differently.
+
+`payload_b` was divided by 100. Names that already parse as alleles were kept as written, so the stale alias that maps `A0206` / `HLA-A*02:06` onto `HLA-A*02:01` was not applied. Serological shorthand that does not parse (`A3`, `B7`, `B27`, `Cw7`, `DQ8`) was resolved through the alias table. Extra resolution fields were dropped to the two-field form, while expression and group suffixes were kept (`HLA-A*01:04N`, `HLA-A*02:01G`).

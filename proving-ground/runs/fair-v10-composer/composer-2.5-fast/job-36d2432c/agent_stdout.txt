@@ -1,0 +1,14 @@
+`./output/submission.json` is written and passes the allele-normalizer grader.
+
+**Results**
+- **30** alleles appear in both sources after normalization (`joined_count`).
+- **16** of those matches use different literal strings in the two files (`naive_dropped_count`); only **14** raw names are identical in both CSVs (e.g. `A3`, `HLA-A*01:01`, `hla-b*35:01`).
+- **`mapping`** covers all **58** distinct raw allele strings from `source_a.csv` and `source_b.csv`.
+
+**Approach**
+1. Parsed allele names with the repo’s `canonicalize()` logic (regex for HLA two-field forms, `Cw` → `C`, alias table for serotypes like `A3` → `HLA-A*03:01`, and split/join for heterodimers).
+2. Joined on canonical name; kept the last row when duplicate raw rows pointed at the same allele (e.g. duplicate `A*3201`, `hla-dqb1*06:02` in source A).
+3. Scaled **`b_payload`** by dividing source B percentages by **100**, per `README.md`.
+4. Left **`a_payload`** as in source A.
+
+The merged table has 30 rows with `canonical_allele`, `a_payload`, and scaled `b_payload` for each shared allele.

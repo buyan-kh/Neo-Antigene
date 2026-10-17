@@ -1,72 +1,138 @@
 {
   "affected_transcripts": [
-    "ENST00000000003",
-    "ENST00000000005",
-    "ENST00000000007",
-    "ENST00000000008",
-    "ENST00000000009",
-    "ENST00000000010",
-    "ENST00000000012"
+    "ENST00000000006",
+    "ENST00000000018",
+    "ENST00000000022",
+    "ENST00000000024"
   ],
   "affected_variants": [
-    "ENST00000000003:88",
-    "ENST00000000005:275",
-    "ENST00000000007:112",
-    "ENST00000000008:285",
-    "ENST00000000009:259",
-    "ENST00000000010:260",
-    "ENST00000000012:155"
+    "ENST00000000006:516",
+    "ENST00000000018:499",
+    "ENST00000000022:514",
+    "ENST00000000024:509"
   ],
   "annotation_release": 114,
   "code_release": 113,
   "corrected": {
-    "ENST00000000001:292": {
-      "downstream_peptide": "WGEFQDCFLEKIFLSEQSVY*",
-      "start_offset": 97
+    "ENST00000000001:124": {
+      "downstream_peptide": "VL*",
+      "start_offset": 41
     },
-    "ENST00000000002:81": {
-      "downstream_peptide": "TGTCRISRRSMTVVIRPIPSDRLEFLVQFISYGGIGPFPLFRESYRERATRRSPGIAVLPNYIDGYMHVLP*",
+    "ENST00000000002:126": {
+      "downstream_peptide": "SDWSS*",
+      "start_offset": 41
+    },
+    "ENST00000000003:299": {
+      "downstream_peptide": "PLHDKRSPRE*",
+      "start_offset": 99
+    },
+    "ENST00000000004:64": {
+      "downstream_peptide": "QATMAGLVTNLELAHARVTQLLVTTYPRTCGCKRTVSQATRYRRA*",
+      "start_offset": 21
+    },
+    "ENST00000000005:270": {
+      "downstream_peptide": "IDWKRAILGSQY*",
+      "start_offset": 89
+    },
+    "ENST00000000006:516": {
+      "downstream_peptide": "WNHSQFFLNQLPIGRL*",
+      "start_offset": 171
+    },
+    "ENST00000000007:167": {
+      "downstream_peptide": "RGG*",
+      "start_offset": 55
+    },
+    "ENST00000000008:153": {
+      "downstream_peptide": "IRVQ*",
+      "start_offset": 50
+    },
+    "ENST00000000009:167": {
+      "downstream_peptide": "GLRIFSYI*",
+      "start_offset": 55
+    },
+    "ENST00000000010:81": {
+      "downstream_peptide": "NRCDLLKNRLSLSRLTRAVHRHPYV*",
       "start_offset": 26
     },
-    "ENST00000000003:88": {
-      "downstream_peptide": "FHHYCLGKCVPWPGCAIESSYSYSIYKEQDEKSGDVVWWYFLAFTFFACTIHSRVPPVYGASKVFLFSATVGSYIFRLNGRHGYLYTPLHDKRSPREEGSPISTDRAQSSNGRNGVSLTWGLTRRIDLVDTHAERTHRAPSTFWIKTDLRE",
-      "start_offset": 28
+    "ENST00000000011:343": {
+      "downstream_peptide": "WRPCPHTSFRVNRF*",
+      "start_offset": 114
     },
-    "ENST00000000004:311": {
-      "downstream_peptide": "PH*",
+    "ENST00000000012:310": {
+      "downstream_peptide": "PGPPLPGILRNGRERPGQVKTGGRGWS*",
       "start_offset": 103
     },
-    "ENST00000000005:275": {
-      "downstream_peptide": "LILIIANMSDMLRAINTCPTLLETEEDPPIPPCIKLEAGNTWEPVLISVRSLMRLTRPLIVTPTKLSAISPIVINGLITWSCLDRQIL",
-      "start_offset": 91
+    "ENST00000000013:98": {
+      "downstream_peptide": "DSSQPRIFPNRRWITTR*",
+      "start_offset": 32
     },
-    "ENST00000000006:83": {
-      "downstream_peptide": "*",
-      "start_offset": 27
+    "ENST00000000014:231": {
+      "downstream_peptide": "HRVCWMGQTKSQSYSATSYKASLP*",
+      "start_offset": 76
     },
-    "ENST00000000007:112": {
-      "downstream_peptide": "FFRLSLMRLCAVADWIYGSQSLSSFALAPLSEFKPSTDIILMKSFERSGEPASSPVKTSTSLVNPNWESLGRGGRVEIDQEAVSLVWSCKSLTRQSRALVSFLIPYVTCRLSDVAVGSKGLMEGNLEANARLTRGPAYYRPCY",
-      "start_offset": 36
+    "ENST00000000015:67": {
+      "downstream_peptide": "TL*",
+      "start_offset": 22
     },
-    "ENST00000000008:285": {
-      "downstream_peptide": "VERRPSRCLIGPTVPNAYHKKGLDPTT*",
-      "start_offset": 94
+    "ENST00000000016:315": {
+      "downstream_peptide": "KTSTILEVPPSRKRKSPMVAVSACYPHGHLERLSGLNTVAEALFLISTSFGLNAA*",
+      "start_offset": 104
     },
-    "ENST00000000009:259": {
-      "downstream_peptide": "LLPAKLFEHLEHVHQTGGTGIYCKEIIKSFESTGVTWCYGRRQRCPYTYLLVLRLDPAEVDERVPPWNVSRRVVLKGVICSYGLPRILIAYIRL",
-      "start_offset": 85
+    "ENST00000000017:341": {
+      "downstream_peptide": "APNLLLDWRLSPDHVQKPVSRYAHTYVRS*",
+      "start_offset": 113
     },
-    "ENST00000000010:260": {
-      "downstream_peptide": "CQKATKG*",
-      "start_offset": 86
+    "ENST00000000018:499": {
+      "downstream_peptide": "MCPGRSHVDFVQHNIGSTKLDNSPIWSRNSLP*",
+      "start_offset": 166
     },
-    "ENST00000000011:136": {
-      "downstream_peptide": "LHGTYS*",
+    "ENST00000000019:202": {
+      "downstream_peptide": "TSPNDPCSRIRQLYFLLWLTDRKITPGCEQTRTQTSRKCRIPHTRDSTSIASFTPVRPRGYET*",
+      "start_offset": 67
+    },
+    "ENST00000000020:131": {
+      "downstream_peptide": "DQKKILIVLAAYRACDVVTTSSILRRLVLL*",
+      "start_offset": 43
+    },
+    "ENST00000000021:71": {
+      "downstream_peptide": "HSGHGREHVEPFIKPEHNNLSWLH*",
+      "start_offset": 23
+    },
+    "ENST00000000022:514": {
+      "downstream_peptide": "KPPPPTRLKCLLERGVRDWL*",
+      "start_offset": 171
+    },
+    "ENST00000000023:312": {
+      "downstream_peptide": "LRL*",
+      "start_offset": 103
+    },
+    "ENST00000000024:509": {
+      "downstream_peptide": "KPIFSRTRGANVPTRRARVELIANLF*",
+      "start_offset": 169
+    },
+    "ENST00000000025:248": {
+      "downstream_peptide": "SETYDESISDFVFRRIKGFGRSNCRLD*",
+      "start_offset": 82
+    },
+    "ENST00000000026:137": {
+      "downstream_peptide": "TSTALPQGRVYTGFTERCQRLPLVTVASGPAFYSRFIAFSRLCTPTPA*",
       "start_offset": 45
     },
-    "ENST00000000012:155": {
-      "downstream_peptide": "RR*",
-      "start_offset": 51
+    "ENST00000000027:124": {
+      "downstream_peptide": "IYSQCTDGSRKGLLGLKSWSAGPLLTTSAGAIRAPQRLQYERQSTAVYNS*",
+      "start_offset": 41
+    },
+    "ENST00000000028:236": {
+      "downstream_peptide": "SVPGVSSFIRGPRYASKIKRT*",
+      "start_offset": 78
+    },
+    "ENST00000000029:338": {
+      "downstream_peptide": "SFTSVLSR*",
+      "start_offset": 112
+    },
+    "ENST00000000030:71": {
+      "downstream_peptide": "V*",
+      "start_offset": 23
     }
   },
   "fixture": "canonical",
@@ -74,66 +140,137 @@
     "direction": "downstream",
     "offset": 1
   },
-  "mechanism": "cds_phase_ignored",
+  "mechanism": "annotation_release_mismatch",
   "mechanism_options": [
     "none",
     "annotation_release_mismatch",
     "zero_vs_one_based_position",
     "downstream_start_skips_variant_codon",
-    "cds_phase_ignored",
     "wrong_strand",
     "wrong_codon_table",
     "indel_applied_at_wrong_sequence_level",
     "translation_not_stopped_at_stop_codon"
   ],
   "reported": {
-    "ENST00000000001:292": {
-      "downstream_peptide": "WGEFQDCFLEKIFLSEQSVY*",
-      "start_offset": 97
+    "ENST00000000001:124": {
+      "downstream_peptide": "VL*",
+      "start_offset": 41
     },
-    "ENST00000000002:81": {
-      "downstream_peptide": "TGTCRISRRSMTVVIRPIPSDRLEFLVQFISYGGIGPFPLFRESYRERATRRSPGIAVLPNYIDGYMHVLP*",
+    "ENST00000000002:126": {
+      "downstream_peptide": "SDWSS*",
+      "start_offset": 41
+    },
+    "ENST00000000003:299": {
+      "downstream_peptide": "PLHDKRSPRE*",
+      "start_offset": 99
+    },
+    "ENST00000000004:64": {
+      "downstream_peptide": "QATMAGLVTNLELAHARVTQLLVTTYPRTCGCKRTVSQATRYRRA*",
+      "start_offset": 21
+    },
+    "ENST00000000005:270": {
+      "downstream_peptide": "IDWKRAILGSQY*",
+      "start_offset": 89
+    },
+    "ENST00000000006:516": {
+      "downstream_peptide": "KGNHSQFFL",
+      "start_offset": 171
+    },
+    "ENST00000000007:167": {
+      "downstream_peptide": "RGG*",
+      "start_offset": 55
+    },
+    "ENST00000000008:153": {
+      "downstream_peptide": "IRVQ*",
+      "start_offset": 50
+    },
+    "ENST00000000009:167": {
+      "downstream_peptide": "GLRIFSYI*",
+      "start_offset": 55
+    },
+    "ENST00000000010:81": {
+      "downstream_peptide": "NRCDLLKNRLSLSRLTRAVHRHPYV*",
       "start_offset": 26
     },
-    "ENST00000000003:88": {
-      "downstream_peptide": "PPLLSREMRPLAWVCDRVQLLVLDL*",
-      "start_offset": 29
+    "ENST00000000011:343": {
+      "downstream_peptide": "WRPCPHTSFRVNRF*",
+      "start_offset": 114
     },
-    "ENST00000000004:311": {
-      "downstream_peptide": "PH*",
+    "ENST00000000012:310": {
+      "downstream_peptide": "PGPPLPGILRNGRERPGQVKTGGRGWS*",
       "start_offset": 103
     },
-    "ENST00000000005:275": {
-      "downstream_peptide": "SHSDYCQHVGHVASDQHLSYTTRNGGGPTDSTVHQIGSGQYLGASINIRAFVNAPD*",
-      "start_offset": 91
+    "ENST00000000013:98": {
+      "downstream_peptide": "DSSQPRIFPNRRWITTR*",
+      "start_offset": 32
     },
-    "ENST00000000006:83": {
-      "downstream_peptide": "*",
-      "start_offset": 27
+    "ENST00000000014:231": {
+      "downstream_peptide": "HRVCWMGQTKSQSYSATSYKASLP*",
+      "start_offset": 76
     },
-    "ENST00000000007:112": {
-      "downstream_peptide": "FQAQLDEIVRCSRLDLRISIAEQFCPCPSIGI*",
-      "start_offset": 37
+    "ENST00000000015:67": {
+      "downstream_peptide": "TL*",
+      "start_offset": 22
     },
-    "ENST00000000008:285": {
-      "downstream_peptide": "RGEAAQSVPHRADSAECLSQKRP*",
-      "start_offset": 94
+    "ENST00000000016:315": {
+      "downstream_peptide": "KTSTILEVPPSRKRKSPMVAVSACYPHGHLERLSGLNTVAEALFLISTSFGLNAA*",
+      "start_offset": 104
     },
-    "ENST00000000009:259": {
-      "downstream_peptide": "TTG*",
-      "start_offset": 86
+    "ENST00000000017:341": {
+      "downstream_peptide": "APNLLLDWRLSPDHVQKPVSRYAHTYVRS*",
+      "start_offset": 113
     },
-    "ENST00000000010:260": {
-      "downstream_peptide": "LSEGHQGIMGLTRTSR*",
-      "start_offset": 86
+    "ENST00000000018:499": {
+      "downstream_peptide": "IVCPGRSHVDFVQH",
+      "start_offset": 166
     },
-    "ENST00000000011:136": {
-      "downstream_peptide": "LHGTYS*",
+    "ENST00000000019:202": {
+      "downstream_peptide": "TSPNDPCSRIRQLYFLLWLTDRKITPGCEQTRTQTSRKCRIPHTRDSTSIASFTPVRPRGYET*",
+      "start_offset": 67
+    },
+    "ENST00000000020:131": {
+      "downstream_peptide": "DQKKILIVLAAYRACDVVTTSSILRRLVLL*",
+      "start_offset": 43
+    },
+    "ENST00000000021:71": {
+      "downstream_peptide": "HSGHGREHVEPFIKPEHNNLSWLH*",
+      "start_offset": 23
+    },
+    "ENST00000000022:514": {
+      "downstream_peptide": "R*",
+      "start_offset": 171
+    },
+    "ENST00000000023:312": {
+      "downstream_peptide": "LRL*",
+      "start_offset": 103
+    },
+    "ENST00000000024:509": {
+      "downstream_peptide": "EIPIFSRTRGA",
+      "start_offset": 169
+    },
+    "ENST00000000025:248": {
+      "downstream_peptide": "SETYDESISDFVFRRIKGFGRSNCRLD*",
+      "start_offset": 82
+    },
+    "ENST00000000026:137": {
+      "downstream_peptide": "TSTALPQGRVYTGFTERCQRLPLVTVASGPAFYSRFIAFSRLCTPTPA*",
       "start_offset": 45
     },
-    "ENST00000000012:155": {
-      "downstream_peptide": "PAVRHPVDPGAHATIQIRVSWFMATPMDSHQQQGPLIRDINKENNNGYVGPLCLMCRPRHTKLGTGKHYI*",
-      "start_offset": 51
+    "ENST00000000027:124": {
+      "downstream_peptide": "IYSQCTDGSRKGLLGLKSWSAGPLLTTSAGAIRAPQRLQYERQSTAVYNS*",
+      "start_offset": 41
+    },
+    "ENST00000000028:236": {
+      "downstream_peptide": "SVPGVSSFIRGPRYASKIKRT*",
+      "start_offset": 78
+    },
+    "ENST00000000029:338": {
+      "downstream_peptide": "SFTSVLSR*",
+      "start_offset": 112
+    },
+    "ENST00000000030:71": {
+      "downstream_peptide": "V*",
+      "start_offset": 23
     }
   },
   "seed": 20261014

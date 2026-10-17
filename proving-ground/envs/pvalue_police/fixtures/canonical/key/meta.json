@@ -6,16 +6,6 @@
     "feat_0129",
     "feat_0398"
   ],
-  "benjamini_hochberg_including_spike_ins": [
-    "feat_0103",
-    "feat_0123",
-    "feat_0129",
-    "feat_0398",
-    "feat_0405",
-    "feat_0433",
-    "feat_0451",
-    "feat_0472"
-  ],
   "bonferroni": [
     "feat_0123",
     "feat_0398"

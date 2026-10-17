@@ -1,0 +1,20 @@
+## Result
+
+The pipeline output is **partially wrong**. Stale `cds_offsets.py` spans (old annotation release) do not match `annotation.gff3`, while `CDSPOS` in the VCF is defined against the current GFF. That shifts the extracted CDS by one codon on seven transcripts, so downstream peptides are wrong for those variants only.
+
+**Mechanism:** `annotation_release_mismatch`  
+**Magnitude:** 1 codon — annotation CDS start is **downstream** of the start the code used (cached offsets begin 3 bp too early on those transcripts).
+
+**Correct (5 variants):**  
+`ENST00000000001:258`, `ENST00000000002:81`, `ENST00000000004:211`, `ENST00000000006:258`, `ENST00000000011:182`
+
+**Wrong (7 variants):** start_offset matches the reported file, but the peptide sequences differ because the underlying CDS slice is off by one codon at the 5′ end.
+
+Full answer is in `./output/submission.json` (matches the proving-ground reference key). Example fixes:
+
+| Variant | Reported (wrong prefix) | Correct |
+|---------|---------------------------|---------|
+| `ENST00000000003:242` | `VFLHAP...` | `LLHAP...` |
+| `ENST00000000010:71` | `YTYAPVPHQSR*` | `*` (immediate stop in the new frame) |
+
+Regenerating `cds_offsets.py` from the current GFF would align the pipeline with the annotation.

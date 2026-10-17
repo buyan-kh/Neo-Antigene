@@ -30,6 +30,7 @@ CHECK_NAMES = [
     "min_sample_size",
     "claim_honesty",
     "p_value_sanity",
+    "design_vs_data_discrepancy",
 ]
 GATE = "underpowered_flag"
 POWER_TOLERANCE = 0.02
@@ -136,10 +137,33 @@ def grade(submission_path: Path, fixture_dir: Path) -> GraderResult:
         )
     )
 
+    pre_registered = design["successes_in_population"]
+    discrepancy = submission.get("design_vs_data_discrepancy")
+    discrepancy = discrepancy if isinstance(discrepancy, dict) else {}
+    discrepancy_ok = (
+        as_int(discrepancy.get("pre_registered")) == pre_registered
+        and as_int(discrepancy.get("actual")) == K
+    )
+    checks.append(
+        Check(
+            "design_vs_data_discrepancy",
+            discrepancy_ok,
+            "expected pre_registered={} actual={} got={}".format(
+                pre_registered, K, submission.get("design_vs_data_discrepancy")
+            ),
+        )
+    )
+
     return build_result(
         checks,
         gates=[GATE],
-        required_to_pass=["underpowered_flag", "claim_honesty", "power_value", "min_sample_size"],
+        required_to_pass=[
+            "underpowered_flag",
+            "claim_honesty",
+            "power_value",
+            "min_sample_size",
+            "design_vs_data_discrepancy",
+        ],
         flags=flags,
     )
 

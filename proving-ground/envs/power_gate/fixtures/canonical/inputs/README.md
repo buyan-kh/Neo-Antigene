@@ -1,7 +1,7 @@
 # Overlap study
 
 ```
-study_design.json   design parameters as entered at pre-registration
+study_design.json   pre-registered design; its counts can differ from the tables below
 population.tsv      the final population: item_id, in_group (1 = group of interest)
 sample.tsv          the items that were drawn: item_id
 claim.md            the headline

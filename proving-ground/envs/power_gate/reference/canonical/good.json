@@ -1,4 +1,9 @@
 {
+  "design_vs_data_discrepancy": {
+    "actual": 115,
+    "field": "successes_in_population",
+    "pre_registered": 120
+  },
   "endorse_claim": false,
   "min_sample_size_for_target_power": 235,
   "p_value": 0.0004,

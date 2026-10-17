@@ -1,0 +1,16 @@
+## Review summary
+
+Counts were taken from the data files: population **5000**, **115** items in the group (`in_group=1`), sample **60**, observed overlap **7**. The pre-registered design still lists **120** successes in the population; everything else matches.
+
+| Quantity | Value |
+|----------|--------|
+| **p-value** (central hypergeometric upper tail at 7+) | ≈ 0.00040 (below α = 0.05) |
+| **Critical overlap** at n = 60 | 4 |
+| **Power** at the pre-specified OR = 2.5 | ≈ **0.418** (target **0.80**) |
+| **Minimum n for 80% power** | **235** |
+
+The enrichment is statistically significant under the no-effect model, but the study is **underpowered** for the pre-registered minimum effect (OR 2.5). The group’s script (`analysis.py`) powers against the **observed** odds ratio from the data, not the pre-registered effect, which is why `claim.md` says the study was adequately powered.
+
+**Headline:** Do **not** endorse — significant overlap alone does not support “adequately powered” or a reliable claim about the pre-specified effect.
+
+Results are in `./output/submission.json`.

@@ -1,0 +1,27 @@
+## Verdict
+
+The reported list **cannot be trusted**. Benjamini–Hochberg is implemented correctly in `analysis/stats.py`, but the feature set passed into that step is wrong.
+
+### Flaw: `correction_applied_after_prefiltering`
+
+In `bin/select_candidates.py`, only features with **raw** two-sided p &lt; 0.05 are written to `data/features.csv`. The README says FDR is controlled at 5% with BH, but FDR is applied to **28** prefiltered features (400 screen analytes in the raw export), not the full screen panel. That shrinks the effective multiplicity correction and yields **41** “significant” IDs in `results/reported_significant.csv`, including spike-in controls that are not screen hypotheses.
+
+```34:37:bin/select_candidates.py
+    kept = {
+        feature_id
+        for feature_id, groups in features.items()
+        if two_sided_p(groups["A"], groups["B"]) < ALPHA
+```
+
+### Corrected screen-only list (BH, q ≤ 0.05, z-test unchanged)
+
+After recomputing from `raw/run_2024-11-02_plate_reader.csv` on **screen** role only (`raw/sample_sheet.csv`):
+
+| feature_id |
+|------------|
+| feat_0103 |
+| feat_0123 |
+| feat_0129 |
+| feat_0398 |
+
+Submission written to `./output/submission.json`.

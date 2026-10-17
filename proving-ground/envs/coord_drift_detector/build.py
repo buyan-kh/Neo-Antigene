@@ -14,23 +14,21 @@ if str(ROOT) not in sys.path:
 from envs.coord_drift_detector.translate import downstream_peptide  # noqa: E402
 
 SEED = 20261014
-TRANSCRIPT_COUNT = 12
-AFFECTED_COUNT = 7
-END_ONLY_DRIFT_COUNT = 2
-END_ONLY_DRIFT_NT = 6
+TRANSCRIPT_COUNT = 30
+AFFECTED_COUNT = 4
+END_DECOY_COUNT = 6
+END_DECOY_NT = 6
 CDS_CODONS = 180
 ANNOTATION_RELEASE = 114
 CODE_RELEASE = 113
 DRIFT_CODONS = 1
 GENOMIC_ORIGIN = 1000000
-MECHANISM = "cds_phase_ignored"
-PHASED_COUNT = 7
+MECHANISM = "annotation_release_mismatch"
 MECHANISMS = [
     "none",
     "annotation_release_mismatch",
     "zero_vs_one_based_position",
     "downstream_start_skips_variant_codon",
-    "cds_phase_ignored",
     "wrong_strand",
     "wrong_codon_table",
     "indel_applied_at_wrong_sequence_level",
@@ -181,8 +179,9 @@ reported_neoorfs.csv      the current output
 
 Run with `python enumerate_downstream.py transcripts.fasta variants.vcf out.csv`.
 
-The sequence and annotation files were refreshed last quarter. The cached
-span table has been in use for a while and was not regenerated.
+`annotation.gff3` is the current reference release. `cds_offsets.py` was
+cached from the previous release and was not regenerated when the annotation
+was refreshed.
 """
 
 
@@ -213,7 +212,7 @@ def make_transcript(rng: random.Random, upstream_atg: bool) -> dict:
             utr5 = utr5[:-3] + random_codon(rng, allow_stop=True)
     codons = ["ATG"] + [random_codon(rng) for _ in range(CDS_CODONS - 2)] + ["TAA"]
     cds = "".join(codons)
-    utr3 = "".join(rng.choice(BASES) for _ in range(rng.randint(30, 120)))
+    utr3 = "".join(rng.choice(BASES) for _ in range(rng.randint(90, 180)))
     return {
         "sequence": utr5 + cds + utr3,
         "cds_start": utr5_len + 1,
@@ -230,11 +229,12 @@ def build_fixture(name: str) -> dict:
     key_dir.mkdir(parents=True, exist_ok=True)
 
     transcript_ids = ["ENST{:011d}".format(i + 1) for i in range(TRANSCRIPT_COUNT)]
-    phased_ids = set(rng.sample(transcript_ids, PHASED_COUNT))
+    drift_ids = set(rng.sample(transcript_ids, AFFECTED_COUNT))
+    decoy_ids = set(rng.sample([item for item in transcript_ids if item not in drift_ids], END_DECOY_COUNT))
 
     transcripts = {}
     for transcript_id in transcript_ids:
-        transcripts[transcript_id] = make_transcript(rng, False)
+        transcripts[transcript_id] = make_transcript(rng, transcript_id in drift_ids)
 
     with open(inputs_dir / "transcripts.fasta", "w", encoding="utf-8") as handle:
         for transcript_id in transcript_ids:
@@ -259,13 +259,11 @@ def build_fixture(name: str) -> dict:
                     end=origin + record["cds_start"] - 1,
                 )
             )
-            phase = 1 if transcript_id in phased_ids else 0
             handle.write(
-                "chr1\tensembl\tCDS\t{start}\t{end}\t.\t+\t{phase}\tID=CDS:{tx};Parent=transcript:{tx}\n".format(
+                "chr1\tensembl\tCDS\t{start}\t{end}\t.\t+\t0\tID=CDS:{tx};Parent=transcript:{tx}\n".format(
                     tx=transcript_id,
                     start=origin + record["cds_start"],
                     end=origin + record["cds_end"],
-                    phase=phase,
                 )
             )
             handle.write(
@@ -285,7 +283,15 @@ def build_fixture(name: str) -> dict:
     stale_spans = {}
     for transcript_id in transcript_ids:
         record = transcripts[transcript_id]
-        stale_spans[transcript_id] = (record["cds_start"], record["cds_end"])
+        start = record["cds_start"]
+        end = record["cds_end"]
+        if transcript_id in drift_ids:
+            start -= 3 * DRIFT_CODONS
+            assert record["sequence"][start - 1 : record["cds_start"] - 1] == "ATG"
+        elif transcript_id in decoy_ids:
+            end += END_DECOY_NT
+            assert end <= len(record["sequence"])
+        stale_spans[transcript_id] = (start, end)
 
     with open(inputs_dir / "cds_offsets.py", "w", encoding="utf-8") as handle:
         handle.write(OFFSETS_HEADER)
@@ -298,8 +304,13 @@ def build_fixture(name: str) -> dict:
     for index, transcript_id in enumerate(transcript_ids):
         record = transcripts[transcript_id]
         cds = record["sequence"][record["cds_start"] - 1 : record["cds_end"]]
-        while True:
-            codon_index = rng.randint(20, CDS_CODONS - 60)
+        annotated_tail = record["sequence"][record["cds_start"] - 1 :]
+        placed = False
+        for _ in range(4000):
+            if transcript_id in drift_ids:
+                codon_index = rng.randint(CDS_CODONS - 30, CDS_CODONS - 8)
+            else:
+                codon_index = rng.randint(20, CDS_CODONS - 60)
             cds_pos = codon_index * 3 + rng.randint(0, 2)
             if index % 2 == 0:
                 ref = cds[cds_pos]
@@ -307,12 +318,22 @@ def build_fixture(name: str) -> dict:
             else:
                 ref = cds[cds_pos : cds_pos + 2]
                 alt = ref[0]
-            within_cds, _ = downstream_peptide(cds, cds_pos, ref, alt)
-            through_utr, _ = downstream_peptide(
-                record["sequence"][record["cds_start"] - 1 :], cds_pos, ref, alt
-            )
-            if within_cds.endswith("*") and within_cds == through_utr:
+            cds_pep, _ = downstream_peptide(cds, cds_pos, ref, alt)
+            correct_pep, correct_off = downstream_peptide(annotated_tail, cds_pos, ref, alt)
+            stale_start, stale_end = stale_spans[transcript_id]
+            stale_cds = record["sequence"][stale_start - 1 : stale_end]
+            stale_pep, stale_off = downstream_peptide(stale_cds, cds_pos, ref, alt)
+            differs = stale_pep != correct_pep or stale_off != correct_off
+            if transcript_id in drift_ids:
+                escapes = correct_pep.endswith("*") and correct_pep != cds_pep
+                if escapes and differs:
+                    placed = True
+                    break
+            elif cds_pep.endswith("*") and cds_pep == correct_pep and not differs:
+                placed = True
                 break
+        if not placed:
+            raise RuntimeError("could not place a variant on " + transcript_id)
         variants.append(
             {
                 "variant_id": "{}:{}".format(transcript_id, cds_pos + 1),
@@ -328,7 +349,7 @@ def build_fixture(name: str) -> dict:
         handle.write("##reference=transcript sequences\n")
         handle.write("##INFO=<ID=TRANSCRIPT,Number=1,Type=String,Description=\"Transcript\">\n")
         handle.write(
-            "##INFO=<ID=CDSPOS,Number=1,Type=Integer,Description=\"1-based position within the coding sequence\">\n"
+            "##INFO=<ID=CDSPOS,Number=1,Type=Integer,Description=\"1-based position within the coding sequence in annotation.gff3\">\n"
         )
         handle.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
         for variant in variants:
@@ -352,25 +373,29 @@ def build_fixture(name: str) -> dict:
         record = transcripts[variant["transcript"]]
         cds = record["sequence"][record["cds_start"] - 1 : record["cds_end"]]
         assert cds[variant["cds_pos"] : variant["cds_pos"] + len(variant["ref"])] == variant["ref"]
-        peptide, offset = downstream_peptide(cds, variant["cds_pos"], variant["ref"], variant["alt"])
-        reported[variant["variant_id"]] = {
+        peptide, offset = downstream_peptide(
+            record["sequence"][record["cds_start"] - 1 :],
+            variant["cds_pos"],
+            variant["ref"],
+            variant["alt"],
+        )
+        correct[variant["variant_id"]] = {
             "downstream_peptide": peptide,
             "start_offset": offset,
         }
-        phase = 1 if variant["transcript"] in phased_ids else 0
-        phased = cds[phase:]
-        phased = phased[: len(phased) - (len(phased) % 3)]
-        phased_peptide, phased_offset = downstream_peptide(
-            phased, variant["cds_pos"] - phase, variant["ref"], variant["alt"]
+        stale_start, stale_end = stale_spans[variant["transcript"]]
+        stale_cds = record["sequence"][stale_start - 1 : stale_end]
+        stale_peptide, stale_offset = downstream_peptide(
+            stale_cds, variant["cds_pos"], variant["ref"], variant["alt"]
         )
-        correct[variant["variant_id"]] = {
-            "downstream_peptide": phased_peptide,
-            "start_offset": phased_offset,
+        reported[variant["variant_id"]] = {
+            "downstream_peptide": stale_peptide,
+            "start_offset": stale_offset,
         }
-        if phased_peptide != peptide or phased_offset != offset:
+        if stale_peptide != peptide or stale_offset != offset:
             affected.append(variant["variant_id"])
 
-    assert {v.split(":")[0] for v in affected} == phased_ids
+    assert {v.split(":")[0] for v in affected} == drift_ids
 
     with open(inputs_dir / "reported_neoorfs.csv", "w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, lineterminator="\n")
@@ -464,7 +489,7 @@ def write_reference_submissions(name: str, key: dict) -> None:
         "bad_wrong_mechanism.json",
         {
             "drift_detected": True,
-            "mechanism": "annotation_release_mismatch",
+            "mechanism": "zero_vs_one_based_position",
             "magnitude": key["magnitude"],
             "affected_variants": key["affected_variants"],
             "corrected": rows(key["affected_variants"], "corrected"),

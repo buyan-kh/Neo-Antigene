@@ -64,7 +64,9 @@ Notes on the fields:
 - `location` should point at the file and the line range where the faulty
   decision is actually made.
 - `corrected_method` is the correction you apply when producing the list.
-  Either accepted method is fine, applied to all features.
+  Either accepted method is fine. The screen tests only the screen-role
+  analytes. `raw/sample_sheet.csv` marks each feature's role. Spike-in
+  controls are not hypotheses and must be excluded before the correction.
 - `corrected_significant` must be the list your chosen method produces at a
-  5% level. It is graded against an independent recomputation, so it has to
-  be right, not merely plausible.
+  5% level, on the screen-role analytes only. It is graded against an
+  independent recomputation, so it has to be right, not merely plausible.

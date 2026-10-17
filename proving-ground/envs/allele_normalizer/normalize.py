@@ -8,6 +8,9 @@ from typing import Dict, Optional
 _FORMAT_RE = re.compile(
     r"^(?:HLA[-_]?)?([A-Z]{1,4}[0-9]?)\*?([0-9]{2}):?([0-9]{2,3})(?::[0-9]{2,3}){0,2}([NLSCAQGP]?)$"
 )
+_TOKEN_RE = re.compile(
+    r"(?:HLA-)?[A-Z]{1,4}[0-9]?\*[0-9]{2}:?[0-9]{2,3}(?::[0-9]{2,3}){0,2}[NLSCAQGP]?"
+)
 
 
 def load_aliases(path: Path) -> Dict[str, str]:
@@ -32,11 +35,20 @@ def canonicalize(raw: object, aliases: Dict[str, str]) -> Optional[str]:
     if not cleaned:
         return None
 
-    if cleaned.count("*") >= 2 and "-" in cleaned:
-        parts = [canonicalize(part, aliases) for part in cleaned.split("-")]
+    tokens = _TOKEN_RE.findall(cleaned)
+    if len(tokens) >= 2:
+        parts = [canonicalize(token, aliases) for token in tokens]
         if all(parts):
-            return "-".join(parts)
+            return "-".join(sorted(parts))
         return None
+
+    if "*" not in cleaned and "-" in cleaned:
+        pieces = cleaned.split("-")
+        if not (len(pieces) == 2 and pieces[0] == "HLA"):
+            parts = [canonicalize(part, aliases) for part in pieces]
+            if len(parts) >= 2 and all(parts):
+                return "-".join(sorted(parts))
+            return None
 
     match = _FORMAT_RE.match(cleaned)
     if match:

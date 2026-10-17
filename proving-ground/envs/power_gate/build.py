@@ -110,7 +110,7 @@ target we set in the design.
 README_TEXT = """# Overlap study
 
 ```
-study_design.json   design parameters as entered at pre-registration
+study_design.json   pre-registered design; its counts can differ from the tables below
 population.tsv      the final population: item_id, in_group (1 = group of interest)
 sample.tsv          the items that were drawn: item_id
 claim.md            the headline
@@ -190,6 +190,7 @@ def build_fixture(name: str, design: dict, actual: dict) -> dict:
         "actual": actual,
         "stale_design_power": stale_power,
         "stale_design_min_sample_size": stale_min_n,
+        "stale_design_group_size": stale_K,
         "power": computed_power,
         "underpowered": underpowered,
         "min_sample_size_for_target_power": needed,
@@ -219,6 +220,11 @@ def write_reference_submissions(name: str, key: dict) -> None:
         "p_value": round(key["p_value"], 6),
         "endorse_claim": not underpowered,
         "reason_code": "underpowered" if underpowered else "adequately_powered",
+        "design_vs_data_discrepancy": {
+            "field": "successes_in_population",
+            "pre_registered": key["stale_design_group_size"],
+            "actual": key["actual"]["successes_in_population"],
+        },
     }
     (reference_dir / "good.json").write_text(
         json.dumps(good, indent=2, sort_keys=True) + "\n", encoding="utf-8"

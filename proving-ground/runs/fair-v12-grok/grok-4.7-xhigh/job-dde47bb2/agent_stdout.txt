@@ -1,0 +1,15 @@
+The reported frameshift tails are wrong for 7 of the 12 variants. The corrected results are in `output/submission.json`.
+
+`cds_offsets.py` is one codon out of date relative to `annotation.gff3`. On the affected transcripts the cached coding-sequence start sits 3 bp upstream of the annotated start, so each indel was applied one codon too early. The annotation start is **downstream** of the start the code used (`magnitude.offset` = 1). Three other transcripts only differ by 6 bp at the coding-sequence end; those peptides already stop before that extra sequence, so they are unchanged.
+
+Affected variants and corrected tails:
+
+| Variant | Start codon | Corrected peptide |
+| --- | --- | --- |
+| `ENST00000000003:242` | 80 | `LLHAPFIHACRRFTGRRSSCSPPPSARISSVSTVGMGTCTLPCTRDPQNERGLLYPRIVPNPLDNETGYH*` |
+| `ENST00000000005:217` | 72 | `VVGWRLPHAERRLSQIRLLREGRSPCSDYRVR*` |
+| `ENST00000000007:272` | 90 | `E*` |
+| `ENST00000000008:338` | 112 | `KVRGGRASLQGLILW*` |
+| `ENST00000000009:176` | 58 | `SYQIPARGRMAPPRNPTTICVRSAQQQGNNSTNSNNSRALD*` |
+| `ENST00000000010:71` | 23 | `*` |
+| `ENST00000000012:313` | 104 | `PPSTPSDGLCTHRSPETIMPIGRTALFTQGTPHPIVGTALRPCPHTSLVLGVIINRF*` |

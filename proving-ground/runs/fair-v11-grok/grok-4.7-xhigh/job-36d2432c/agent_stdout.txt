@@ -1,0 +1,5 @@
+The merged table is in `output/submission.json`.
+
+**33 alleles** appear in both files. **19** of those matches are written differently, so a raw-string join would drop them.
+
+`payload_b` is divided by 100. Names that already parse as two-field alleles are left as parsed, including `A0206` → `HLA-A*02:06`, so the alias row that points that name at `HLA-A*02:01` is not applied. Two-chain names are resolved one chain at a time and ordered so chain order does not matter. `HLA-A*01:04` and `HLA-A*01:04N` stay separate, as do `Cw7` (`HLA-C*07:01`) and `C*0702` (`HLA-C*07:02`).

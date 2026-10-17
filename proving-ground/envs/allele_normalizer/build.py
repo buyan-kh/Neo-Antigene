@@ -47,8 +47,25 @@ FORCED_ONLY_B = {
     "HLA-C*07:02": "C*0702",
     "HLA-A*01:04N": "HLA-A*01:04N",
     "HLA-A*02:01G": "HLA-A*02:01:01:01G",
-    "HLA-DQA1*01:02-HLA-DQB1*05:01": "DQA1*01:02-DQB1*05:01",
 }
+
+HETERODIMERS = [
+    (
+        "HLA-A*02:01-HLA-B*07:02",
+        "A2-B7",
+        "HLA-B*07:02-HLA-A*02:01",
+    ),
+    (
+        "HLA-A*02:06-HLA-B*07:02",
+        "A*0206-B*0702",
+        "HLA-B*07:02-HLA-A*02:06",
+    ),
+    (
+        "HLA-DQA1*01:02-HLA-DQB1*05:01",
+        "HLA-DQA1*01:02-HLA-DQB1*05:01",
+        "DQB1*05:01-DQA1*01:02",
+    ),
+]
 
 README_TEXT = """# Merge two allele tables
 
@@ -186,6 +203,12 @@ def build_fixture(name: str) -> dict:
         raw = FORCED_ONLY_B.get(canonical) or spell(canonical, (index + 1) % 4)
         rows_b.append((raw, round(rng.uniform(0.0, 100.0), 3)))
         raw_to_canonical[raw] = canonical
+
+    for canonical, raw_a, raw_b in HETERODIMERS:
+        rows_a.append((raw_a, round(rng.uniform(0.0, 100.0), 3)))
+        rows_b.append((raw_b, round(rng.uniform(0.0, 100.0), 3)))
+        raw_to_canonical[raw_a] = canonical
+        raw_to_canonical[raw_b] = canonical
 
     distinct_a = len(rows_a)
     distinct_b = len(rows_b)

@@ -2,64 +2,154 @@
   "affected_variants": [],
   "corrected": [
     {
-      "downstream_peptide": "WGEFQDCFLEKIFLSEQSVY*",
-      "start_offset": 97,
-      "variant_id": "ENST00000000001:292"
+      "downstream_peptide": "VL*",
+      "start_offset": 41,
+      "variant_id": "ENST00000000001:124"
     },
     {
-      "downstream_peptide": "TGTCRISRRSMTVVIRPIPSDRLEFLVQFISYGGIGPFPLFRESYRERATRRSPGIAVLPNYIDGYMHVLP*",
+      "downstream_peptide": "SDWSS*",
+      "start_offset": 41,
+      "variant_id": "ENST00000000002:126"
+    },
+    {
+      "downstream_peptide": "PLHDKRSPRE*",
+      "start_offset": 99,
+      "variant_id": "ENST00000000003:299"
+    },
+    {
+      "downstream_peptide": "QATMAGLVTNLELAHARVTQLLVTTYPRTCGCKRTVSQATRYRRA*",
+      "start_offset": 21,
+      "variant_id": "ENST00000000004:64"
+    },
+    {
+      "downstream_peptide": "IDWKRAILGSQY*",
+      "start_offset": 89,
+      "variant_id": "ENST00000000005:270"
+    },
+    {
+      "downstream_peptide": "KGNHSQFFL",
+      "start_offset": 171,
+      "variant_id": "ENST00000000006:516"
+    },
+    {
+      "downstream_peptide": "RGG*",
+      "start_offset": 55,
+      "variant_id": "ENST00000000007:167"
+    },
+    {
+      "downstream_peptide": "IRVQ*",
+      "start_offset": 50,
+      "variant_id": "ENST00000000008:153"
+    },
+    {
+      "downstream_peptide": "GLRIFSYI*",
+      "start_offset": 55,
+      "variant_id": "ENST00000000009:167"
+    },
+    {
+      "downstream_peptide": "NRCDLLKNRLSLSRLTRAVHRHPYV*",
       "start_offset": 26,
-      "variant_id": "ENST00000000002:81"
+      "variant_id": "ENST00000000010:81"
     },
     {
-      "downstream_peptide": "PPLLSREMRPLAWVCDRVQLLVLDL*",
-      "start_offset": 29,
-      "variant_id": "ENST00000000003:88"
+      "downstream_peptide": "WRPCPHTSFRVNRF*",
+      "start_offset": 114,
+      "variant_id": "ENST00000000011:343"
     },
     {
-      "downstream_peptide": "PH*",
+      "downstream_peptide": "PGPPLPGILRNGRERPGQVKTGGRGWS*",
       "start_offset": 103,
-      "variant_id": "ENST00000000004:311"
+      "variant_id": "ENST00000000012:310"
     },
     {
-      "downstream_peptide": "SHSDYCQHVGHVASDQHLSYTTRNGGGPTDSTVHQIGSGQYLGASINIRAFVNAPD*",
-      "start_offset": 91,
-      "variant_id": "ENST00000000005:275"
+      "downstream_peptide": "DSSQPRIFPNRRWITTR*",
+      "start_offset": 32,
+      "variant_id": "ENST00000000013:98"
     },
     {
-      "downstream_peptide": "*",
-      "start_offset": 27,
-      "variant_id": "ENST00000000006:83"
+      "downstream_peptide": "HRVCWMGQTKSQSYSATSYKASLP*",
+      "start_offset": 76,
+      "variant_id": "ENST00000000014:231"
     },
     {
-      "downstream_peptide": "FQAQLDEIVRCSRLDLRISIAEQFCPCPSIGI*",
-      "start_offset": 37,
-      "variant_id": "ENST00000000007:112"
+      "downstream_peptide": "TL*",
+      "start_offset": 22,
+      "variant_id": "ENST00000000015:67"
     },
     {
-      "downstream_peptide": "RGEAAQSVPHRADSAECLSQKRP*",
-      "start_offset": 94,
-      "variant_id": "ENST00000000008:285"
+      "downstream_peptide": "KTSTILEVPPSRKRKSPMVAVSACYPHGHLERLSGLNTVAEALFLISTSFGLNAA*",
+      "start_offset": 104,
+      "variant_id": "ENST00000000016:315"
     },
     {
-      "downstream_peptide": "TTG*",
-      "start_offset": 86,
-      "variant_id": "ENST00000000009:259"
+      "downstream_peptide": "APNLLLDWRLSPDHVQKPVSRYAHTYVRS*",
+      "start_offset": 113,
+      "variant_id": "ENST00000000017:341"
     },
     {
-      "downstream_peptide": "LSEGHQGIMGLTRTSR*",
-      "start_offset": 86,
-      "variant_id": "ENST00000000010:260"
+      "downstream_peptide": "IVCPGRSHVDFVQH",
+      "start_offset": 166,
+      "variant_id": "ENST00000000018:499"
     },
     {
-      "downstream_peptide": "LHGTYS*",
+      "downstream_peptide": "TSPNDPCSRIRQLYFLLWLTDRKITPGCEQTRTQTSRKCRIPHTRDSTSIASFTPVRPRGYET*",
+      "start_offset": 67,
+      "variant_id": "ENST00000000019:202"
+    },
+    {
+      "downstream_peptide": "DQKKILIVLAAYRACDVVTTSSILRRLVLL*",
+      "start_offset": 43,
+      "variant_id": "ENST00000000020:131"
+    },
+    {
+      "downstream_peptide": "HSGHGREHVEPFIKPEHNNLSWLH*",
+      "start_offset": 23,
+      "variant_id": "ENST00000000021:71"
+    },
+    {
+      "downstream_peptide": "R*",
+      "start_offset": 171,
+      "variant_id": "ENST00000000022:514"
+    },
+    {
+      "downstream_peptide": "LRL*",
+      "start_offset": 103,
+      "variant_id": "ENST00000000023:312"
+    },
+    {
+      "downstream_peptide": "EIPIFSRTRGA",
+      "start_offset": 169,
+      "variant_id": "ENST00000000024:509"
+    },
+    {
+      "downstream_peptide": "SETYDESISDFVFRRIKGFGRSNCRLD*",
+      "start_offset": 82,
+      "variant_id": "ENST00000000025:248"
+    },
+    {
+      "downstream_peptide": "TSTALPQGRVYTGFTERCQRLPLVTVASGPAFYSRFIAFSRLCTPTPA*",
       "start_offset": 45,
-      "variant_id": "ENST00000000011:136"
+      "variant_id": "ENST00000000026:137"
     },
     {
-      "downstream_peptide": "PAVRHPVDPGAHATIQIRVSWFMATPMDSHQQQGPLIRDINKENNNGYVGPLCLMCRPRHTKLGTGKHYI*",
-      "start_offset": 51,
-      "variant_id": "ENST00000000012:155"
+      "downstream_peptide": "IYSQCTDGSRKGLLGLKSWSAGPLLTTSAGAIRAPQRLQYERQSTAVYNS*",
+      "start_offset": 41,
+      "variant_id": "ENST00000000027:124"
+    },
+    {
+      "downstream_peptide": "SVPGVSSFIRGPRYASKIKRT*",
+      "start_offset": 78,
+      "variant_id": "ENST00000000028:236"
+    },
+    {
+      "downstream_peptide": "SFTSVLSR*",
+      "start_offset": 112,
+      "variant_id": "ENST00000000029:338"
+    },
+    {
+      "downstream_peptide": "V*",
+      "start_offset": 23,
+      "variant_id": "ENST00000000030:71"
     }
   ],
   "drift_detected": false,

@@ -15,5 +15,6 @@ reported_neoorfs.csv      the current output
 
 Run with `python enumerate_downstream.py transcripts.fasta variants.vcf out.csv`.
 
-The sequence and annotation files were refreshed last quarter. The cached
-span table has been in use for a while and was not regenerated.
+`annotation.gff3` is the current reference release. `cds_offsets.py` was
+cached from the previous release and was not regenerated when the annotation
+was refreshed.

@@ -1,48 +1,30 @@
 {
   "affected_variants": [
-    "ENST00000000003:88",
-    "ENST00000000005:275",
-    "ENST00000000007:112",
-    "ENST00000000008:285",
-    "ENST00000000009:259",
-    "ENST00000000010:260",
-    "ENST00000000012:155"
+    "ENST00000000006:516",
+    "ENST00000000018:499",
+    "ENST00000000022:514",
+    "ENST00000000024:509"
   ],
   "corrected": [
     {
-      "downstream_peptide": "PPLLSREMRPLAWVCDRVQLLVLDL*",
-      "start_offset": 29,
-      "variant_id": "ENST00000000003:88"
+      "downstream_peptide": "KGNHSQFFL",
+      "start_offset": 171,
+      "variant_id": "ENST00000000006:516"
     },
     {
-      "downstream_peptide": "SHSDYCQHVGHVASDQHLSYTTRNGGGPTDSTVHQIGSGQYLGASINIRAFVNAPD*",
-      "start_offset": 91,
-      "variant_id": "ENST00000000005:275"
+      "downstream_peptide": "IVCPGRSHVDFVQH",
+      "start_offset": 166,
+      "variant_id": "ENST00000000018:499"
     },
     {
-      "downstream_peptide": "FQAQLDEIVRCSRLDLRISIAEQFCPCPSIGI*",
-      "start_offset": 37,
-      "variant_id": "ENST00000000007:112"
+      "downstream_peptide": "R*",
+      "start_offset": 171,
+      "variant_id": "ENST00000000022:514"
     },
     {
-      "downstream_peptide": "RGEAAQSVPHRADSAECLSQKRP*",
-      "start_offset": 94,
-      "variant_id": "ENST00000000008:285"
-    },
-    {
-      "downstream_peptide": "TTG*",
-      "start_offset": 86,
-      "variant_id": "ENST00000000009:259"
-    },
-    {
-      "downstream_peptide": "LSEGHQGIMGLTRTSR*",
-      "start_offset": 86,
-      "variant_id": "ENST00000000010:260"
-    },
-    {
-      "downstream_peptide": "PAVRHPVDPGAHATIQIRVSWFMATPMDSHQQQGPLIRDINKENNNGYVGPLCLMCRPRHTKLGTGKHYI*",
-      "start_offset": 51,
-      "variant_id": "ENST00000000012:155"
+      "downstream_peptide": "EIPIFSRTRGA",
+      "start_offset": 169,
+      "variant_id": "ENST00000000024:509"
     }
   ],
   "drift_detected": true,
@@ -50,5 +32,5 @@
     "direction": "downstream",
     "offset": 1
   },
-  "mechanism": "cds_phase_ignored"
+  "mechanism": "annotation_release_mismatch"
 }

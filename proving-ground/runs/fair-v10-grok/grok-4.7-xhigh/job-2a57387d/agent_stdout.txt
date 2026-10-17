@@ -1,0 +1,12 @@
+The reported list cannot be trusted. Benjamini–Hochberg is applied only after an uncorrected p < 0.05 screen, so the correction never sees the full set of tests.
+
+`bin/select_candidates.py` keeps a feature only when its raw two-sided z-test p-value is below 0.05 (lines 34–38), and `analysis/stats.py` then runs false-discovery-rate control on that reduced table. Of 480 measured features, 41 pass that filter, and every one of them is reported as significant. That set also includes spike-in controls, which are not hypotheses.
+
+Recomputing the same z-test on the 400 screen-role analytes only, then applying Benjamini–Hochberg at 5%, leaves four features:
+
+- `feat_0103`
+- `feat_0123`
+- `feat_0129`
+- `feat_0398`
+
+That list is in `output/submission.json`.

@@ -20,12 +20,12 @@ correct, say so.
 
 | File | What it holds |
 | --- | --- |
-| `variants.vcf` | the variants, with transcript and 1-based position within the coding sequence |
+| `variants.vcf` | the variants. `CDSPOS` is the 1-based position within the coding sequence in `annotation.gff3` |
 | `transcripts.fasta` | full transcript sequences |
 | `annotation.gff3` | UTR and coding-sequence coordinates on the reference chromosome |
 | `transcript_origin.tsv` | genomic origin of each transcript sequence |
 | `enumerate_downstream.py` | the code that computes the new stretch |
-| `cds_offsets.py` | a table the code uses |
+| `cds_offsets.py` | the coding-sequence spans the code uses |
 | `reported_neoorfs.csv` | the pipeline's current output |
 | `README.md` | the team's own note |
 
@@ -55,7 +55,6 @@ Write one file to `/output/submission.json` with these fields:
 - `annotation_release_mismatch` — the code and the annotation files come from different releases of the reference
 - `zero_vs_one_based_position` — positions are treated as 0-based in one place and 1-based in another
 - `downstream_start_skips_variant_codon` — the start of the new stretch is placed at the wrong codon
-- `cds_phase_ignored` — the frame offset recorded on the coding-sequence feature is not used
 - `wrong_strand` — the sequence is read in the wrong orientation
 - `wrong_codon_table` — the wrong translation table is used
 - `indel_applied_at_wrong_sequence_level` — the variant is applied to the full transcript where the coding sequence was meant, or the reverse
@@ -65,8 +64,15 @@ Notes on the fields:
 
 - `affected_variants` is only the variants whose reported result is wrong.
 - `downstream_peptide` is the amino-acid sequence of the new stretch,
-  including the stop character `*` if the stretch runs into one.
-- `start_offset` is the zero-based codon index, within the coding sequence as
-  annotated, at which the new stretch begins.
+  including the stop character `*` if the stretch runs into one. Translate
+  until that stop. When the new frame no longer stops inside the annotated
+  coding sequence, continue through the 3' UTR.
+- `start_offset` is the zero-based codon index, within the coding sequence in
+  `annotation.gff3`, at which the new stretch begins.
+- `magnitude.offset` is how many codons separate the coding-sequence start the
+  code used from the start in `annotation.gff3`, for the variants whose
+  peptide is wrong. Those variants share one shift. `direction` is where the
+  annotation start sits relative to the start the code used. Use `none` and
+  offset 0 when every compared start agrees.
 - Each corrected peptide is checked against an independent translation of the
   sequence, so it must be exactly right.
