@@ -1,5 +1,5 @@
-a lab or company sends us a patient's tumor and normal DNA, tumor RNA, and HLA type. Our software hands back a short ranked list of the ~20 peptides most likely to be real neoantigens, the targets worth putting in that patient's personal cancer vaccine.
+Deterministic, self-grading reinforcement learning and evaluation environments for frontier AI labs in science and biostatistics.
 
-What makes us different: we own the proof. We validate our picks against the patient's own immune cells (real yes/no T-cell responses), which is data no one else can fake or buy. That owned data is the moat.
+What makes us different: we sell the exam, not the student. Each environment drops an agent into a realistic scientific workspace with messy raw files and tests whether it can catch real methodology errors—data leakage, p-value bugs, uncorrected power calculations, coordinate drift, and naming mismatches—graded by pure Python with zero LLM-as-judge ambiguity.
 
-One line: "We pick the targets for personal cancer vaccines, and we're the only ones who can prove our picks against the patient's own immune cells.
+One line: "Deterministic, reward-hack-resistant science and statistics evaluation environments for AI labs, built from bugs caught in production bioinformatics pipelines."

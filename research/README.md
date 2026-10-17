@@ -1,7 +1,9 @@
 # Research notes
 
-This folder is the record of what we have actually checked. It is written in
-plain language so it can be read without the chat that produced it.
+This folder is the record of what we checked during the initial project. It is
+written in plain language so it can be read without the chat that produced it.
+These field audits, benchmark checks, and competitor analyses served as the
+direct source material for the evaluation environments in `proving-ground/`.
 
 Markdown is the format because it stays in the repository, opens in any
 editor, and can be searched. Each file is one subject. Start here, then open
